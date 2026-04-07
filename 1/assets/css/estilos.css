@@ -15,7 +15,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px;
+    padding: 15px 20px;
+    flex-wrap: wrap;
 }
 
 .nav-logo {
@@ -30,26 +31,38 @@ body {
 
 .nav-logo h3 {
     color: white;
+    font-size: 1.4em;
 }
 
-/* Links */
+/* Navegação central */
+.container-navegacao {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
 .container-navegacao a {
     margin: 0 10px;
     text-decoration: none;
     color: #dddddd;
+    font-size: 1em;
 }
 
 .container-navegacao a:hover {
     color: white;
 }
 
-/* Botão */
+/* Área restrita */
 .nav-cliente a {
     background-color: #52796f;
     color: white;
     padding: 8px 12px;
     text-decoration: none;
     border-radius: 5px;
+}
+
+.nav-cliente a:hover {
+    background-color: #3d5a52;
 }
 
 /* Conteúdo */
@@ -59,10 +72,21 @@ body {
 }
 
 .card-conteudo {
-    background: white;
+    background-color: white;
     padding: 20px;
     margin-bottom: 20px;
     border-left: 5px solid #52796f;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.card-conteudo h2 {
+    margin-bottom: 12px;
+    color: #2f3e46;
+}
+
+.card-conteudo p {
+    line-height: 1.6;
+    color: #333333;
 }
 
 /* Rodapé */
@@ -73,4 +97,19 @@ footer {
     justify-content: space-around;
     padding: 20px;
     margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+footer div {
+    margin: 10px 20px;
+}
+
+footer strong {
+    display: block;
+    margin-bottom: 10px;
+}
+
+footer p {
+    margin-bottom: 5px;
+    color: #dddddd;
 }
