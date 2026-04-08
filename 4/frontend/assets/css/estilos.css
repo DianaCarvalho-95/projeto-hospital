@@ -1,0 +1,110 @@
+/* Seletor universal - aplica-se a todos os elementos da página */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* Barra de navegação superior */
+.bng-navbar-menu {
+    background-color: #343a40;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    position: sticky;
+    top: 0;
+    border-bottom: 2px solid #495057;
+    z-index: 1000;
+}
+
+.bng-navbar-menu div {
+    display: flex;
+    align-items: center;
+}
+
+.bng-navbar-menu img {
+    height: 50px;
+    margin-right: 10px;
+}
+
+.bng-navbar-menu h3 {
+    font-size: 1.5em;
+    color: #dddddd;
+}
+
+.bng-navbar-menu button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.bng-navbar-menu button:hover {
+    background-color: #5a6268;
+}
+
+
+/* Menu lateral fixo */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background-color: #343a40;
+    color: white;
+    padding: 100px 20px 20px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.sidebar h4 {
+    margin-bottom: 15px;
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar a {
+    display: flex;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.sidebar a:hover {
+    background-color: rgb(57, 86, 179);
+}
+
+
+/* Conteúdo principal */
+.content {
+    margin-left: 250px;
+    margin-top: 70px;
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.content section {
+    padding: 20px;
+}
+
+.content h2 {
+    margin-bottom: 10px;
+    color: #343a40;
+}
+
+.content p {
+    color: #333333;
+    line-height: 1.6;
+}
