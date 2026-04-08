@@ -1,0 +1,150 @@
+/* Seletor Universal - Remove margens e preenchimentos padrão */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Comportamento suave ao clicar nas âncoras */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Corpo da página */
+body {
+    background-color: #f4f6f9;
+    color: #222222;
+}
+
+/* Estilo da barra de navegação principal */
+.bng-navbar {
+    background-color: #343a40;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/* Estilo para os <div> internos da barra de navegação */
+.bng-navbar div {
+    display: flex;
+    align-items: center;
+}
+
+/* Estilo do logótipo na barra de navegação */
+.bng-navbar img {
+    height: 50px;
+    margin-right: 10px;
+}
+
+/* Estilo do texto com o nome da empresa */
+.bng-navbar h3 {
+    font-size: 1.5em;
+    color: #dddddd;
+}
+
+/* Estilos para os links centrais da navegação */
+.container-navegacao {
+    text-align: center;
+    padding: 20px;
+}
+
+/* Estilos individuais dos links */
+.container-navegacao a {
+    font-size: 1.2em;
+    margin: 0px 20px;
+    text-decoration: none;
+    color: #dddddd;
+}
+
+/* Efeito hover nos links */
+.container-navegacao a:hover {
+    color: #ffffff;
+}
+
+/* Estilos para o botão da Área Restrita */
+.nav-cliente a {
+    color: #dddddd;
+    text-decoration: none;
+    font-size: 1.2em;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+/* Efeito ao passar o rato no botão */
+.nav-cliente a:hover {
+    background-color: #0056b3;
+}
+
+/* Estilos para o Rodapé */
+.footer-container {
+    display: flex;
+    background-color: #343a40;
+    color: white;
+    padding: 40px 20px;
+    flex-wrap: wrap;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+
+/* Estilos para cada secção do rodapé */
+.footer-section {
+    flex: 1;
+    min-width: 250px;
+    padding: 10px;
+    text-align: center;
+}
+
+/* Estilo dos títulos do rodapé */
+.footer-section strong {
+    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 10px;
+    color: #f8f9fa;
+}
+
+/* Estilo dos parágrafos do rodapé */
+.footer-section p {
+    font-size: 1rem;
+    color: #d6d6d6;
+}
+
+/* Texto Genérico */
+.container-texto-generico {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 100px 40px;
+    text-align: center;
+    min-height: 100vh;
+}
+
+/* Caixa interna de cada secção */
+.container-texto-generico section {
+    max-width: 900px;
+}
+
+/* Títulos das secções */
+.container-texto-generico h2 {
+    margin-bottom: 15px;
+    color: #2f3e46;
+}
+
+/* Parágrafos das secções */
+.container-texto-generico p {
+    line-height: 1.6;
+    color: #333333;
+}
+
+/* Ajuste para o conteúdo não ficar escondido pelo rodapé fixo */
+body {
+    padding-bottom: 140px;
+}
