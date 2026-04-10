@@ -1,0 +1,311 @@
+/* Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Titillium Web', Arial, Helvetica, sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: #f4f6f9;
+    color: #222222;
+    padding-bottom: 140px;
+}
+
+/* Navbar */
+.bng-navbar {
+    background-color: #343a40;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.bng-navbar div {
+    display: flex;
+    align-items: center;
+}
+
+.bng-navbar img {
+    height: 50px;
+    margin-right: 10px;
+}
+
+.bng-navbar h3 {
+    font-size: 1.5em;
+    color: #dddddd;
+}
+
+.container-navegacao {
+    text-align: center;
+    padding: 20px;
+}
+
+.container-navegacao a {
+    font-size: 1.1em;
+    margin: 0 15px;
+    text-decoration: none;
+    color: #dddddd;
+}
+
+.container-navegacao a:hover {
+    color: #ffffff;
+}
+
+.nav-cliente a {
+    color: #dddddd;
+    text-decoration: none;
+    font-size: 1.1em;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.nav-cliente a:hover {
+    background-color: #0056b3;
+}
+
+/* Rodapé */
+.footer-container {
+    display: flex;
+    background-color: #343a40;
+    color: white;
+    padding: 40px 20px;
+    flex-wrap: wrap;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 250px;
+    padding: 10px;
+    text-align: center;
+}
+
+.footer-section strong {
+    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 10px;
+    color: #f8f9fa;
+}
+
+.footer-section p {
+    font-size: 1rem;
+    color: #d6d6d6;
+}
+
+/* Secções gerais */
+.container-texto-generico {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 100px 40px;
+    text-align: center;
+    min-height: 100vh;
+}
+
+section {
+    padding: 100px 40px;
+    text-align: center;
+    min-height: 100vh;
+}
+
+section h2 {
+    font-size: 2.3em;
+    margin-bottom: 20px;
+}
+
+/* Hero / Quem Somos */
+#quem-somos {
+    text-align: center;
+    padding: 100px 0;
+    min-height: 100vh;
+}
+
+.quem-somos-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.quem-somos-content h1 {
+    font-size: 2.4em;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.quem-somos-content p {
+    font-size: 1.2em;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.quem-somos-content img {
+    width: 700px;
+    height: 165px;
+    display: block;
+    margin: 20px auto;
+    object-fit: cover;
+    max-width: 100%;
+    border-radius: 6px;
+}
+
+.button {
+    display: inline-block;
+    background-color: #aaaaaa;
+    color: #fff;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.button:hover {
+    background-color: #8f8f8f;
+}
+
+/* Equipa */
+.equipa-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.pessoa {
+    width: 300px;
+    margin: 20px;
+    padding: 20px;
+    background-color: #eee;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.pessoa img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    object-fit: cover;
+}
+
+.pessoa h3 {
+    margin-bottom: 8px;
+}
+
+/* Serviços e Áreas */
+#servicos,
+#aula-grupo {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 50px;
+    scroll-margin-top: 100px;
+}
+
+.servicos-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.servico {
+    width: 300px;
+    margin: 20px;
+    padding: 20px;
+    background-color: #eee;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.servico i {
+    margin-bottom: 15px;
+    color: #343a40;
+}
+
+.servico h3 {
+    margin-bottom: 10px;
+}
+
+/* Planos */
+.pacotes-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.pacote {
+    width: 300px;
+    margin: 20px;
+    padding: 20px;
+    background-color: #eee;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.pacote h3 {
+    margin-bottom: 10px;
+}
+
+.pacote .preco {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.pacote ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.pacote ul li {
+    margin-bottom: 8px;
+}
+
+/* Contacto */
+#contacto p {
+    margin-bottom: 20px;
+}
+
+#contacto form {
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+#contacto label {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+#contacto input,
+#contacto textarea {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+#contacto button {
+    background-color: #aaaaaa;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#contacto button:hover {
+    background-color: #8f8f8f;
+}
