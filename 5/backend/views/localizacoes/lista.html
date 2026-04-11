@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Localizações - MedTech Solutions</title>
+
+    <link rel="shortcut icon" href="../../assets/img/hospital125.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../../assets/css/admin.css">
+</head>
+
+<body>
+
+    <header class="bng-navbar-menu">
+        <div>
+            <a href="../../index.html">
+                <img src="../../assets/img/hospital255.png" alt="Logo MedTech Solutions">
+            </a>
+            <h3>MedTech Solutions</h3>
+        </div>
+        <div>
+            <button>Utilizador</button>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <h4>Menu</h4>
+        <nav>
+            <a href="../equipamentos/lista.html"><i class="fas fa-cogs"></i><span>Equipamentos</span></a>
+            <a href="lista.html"><i class="fas fa-location-dot"></i><span>Localizações</span></a>
+            <a href="../fornecedores/lista.html"><i class="fas fa-truck-medical"></i><span>Fornecedores</span></a>
+            <a href="../documentacao/documentacao.html"><i class="fas fa-file-medical"></i><span>Documentação</span></a>
+            <a href="../dashboard/dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+        </nav>
+    </aside>
+
+    <main class="content">
+        <div class="actions-top">
+            <h2><strong><i class="fa-solid fa-location-dot"></i> Listagem de Localizações</strong></h2>
+            <a href="novo.html"><i class="fa-solid fa-plus"></i> Nova localização</a>
+        </div>
+
+        <hr>
+
+        <p>Não existem localizações registadas.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Edifício</th>
+                    <th>Piso</th>
+                    <th>Serviço / Departamento</th>
+                    <th>Sala</th>
+                    <th>Observações</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>[Edifício]</td>
+                    <td>[Piso]</td>
+                    <td>[Serviço]</td>
+                    <td>[Sala]</td>
+                    <td>[Observações]</td>
+                    <td>
+                        <a href="detalhes.html"><i class="fa-solid fa-eye"></i> Consultar</a>
+                        <span>|</span>
+                        <a href="editar.html"><i class="fa-regular fa-pen-to-square"></i> Editar</a>
+                        <span>|</span>
+                        <a href="apagar.html"><i class="fa-solid fa-trash-can"></i> Eliminar</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+</body>
+
+</html>

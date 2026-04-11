@@ -9,7 +9,7 @@
 }
 
 /* =========================================================
-   BODY - Cor de fundo geral do sistema
+   BODY
 ========================================================= */
 body {
     background-color: #f4f6f9;
@@ -17,7 +17,7 @@ body {
 }
 
 /* =========================================================
-   NAVBAR SUPERIOR - Barra no topo com logo + nome + botão utilizador
+   NAVBAR SUPERIOR
 ========================================================= */
 .bng-navbar-menu {
     background-color: #343a40;
@@ -31,25 +31,21 @@ body {
     z-index: 1000;
 }
 
-/* Organização interna da navbar */
 .bng-navbar-menu div {
     display: flex;
     align-items: center;
 }
 
-/* Logo */
 .bng-navbar-menu img {
     height: 50px;
     margin-right: 10px;
 }
 
-/* Nome da aplicação */
 .bng-navbar-menu h3 {
     font-size: 1.5em;
     color: #dddddd;
 }
 
-/* Botão utilizador */
 .bng-navbar-menu button {
     background-color: #6c757d;
     color: #ffffff;
@@ -64,7 +60,7 @@ body {
 }
 
 /* =========================================================
-   SIDEBAR (MENU LATERAL)
+   SIDEBAR
 ========================================================= */
 .sidebar {
     width: 250px;
@@ -78,35 +74,53 @@ body {
     overflow-y: auto;
 }
 
-/* Título Menu */
 .sidebar h4 {
     margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: bold;
 }
 
-/* Links do menu */
 .sidebar nav {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-/* Cada link */
 .sidebar a {
+    position: relative;
     display: block;
     color: white;
     text-decoration: none;
-    padding: 10px;
+    padding: 10px 10px 10px 38px;
     border-radius: 5px;
     transition: background 0.3s;
+    white-space: nowrap;
+    font-size: 16px;
+    line-height: 1.2;
 }
 
-/* Hover */
+.sidebar a i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.sidebar a span {
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .sidebar a:hover {
     background-color: rgb(57, 86, 179);
 }
 
+
 /* =========================================================
-   ÁREA DE CONTEÚDO
+   CONTEÚDO
 ========================================================= */
 .content {
     margin-left: 250px;
@@ -114,35 +128,30 @@ body {
     padding: 20px;
 }
 
-/* Títulos */
 .content h2 {
     color: #343a40;
 }
 
-/* Parágrafos - ESPAÇAMENTO IGUAL */
 .content p {
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin: 10px 0;
     color: #333;
 }
 
 /* =========================================================
-   TOPO DAS LISTAGENS (TÍTULO + BOTÃO)
+   TOPO DAS LISTAGENS
 ========================================================= */
 .actions-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
-    /* 👈 REDUZIDO */
 }
 
-/* Título da listagem */
 .actions-top h2 {
     font-size: 20px;
+    margin: 0;
 }
 
-/* Botão "Novo" */
 .actions-top a {
     padding: 8px 12px;
     background-color: #495057;
@@ -157,47 +166,54 @@ body {
 }
 
 /* =========================================================
-   LINHA SEPARADORA
+   LINHA (HR)
 ========================================================= */
 hr {
     border: none;
     border-top: 1px solid #dee2e6;
     margin: 10px 0 15px 0;
-    /* 👈 CONTROLADO */
 }
 
 /* =========================================================
-   TABELAS
+   TABELAS (CORRIGIDAS)
 ========================================================= */
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
-    /* 👈 uniformizado */
     background-color: #fff;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    table-layout: fixed;
 }
 
-/* Cabeçalho */
 thead {
     background-color: #212529;
     color: white;
 }
 
 thead th {
-    padding: 12px;
-    font-size: 14px;
+    padding: 8px;
+    font-size: 13px;
 }
 
-/* Linhas */
 tbody td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #dee2e6;
+    padding: 8px;
+    font-size: 13px;
 }
 
-/* Hover */
 tbody tr:hover {
     background-color: #f8f9fa;
+}
+
+/* Coluna de ações */
+thead th:last-child,
+tbody td:last-child {
+    width: 260px;
+    white-space: nowrap;
+}
+
+tbody td:last-child {
+    text-align: left;
 }
 
 /* Links da tabela */
@@ -205,21 +221,23 @@ td a {
     color: #007bff;
     text-decoration: none;
     font-weight: bold;
+    display: inline-flex;
+    align-items: center;
 }
 
 td a:hover {
     text-decoration: underline;
 }
 
-/* Separador | */
-td span {
-    margin: 0 5px;
-    color: #6c757d;
-}
-
 /* Ícones */
 td a i {
     margin-right: 5px;
+}
+
+/* Separador */
+td span {
+    margin: 0 6px;
+    color: #6c757d;
 }
 
 /* =========================================================
@@ -235,24 +253,16 @@ td a i {
     border-radius: 8px;
 }
 
-/* Texto dentro do formulário */
-.form-wrapper p {
-    margin-bottom: 10px;
-}
-
-/* Grupo de campos */
 .form-group {
     margin-bottom: 15px;
 }
 
-/* Labels */
 .form-group label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
 }
 
-/* Inputs */
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -271,7 +281,6 @@ td a i {
     margin-top: 20px;
 }
 
-/* Botão link */
 .form-buttons a {
     padding: 10px 15px;
     background-color: #6c757d;
@@ -284,7 +293,6 @@ td a i {
     background-color: #5a6268;
 }
 
-/* Botão principal */
 .form-buttons button {
     padding: 10px 15px;
     background-color: #343a40;
@@ -309,7 +317,6 @@ td a i {
     border-radius: 5px;
 }
 
-/* Texto centrado */
 .text-center {
     text-align: center;
 }
