@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Equipamentos - MedTech Solutions</title>
+    <title>Lista de Documentação - MedTech Solutions</title>
 
     <link rel="shortcut icon" href="../../assets/img/hospital125.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,6 @@
 
 <body>
 
-    <!-- Navbar -->
     <header class="bng-navbar-menu">
         <div>
             <a href="../../index.html">
@@ -30,50 +29,47 @@
         </div>
     </header>
 
-    <!-- Sidebar -->
     <aside class="sidebar">
         <h4>Menu</h4>
         <nav>
-            <a href="lista.html"><i class="fas fa-cogs"></i> &ensp; Equipamentos</a>
-            <a href="../localizacoes/localizacoes.html"><i class="fas fa-location-dot"></i> &ensp; Localizações</a>
-            <a href="../fornecedores/lista.html"><i class="fas fa-truck-medical"></i> &ensp; Fornecedores</a>
-            <a href="../documentacao/lista.html"><i class="fas fa-file-medical"></i> &ensp; Documentação</a>
-            <a href="../dashboard/dashboard.html"><i class="fas fa-chart-line"></i> &ensp; Dashboard</a>
+            <a href="../equipamentos/lista.html"><i class="fas fa-cogs"></i><span>Equipamentos</span></a>
+            <a href="../localizacoes/lista.html"><i class="fas fa-location-dot"></i><span>Localizações</span></a>
+            <a href="../fornecedores/lista.html"><i class="fas fa-truck-medical"></i><span>Fornecedores</span></a>
+            <a href="lista.html"><i class="fas fa-file-medical"></i><span>Documentação</span></a>
+            <a href="../dashboard/dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
         </nav>
     </aside>
 
-    <!-- Conteúdo -->
     <main class="content">
         <div class="actions-top">
-            <h2><strong><i class="fa-solid fa-cogs"></i> Listagem de Equipamentos</strong></h2>
-            <a href="novo.html"><i class="fa-solid fa-plus"></i> Novo equipamento</a>
+            <h2><strong><i class="fa-solid fa-file-medical"></i> Listagem de Documentação</strong></h2>
+            <a href="novo.html"><i class="fa-solid fa-plus"></i> Novo documento</a>
         </div>
 
         <hr>
 
-        <p>Não existem equipamentos registados.</p>
+        <p>Não existem documentos registados.</p>
 
-        <table class="table-equipamentos">
+        <table class="table-documentacao">
             <thead>
                 <tr>
-                    <th>Código</th>
-                    <th>Designação</th>
-                    <th>Categoria</th>
-                    <th>Marca</th>
-                    <th>Modelo</th>
-                    <th>Estado</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Equipamento</th>
+                    <th>Fornecedor</th>
+                    <th>Data</th>
+                    <th>Validade</th>
                     <th>Ações</th>
-                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>[Código]</td>
-                    <td>[Designação]</td>
-                    <td>[Categoria]</td>
-                    <td>[Marca]</td>
-                    <td>[Modelo]</td>
-                    <td>[Estado]</td>
+                    <td>[Nome Documento]</td>
+                    <td>[Tipo]</td>
+                    <td>[Equipamento]</td>
+                    <td>[Fornecedor]</td>
+                    <td>[Data]</td>
+                    <td>[Validade]</td>
                     <td>
                         <a href="detalhes.html"><i class="fa-solid fa-eye"></i> Consultar</a>
                         <span>|</span>

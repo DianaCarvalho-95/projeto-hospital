@@ -1,5 +1,5 @@
 /* =========================================================
-   RESET GERAL
+   BASE GERAL
 ========================================================= */
 * {
     margin: 0;
@@ -8,27 +8,25 @@
     font-family: 'Titillium Web', sans-serif;
 }
 
-/* =========================================================
-   BODY
-========================================================= */
 body {
     background-color: #f4f6f9;
     color: #212529;
 }
 
+
 /* =========================================================
-   NAVBAR SUPERIOR
+   NAVBAR
 ========================================================= */
 .bng-navbar-menu {
     background-color: #343a40;
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     padding: 10px 20px;
     position: sticky;
     top: 0;
-    border-bottom: 2px solid #495057;
     z-index: 1000;
+    border-bottom: 2px solid #495057;
 }
 
 .bng-navbar-menu div {
@@ -42,13 +40,13 @@ body {
 }
 
 .bng-navbar-menu h3 {
-    font-size: 1.5em;
     color: #dddddd;
+    font-size: 1.5em;
 }
 
 .bng-navbar-menu button {
     background-color: #6c757d;
-    color: #ffffff;
+    color: white;
     border: none;
     padding: 8px 14px;
     border-radius: 5px;
@@ -58,6 +56,7 @@ body {
 .bng-navbar-menu button:hover {
     background-color: #5a6268;
 }
+
 
 /* =========================================================
    SIDEBAR
@@ -69,15 +68,14 @@ body {
     color: white;
     padding: 20px;
     position: fixed;
-    left: 0;
     top: 72px;
+    left: 0;
     overflow-y: auto;
 }
 
 .sidebar h4 {
     margin-bottom: 15px;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 1.1em;
 }
 
 .sidebar nav {
@@ -87,31 +85,18 @@ body {
 }
 
 .sidebar a {
-    position: relative;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     color: white;
     text-decoration: none;
-    padding: 10px 10px 10px 38px;
+    padding: 10px;
     border-radius: 5px;
-    transition: background 0.3s;
-    white-space: nowrap;
-    font-size: 16px;
-    line-height: 1.2;
 }
 
 .sidebar a i {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 18px;
+    width: 20px;
     text-align: center;
-    font-size: 16px;
-}
-
-.sidebar a span {
-    display: inline-block;
-    vertical-align: middle;
 }
 
 .sidebar a:hover {
@@ -134,8 +119,9 @@ body {
 
 .content p {
     margin: 10px 0;
-    color: #333;
+    color: #333333;
 }
+
 
 /* =========================================================
    TOPO DAS LISTAGENS
@@ -149,15 +135,14 @@ body {
 
 .actions-top h2 {
     font-size: 20px;
-    margin: 0;
 }
 
 .actions-top a {
-    padding: 8px 12px;
     background-color: #495057;
     color: white;
-    border-radius: 4px;
     text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 4px;
     font-size: 14px;
 }
 
@@ -165,8 +150,9 @@ body {
     background-color: #343a40;
 }
 
+
 /* =========================================================
-   LINHA (HR)
+   LINHA
 ========================================================= */
 hr {
     border: none;
@@ -174,71 +160,55 @@ hr {
     margin: 10px 0 15px 0;
 }
 
+
 /* =========================================================
-   TABELAS (CORRIGIDAS)
+   TABELA BASE
 ========================================================= */
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    table-layout: fixed;
-}
-
-thead {
-    background-color: #212529;
-    color: white;
+    background-color: white;
 }
 
 thead th {
-    padding: 8px;
-    font-size: 13px;
+    background-color: #212529;
+    color: white;
+    text-align: left;
+    padding: 10px;
+    font-size: 14px;
 }
 
 tbody td {
-    padding: 8px;
-    font-size: 13px;
+    padding: 10px;
+    font-size: 14px;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
 }
 
 tbody tr:hover {
     background-color: #f8f9fa;
 }
 
-/* Coluna de ações */
-thead th:last-child,
-tbody td:last-child {
-    width: 260px;
-    white-space: nowrap;
-}
-
-tbody td:last-child {
-    text-align: left;
-}
-
-/* Links da tabela */
 td a {
     color: #007bff;
     text-decoration: none;
     font-weight: bold;
-    display: inline-flex;
-    align-items: center;
 }
 
 td a:hover {
     text-decoration: underline;
 }
 
-/* Ícones */
 td a i {
     margin-right: 5px;
 }
 
-/* Separador */
 td span {
     margin: 0 6px;
     color: #6c757d;
 }
+
 
 /* =========================================================
    FORMULÁRIOS
@@ -248,8 +218,8 @@ td span {
     max-width: 100%;
     margin: 40px auto;
     padding: 25px;
-    background-color: #fff;
-    border: 1px solid #ccc;
+    background-color: white;
+    border: 1px solid #cccccc;
     border-radius: 8px;
 }
 
@@ -268,12 +238,13 @@ td span {
 .form-group textarea {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #cccccc;
     border-radius: 4px;
 }
 
+
 /* =========================================================
-   BOTÕES
+   BOTÕES DOS FORMULÁRIOS
 ========================================================= */
 .form-buttons {
     display: flex;
@@ -282,10 +253,10 @@ td span {
 }
 
 .form-buttons a {
-    padding: 10px 15px;
     background-color: #6c757d;
     color: white;
     text-decoration: none;
+    padding: 10px 15px;
     border-radius: 5px;
 }
 
@@ -294,10 +265,10 @@ td span {
 }
 
 .form-buttons button {
-    padding: 10px 15px;
     background-color: #343a40;
     color: white;
     border: none;
+    padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
 }
@@ -305,6 +276,7 @@ td span {
 .form-buttons button:hover {
     background-color: #212529;
 }
+
 
 /* =========================================================
    ALERTAS
@@ -319,4 +291,37 @@ td span {
 
 .text-center {
     text-align: center;
+}
+
+
+/* =========================================================
+   AJUSTES POR MÓDULO
+========================================================= */
+
+/* Equipamentos */
+.table-equipamentos th:last-child,
+.table-equipamentos td:last-child {
+    width: 260px;
+    white-space: nowrap;
+}
+
+/* Fornecedores */
+.table-fornecedores th:last-child,
+.table-fornecedores td:last-child {
+    width: 260px;
+    white-space: nowrap;
+}
+
+/* Localizações */
+.table-localizacoes th:last-child,
+.table-localizacoes td:last-child {
+    width: 260px;
+    white-space: nowrap;
+}
+
+/* Documentação */
+.table-documentacao th:last-child,
+.table-documentacao td:last-child {
+    width: 260px;
+    white-space: nowrap;
 }
