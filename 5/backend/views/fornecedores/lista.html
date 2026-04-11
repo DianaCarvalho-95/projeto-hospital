@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Equipamentos - MedTech Solutions</title>
+    <title>Lista de Fornecedores - MedTech Solutions</title>
 
     <link rel="shortcut icon" href="../../assets/img/hospital125.png" type="image/png">
 
@@ -22,6 +22,7 @@
 
 <body>
 
+    <!-- Navbar -->
     <header class="bng-navbar-menu">
         <div>
             <a href="../../index.html">
@@ -35,6 +36,7 @@
         </div>
     </header>
 
+    <!-- Sidebar -->
     <aside class="sidebar">
         <h4>Menu</h4>
         <nav>
@@ -46,11 +48,52 @@
         </nav>
     </aside>
 
+    <!-- Conteúdo Principal -->
     <main class="content">
-        <section>
-            <h2>Equipamentos</h2>
-            <p>Gestão dos equipamentos médicos do hospital.</p>
-        </section>
+        <div class="actions-top">
+            <h2><strong><i class="fa-solid fa-truck-medical"></i> Listagem de Fornecedores</strong></h2>
+            <a href="novo.html"><i class="fa-solid fa-plus"></i> Novo fornecedor</a>
+        </div>
+
+        <br>
+        <hr>
+
+        <p>Não existem fornecedores registados.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Empresa</th>
+                    <th>NIF</th>
+                    <th>Email</th>
+                    <th>Telefone</th>
+                    <th>Tipo</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>[Nome Empresa]</td>
+                    <td>[NIF]</td>
+                    <td>[email]</td>
+                    <td>[telefone]</td>
+                    <td>[tipo_fornecedor]</td>
+                    <td>
+                        <a href="detalhes.html">
+                            <i class="fa-solid fa-eye"></i> Consultar
+                        </a>
+                        <span>|</span>
+                        <a href="editar.html">
+                            <i class="fa-regular fa-pen-to-square"></i> Editar
+                        </a>
+                        <span>|</span>
+                        <a href="apagar.html">
+                            <i class="fa-solid fa-trash-can"></i> Eliminar
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </main>
 
 </body>

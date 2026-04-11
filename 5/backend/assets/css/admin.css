@@ -108,3 +108,209 @@ body {
     color: #333333;
     line-height: 1.6;
 }
+
+
+
+/* =========================
+   TABELAS
+========================= */
+
+/* Define o estilo geral da tabela */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilização do cabeçalho da tabela */
+thead {
+    background-color: #212529;
+    color: #ffffff;
+    text-align: left;
+}
+
+/* Define o espaçamento e estilo dos cabeçalhos de coluna */
+thead th {
+    padding: 12px;
+    font-size: 14px;
+    text-transform: capitalize;
+    letter-spacing: 0.05em;
+}
+
+/* Estilização do corpo da tabela */
+tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 14px;
+    color: #343a40;
+}
+
+/* Efeito hover nas linhas da tabela */
+tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Estilização dos links dentro da tabela */
+td a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Efeito hover nos links da tabela */
+td a:hover {
+    text-decoration: underline;
+}
+
+/* Separadores entre ações */
+td span {
+    color: #6c757d;
+    margin: 0 5px;
+}
+
+/* =========================
+   CABEÇALHO DA PÁGINA / BOTÃO SUPERIOR
+========================= */
+
+.actions-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.actions-top h2 {
+    font-size: 20px;
+    color: #212529;
+}
+
+.actions-top a {
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #495057;
+    color: #fff;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.actions-top a:hover {
+    background-color: #343a40;
+}
+
+/* =========================
+   FORMULÁRIOS
+========================= */
+
+/* Caixa geral do formulário */
+.form-wrapper {
+    width: 700px;
+    max-width: 100%;
+    margin: 50px auto;
+    padding: 25px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+/* Título dentro do formulário */
+.form-wrapper h2 {
+    margin-bottom: 10px;
+}
+
+/* Espaço entre parágrafos em detalhes/apagar */
+.form-wrapper p {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+/* Cada grupo de campo */
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* Rótulo dos campos */
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Inputs, selects e textarea */
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Botões radio */
+.form-group input[type="radio"] {
+    width: auto;
+    margin-right: 5px;
+}
+
+/* =========================
+   BOTÕES DO FORMULÁRIO
+========================= */
+
+.form-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    align-items: center;
+}
+
+/* Link estilo botão */
+.form-buttons a {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #6c757d;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.form-buttons a:hover {
+    background-color: #5a6268;
+}
+
+/* Botão real */
+.form-buttons button {
+    padding: 10px 15px;
+    background-color: #343a40;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.form-buttons button:hover {
+    background-color: #212529;
+}
+
+/* =========================
+   ALERTAS
+========================= */
+
+.alert {
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+}
+
+.text-center {
+    text-align: center;
+}
