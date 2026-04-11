@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Fornecedor - MedTech Solutions</title>
+
+    <link rel="shortcut icon" href="../../assets/img/hospital125.png" type="image/png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,700;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
+
+    <link rel="stylesheet" href="../../assets/css/admin.css">
+</head>
+
+<body>
+
+    <header class="bng-navbar-menu">
+        <div>
+            <a href="../../index.html">
+                <img src="../../assets/img/hospital255.png" alt="Logo MedTech Solutions">
+            </a>
+            <h3>MedTech Solutions</h3>
+        </div>
+
+        <div>
+            <button>Utilizador</button>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <h4>Menu</h4>
+        <nav>
+            <a href="../equipamentos/lista.html"><i class="fas fa-cogs"></i><span>Equipamentos</span></a>
+            <a href="../localizacoes/lista.html"><i class="fas fa-location-dot"></i><span>Localizações</span></a>
+            <a href="../fornecedores/lista.html"><i class="fas fa-truck-medical"></i><span>Fornecedores</span></a>
+            <a href="../documentacao/lista.html"><i class="fas fa-file-medical"></i><span>Documentação</span></a>
+            <a href="../dashboard/dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+            <a href="../ferramentas/ferramentas.html"><i class="fas fa-screwdriver-wrench"></i><span>Ferramentas</span></a>
+        </nav>
+    </aside>
+
+    <main class="content">
+        <div class="form-wrapper">
+            <h2><strong><i class="fa-regular fa-pen-to-square"></i> Editar fornecedor</strong></h2>
+            <hr>
+
+            <form action="#" method="post" novalidate>
+                <div class="form-group">
+                    <label for="nome_empresa">Nome da Empresa</label>
+                    <input type="text" name="nome_empresa" id="nome_empresa" value="[Nome Empresa]" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nif">NIF</label>
+                    <input type="text" name="nif" id="nif" value="[NIF]" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone">Telefone</label>
+                    <input type="text" name="telefone" id="telefone" value="[Telefone]" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" name="email" id="email" value="[Email]" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="morada">Morada</label>
+                    <input type="text" name="morada" id="morada" value="[Morada]">
+                </div>
+
+                <div class="form-group">
+                    <label for="website">Website</label>
+                    <input type="text" name="website" id="website" value="[Website]">
+                </div>
+
+                <div class="form-group">
+                    <label for="pessoa_contacto">Pessoa de Contacto</label>
+                    <input type="text" name="pessoa_contacto" id="pessoa_contacto" value="[Pessoa Contacto]">
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone_contacto">Telefone da Pessoa de Contacto</label>
+                    <input type="text" name="telefone_contacto" id="telefone_contacto" value="[Telefone Contacto]">
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo_fornecedor">Tipo de Fornecedor</label>
+                    <select name="tipo_fornecedor" id="tipo_fornecedor">
+                        <option>Escolha uma opção</option>
+                        <option value="fabricante" selected>Fabricante</option>
+                        <option value="distribuidor">Distribuidor / Comercial</option>
+                        <option value="assistencia">Assistência Técnica</option>
+                        <option value="consumiveis">Consumíveis / Acessórios</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="observacoes">Observações</label>
+                    <input type="text" name="observacoes" id="observacoes" value="[Observações]">
+                </div>
+
+                <div class="form-buttons">
+                    <a href="lista.html"><i class="fa-solid fa-xmark"></i> Cancelar</a>
+                    <button type="submit"><i class="fa-regular fa-floppy-disk"></i> Guardar alterações</button>
+                </div>
+
+                <div class="alert text-center">
+                    Erro simples
+                </div>
+            </form>
+        </div>
+    </main>
+
+</body>
+
+</html>
