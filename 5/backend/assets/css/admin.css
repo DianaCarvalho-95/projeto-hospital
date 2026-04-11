@@ -1,3 +1,6 @@
+/* =========================================================
+   RESET GERAL
+========================================================= */
 * {
     margin: 0;
     padding: 0;
@@ -5,12 +8,17 @@
     font-family: 'Titillium Web', sans-serif;
 }
 
+/* =========================================================
+   BODY - Cor de fundo geral do sistema
+========================================================= */
 body {
     background-color: #f4f6f9;
     color: #212529;
 }
 
-/* Navbar */
+/* =========================================================
+   NAVBAR SUPERIOR - Barra no topo com logo + nome + botão utilizador
+========================================================= */
 .bng-navbar-menu {
     background-color: #343a40;
     display: flex;
@@ -23,21 +31,25 @@ body {
     z-index: 1000;
 }
 
+/* Organização interna da navbar */
 .bng-navbar-menu div {
     display: flex;
     align-items: center;
 }
 
+/* Logo */
 .bng-navbar-menu img {
     height: 50px;
     margin-right: 10px;
 }
 
+/* Nome da aplicação */
 .bng-navbar-menu h3 {
     font-size: 1.5em;
     color: #dddddd;
 }
 
+/* Botão utilizador */
 .bng-navbar-menu button {
     background-color: #6c757d;
     color: #ffffff;
@@ -51,7 +63,9 @@ body {
     background-color: #5a6268;
 }
 
-/* Sidebar */
+/* =========================================================
+   SIDEBAR (MENU LATERAL)
+========================================================= */
 .sidebar {
     width: 250px;
     height: calc(100vh - 72px);
@@ -64,17 +78,19 @@ body {
     overflow-y: auto;
 }
 
+/* Título Menu */
 .sidebar h4 {
     margin-bottom: 15px;
-    font-size: 1.1em;
 }
 
+/* Links do menu */
 .sidebar nav {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
+/* Cada link */
 .sidebar a {
     display: block;
     color: white;
@@ -84,233 +100,216 @@ body {
     transition: background 0.3s;
 }
 
+/* Hover */
 .sidebar a:hover {
     background-color: rgb(57, 86, 179);
 }
 
-/* Conteúdo */
+/* =========================================================
+   ÁREA DE CONTEÚDO
+========================================================= */
 .content {
     margin-left: 250px;
     margin-top: 72px;
     padding: 20px;
 }
 
-.content section {
-    padding: 20px;
-}
-
+/* Títulos */
 .content h2 {
-    margin-bottom: 10px;
     color: #343a40;
 }
 
+/* Parágrafos - ESPAÇAMENTO IGUAL */
 .content p {
-    color: #333333;
-    line-height: 1.6;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    color: #333;
 }
 
-
-
-/* =========================
-   TABELAS
-========================= */
-
-/* Define o estilo geral da tabela */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-/* Estilização do cabeçalho da tabela */
-thead {
-    background-color: #212529;
-    color: #ffffff;
-    text-align: left;
-}
-
-/* Define o espaçamento e estilo dos cabeçalhos de coluna */
-thead th {
-    padding: 12px;
-    font-size: 14px;
-    text-transform: capitalize;
-    letter-spacing: 0.05em;
-}
-
-/* Estilização do corpo da tabela */
-tbody td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #dee2e6;
-    font-size: 14px;
-    color: #343a40;
-}
-
-/* Efeito hover nas linhas da tabela */
-tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
-/* Estilização dos links dentro da tabela */
-td a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-/* Efeito hover nos links da tabela */
-td a:hover {
-    text-decoration: underline;
-}
-
-/* Separadores entre ações */
-td span {
-    color: #6c757d;
-    margin: 0 5px;
-}
-
-/* =========================
-   CABEÇALHO DA PÁGINA / BOTÃO SUPERIOR
-========================= */
-
+/* =========================================================
+   TOPO DAS LISTAGENS (TÍTULO + BOTÃO)
+========================================================= */
 .actions-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    /* 👈 REDUZIDO */
 }
 
+/* Título da listagem */
 .actions-top h2 {
     font-size: 20px;
-    color: #212529;
 }
 
+/* Botão "Novo" */
 .actions-top a {
-    display: inline-block;
     padding: 8px 12px;
     background-color: #495057;
-    color: #fff;
+    color: white;
     border-radius: 4px;
     text-decoration: none;
     font-size: 14px;
-    transition: background 0.3s;
 }
 
 .actions-top a:hover {
     background-color: #343a40;
 }
 
-/* =========================
-   FORMULÁRIOS
-========================= */
+/* =========================================================
+   LINHA SEPARADORA
+========================================================= */
+hr {
+    border: none;
+    border-top: 1px solid #dee2e6;
+    margin: 10px 0 15px 0;
+    /* 👈 CONTROLADO */
+}
 
-/* Caixa geral do formulário */
+/* =========================================================
+   TABELAS
+========================================================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    /* 👈 uniformizado */
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Cabeçalho */
+thead {
+    background-color: #212529;
+    color: white;
+}
+
+thead th {
+    padding: 12px;
+    font-size: 14px;
+}
+
+/* Linhas */
+tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Hover */
+tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Links da tabela */
+td a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+td a:hover {
+    text-decoration: underline;
+}
+
+/* Separador | */
+td span {
+    margin: 0 5px;
+    color: #6c757d;
+}
+
+/* Ícones */
+td a i {
+    margin-right: 5px;
+}
+
+/* =========================================================
+   FORMULÁRIOS
+========================================================= */
 .form-wrapper {
     width: 700px;
     max-width: 100%;
-    margin: 50px auto;
+    margin: 40px auto;
     padding: 25px;
     background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 8px;
 }
 
-/* Título dentro do formulário */
-.form-wrapper h2 {
-    margin-bottom: 10px;
-}
-
-/* Espaço entre parágrafos em detalhes/apagar */
+/* Texto dentro do formulário */
 .form-wrapper p {
     margin-bottom: 10px;
-    line-height: 1.6;
 }
 
-/* Cada grupo de campo */
+/* Grupo de campos */
 .form-group {
     margin-bottom: 15px;
 }
 
-/* Rótulo dos campos */
+/* Labels */
 .form-group label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
 }
 
-/* Inputs, selects e textarea */
+/* Inputs */
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 100%;
     padding: 8px;
-    font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    box-sizing: border-box;
 }
 
-/* Botões radio */
-.form-group input[type="radio"] {
-    width: auto;
-    margin-right: 5px;
-}
-
-/* =========================
-   BOTÕES DO FORMULÁRIO
-========================= */
-
+/* =========================================================
+   BOTÕES
+========================================================= */
 .form-buttons {
     display: flex;
     gap: 10px;
     margin-top: 20px;
-    align-items: center;
 }
 
-/* Link estilo botão */
+/* Botão link */
 .form-buttons a {
-    display: inline-block;
     padding: 10px 15px;
     background-color: #6c757d;
-    color: #fff;
+    color: white;
     text-decoration: none;
     border-radius: 5px;
-    transition: background 0.3s;
 }
 
 .form-buttons a:hover {
     background-color: #5a6268;
 }
 
-/* Botão real */
+/* Botão principal */
 .form-buttons button {
     padding: 10px 15px;
     background-color: #343a40;
-    color: #fff;
+    color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background 0.3s;
 }
 
 .form-buttons button:hover {
     background-color: #212529;
 }
 
-/* =========================
+/* =========================================================
    ALERTAS
-========================= */
-
+========================================================= */
 .alert {
     margin-top: 20px;
     padding: 10px;
-    border-radius: 5px;
     background-color: #f8d7da;
     color: #842029;
-    border: 1px solid #f5c2c7;
+    border-radius: 5px;
 }
 
+/* Texto centrado */
 .text-center {
     text-align: center;
 }

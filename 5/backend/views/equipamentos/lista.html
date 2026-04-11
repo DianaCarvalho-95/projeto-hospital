@@ -4,19 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Fornecedores - MedTech Solutions</title>
+    <title>Lista de Equipamentos - MedTech Solutions</title>
 
     <link rel="shortcut icon" href="../../assets/img/hospital125.png" type="image/png">
-
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,700;1,400&display=swap"
         rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/admin.css">
 </head>
 
@@ -30,7 +25,6 @@
             </a>
             <h3>MedTech Solutions</h3>
         </div>
-
         <div>
             <button>Utilizador</button>
         </div>
@@ -40,7 +34,7 @@
     <aside class="sidebar">
         <h4>Menu</h4>
         <nav>
-            <a href="../equipamentos/equipamentos.html"><i class="fas fa-cogs"></i> &ensp; Equipamentos</a>
+            <a href="lista.html"><i class="fas fa-cogs"></i> &ensp; Equipamentos</a>
             <a href="../localizacoes/localizacoes.html"><i class="fas fa-location-dot"></i> &ensp; Localizações</a>
             <a href="../fornecedores/lista.html"><i class="fas fa-truck-medical"></i> &ensp; Fornecedores</a>
             <a href="../documentacao/documentacao.html"><i class="fas fa-file-medical"></i> &ensp; Documentação</a>
@@ -48,47 +42,43 @@
         </nav>
     </aside>
 
-    <!-- Conteúdo Principal -->
+    <!-- Conteúdo -->
     <main class="content">
         <div class="actions-top">
-            <h2><strong><i class="fa-solid fa-truck-medical"></i> Listagem de Fornecedores</strong></h2>
-            <a href="novo.html"><i class="fa-solid fa-plus"></i> Novo fornecedor</a>
+            <h2><strong><i class="fa-solid fa-cogs"></i> Listagem de Equipamentos</strong></h2>
+            <a href="novo.html"><i class="fa-solid fa-plus"></i> Novo equipamento</a>
         </div>
 
         <hr>
 
-        <p>Não existem fornecedores registados.</p>
+        <p>Não existem equipamentos registados.</p>
 
         <table>
             <thead>
                 <tr>
-                    <th>Empresa</th>
-                    <th>NIF</th>
-                    <th>Email</th>
-                    <th>Telefone</th>
-                    <th>Tipo</th>
+                    <th>Código</th>
+                    <th>Designação</th>
+                    <th>Categoria</th>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Estado</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>[Nome Empresa]</td>
-                    <td>[NIF]</td>
-                    <td>[email]</td>
-                    <td>[telefone]</td>
-                    <td>[tipo_fornecedor]</td>
+                    <td>[Código]</td>
+                    <td>[Designação]</td>
+                    <td>[Categoria]</td>
+                    <td>[Marca]</td>
+                    <td>[Modelo]</td>
+                    <td>[Estado]</td>
                     <td>
-                        <a href="detalhes.html">
-                            <i class="fa-solid fa-eye"></i> Consultar
-                        </a>
+                        <a href="detalhes.html"><i class="fa-solid fa-eye"></i> Consultar</a>
                         <span>|</span>
-                        <a href="editar.html">
-                            <i class="fa-regular fa-pen-to-square"></i> Editar
-                        </a>
+                        <a href="editar.html"><i class="fa-regular fa-pen-to-square"></i> Editar</a>
                         <span>|</span>
-                        <a href="apagar.html">
-                            <i class="fa-solid fa-trash-can"></i> Eliminar
-                        </a>
+                        <a href="apagar.html"><i class="fa-solid fa-trash-can"></i> Eliminar</a>
                     </td>
                 </tr>
             </tbody>
