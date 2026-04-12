@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garantias e Contratos - MedTech Solutions</title>
+
+    <link rel="shortcut icon" href="../../assets/img/hospital125.png" type="image/png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,700;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../assets/css/admin.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <header class="bng-navbar-menu">
+        <div>
+            <a href="../../index.html">
+                <img src="../../assets/img/hospital255.png" alt="Logo MedTech Solutions">
+            </a>
+            <h3>MedTech Solutions</h3>
+        </div>
+
+        <div>
+            <button>Utilizador</button>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h4>Menu</h4>
+        <nav>
+            <a href="../equipamentos/lista.html"><i class="fas fa-cogs"></i><span>Equipamentos</span></a>
+            <a href="../localizacoes/lista.html"><i class="fas fa-location-dot"></i><span>Localizações</span></a>
+            <a href="../fornecedores/lista.html"><i class="fas fa-truck-medical"></i><span>Fornecedores</span></a>
+            <a href="../documentacao/lista.html"><i class="fas fa-file-medical"></i><span>Documentação</span></a>
+            <a href="../dashboard/dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+            <a href="ferramentas.html"><i class="fas fa-screwdriver-wrench"></i><span>Ferramentas</span></a>
+        </nav>
+    </aside>
+
+    <!-- CONTEÚDO -->
+    <main class="content">
+        <section>
+            <h2>Garantias e Contratos</h2>
+            <p>
+                Esta página permite consultar informação resumida sobre garantias,
+                contratos de manutenção e datas importantes associadas aos equipamentos.
+            </p>
+        </section>
+
+        <div class="form-wrapper">
+            <h2><strong><i class="fa-solid fa-file-signature"></i> Consulta de Garantias e Contratos</strong></h2>
+            <hr>
+
+            <form>
+                <!-- Equipamento -->
+                <div class="form-group">
+                    <label for="equipamentoGarantia">Equipamento</label>
+                    <input type="text" id="equipamentoGarantia" name="equipamentoGarantia"
+                        value="Monitor Multiparamétrico">
+                </div>
+
+                <!-- Tipo -->
+                <div class="form-group">
+                    <label for="tipoContrato">Tipo</label>
+                    <select id="tipoContrato" name="tipoContrato">
+                        <option>Garantia</option>
+                        <option selected>Contrato de manutenção</option>
+                        <option>Contrato de assistência técnica</option>
+                    </select>
+                </div>
+
+                <!-- Fornecedor -->
+                <div class="form-group">
+                    <label for="fornecedorContrato">Fornecedor</label>
+                    <input type="text" id="fornecedorContrato" name="fornecedorContrato" value="MedEquip Portugal">
+                </div>
+
+                <!-- Datas -->
+                <div class="form-group">
+                    <label for="dataInicioContrato">Data de início</label>
+                    <input type="date" id="dataInicioContrato" name="dataInicioContrato" value="2024-01-01">
+                </div>
+
+                <div class="form-group">
+                    <label for="dataFimContrato">Data de fim</label>
+                    <input type="date" id="dataFimContrato" name="dataFimContrato" value="2026-01-01">
+                </div>
+
+                <!-- Estado -->
+                <div class="form-group">
+                    <label for="estadoContrato">Estado</label>
+                    <select id="estadoContrato" name="estadoContrato">
+                        <option selected>Ativo</option>
+                        <option>Expirado</option>
+                        <option>Pendente de renovação</option>
+                    </select>
+                </div>
+
+                <!-- Observações -->
+                <div class="form-group">
+                    <label for="observacoesContrato">Observações</label>
+                    <textarea id="observacoesContrato" name="observacoesContrato"
+                        rows="4">Contrato válido para manutenção preventiva e corretiva.</textarea>
+                </div>
+
+                <!-- Área informativa -->
+                <div class="form-group">
+                    <label>Resumo:</label>
+                    <div class="alert text-center">
+                        Contrato ativo até 01/01/2026.
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+</body>
+
+</html>
