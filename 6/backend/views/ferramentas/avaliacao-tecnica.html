@@ -60,43 +60,30 @@
             </p>
         </section>
 
+
         <div class="form-wrapper">
             <h2><strong><i class="fa-solid fa-stethoscope"></i> Avaliação Técnica do Equipamento</strong></h2>
             <hr>
-
-            <!-- 
-                oninput chama a função sempre que o utilizador altera
-                alguma das opções do formulário
-            -->
             <form oninput="avaliarEstadoTecnico()">
+                <div>
+                    <input type="checkbox" id="precisaCalibracao" name="avaliacao">
+                    <label for="precisaCalibracao">Precisa de calibração</label><br>
 
-                <div class="form-group checkbox-group">
-                    <label for="precisaCalibracao" class="checkbox-label">
-                        <input type="checkbox" id="precisaCalibracao" name="avaliacao">
-                        <span>Precisa de calibração</span>
-                    </label>
-                </div>
+                    <input type="checkbox" id="emManutencao" name="avaliacao">
+                    <label for="emManutencao">Está em manutenção</label><br>
 
-                <div class="form-group checkbox-group">
-                    <label for="emManutencao" class="checkbox-label">
-                        <input type="checkbox" id="emManutencao" name="avaliacao">
-                        <span>Está em manutenção</span>
-                    </label>
-                </div>
-
-                <div class="form-group checkbox-group">
-                    <label for="avariaReportada" class="checkbox-label">
-                        <input type="checkbox" id="avariaReportada" name="avaliacao">
-                        <span>Tem avaria reportada</span>
-                    </label>
+                    <input type="checkbox" id="avariaReportada" name="avaliacao">
+                    <label for="avariaReportada">Tem avaria reportada</label>
                 </div>
 
                 <div class="form-group">
                     <label>Recomendação:</label>
                     <div id="mensagemTecnica" class="alert text-center"></div>
                 </div>
-
             </form>
+        </div>
+
+        </form>
         </div>
     </main>
 

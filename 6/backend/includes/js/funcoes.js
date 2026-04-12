@@ -83,3 +83,45 @@ function avaliarEstadoTecnico() {
         mensagemTecnica.textContent = "Equipamento apto para utilização normal.";
     }
 }
+
+
+// =========================================================
+// ESTIMATIVA DE CUSTO (simples)
+// =========================================================
+
+function calcularEstimativaCusto() {
+
+    const tipo = document.getElementById("tipoIntervencao");
+    const urgencia = document.getElementById("nivelUrgencia");
+    const resultado = document.getElementById("resultadoCusto");
+
+    if (!tipo || !urgencia || !resultado) {
+        return;
+    }
+
+    if (!tipo.value || !urgencia.value) {
+        resultado.textContent = "";
+        return;
+    }
+
+    let custo = 0;
+
+    // Tipo de intervenção
+    if (tipo.value === "preventiva") {
+        custo = 100;
+    } else if (tipo.value === "corretiva") {
+        custo = 180;
+    } else if (tipo.value === "calibracao") {
+        custo = 140;
+    }
+
+    // Urgência
+    if (urgencia.value === "urgente") {
+        custo += 50;
+    } else if (urgencia.value === "critica") {
+        custo += 100;
+    }
+
+    // Resultado final
+    resultado.textContent = custo + " €";
+}
