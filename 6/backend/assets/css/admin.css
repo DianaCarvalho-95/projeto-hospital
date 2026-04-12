@@ -162,7 +162,7 @@ hr {
 
 
 /* =========================================================
-   TABELA BASE
+   TABELAS 
 ========================================================= */
 table {
     width: 100%;
@@ -366,3 +366,14 @@ td span {
     color: black;                 /* Define a cor preta para o texto dos links */ 
     text-decoration: none;          /* Remove sublinhado */ 
 } 
+
+
+/* =========================================================
+   RESULTADO DO CÁLCULO DA PRÓXIMA MANUTENÇÃO (FERRAMENTAS)
+========================================================= */
+#resultado {
+    font-weight: bold;
+    color: blue;
+}
+
+
