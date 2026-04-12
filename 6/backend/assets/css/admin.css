@@ -376,4 +376,31 @@ td span {
     color: blue;
 }
 
+/* =========================================================
+   RESULTADO DA AVALIAÇÃO TÉCNICA (FERRAMENTAS)
+========================================================= */
+#mensagemTecnica {
+    font-weight: bold;
+}
 
+/* Checkboxes da avaliação técnica */
+.checkbox-group {
+    margin-bottom: 20px;
+}
+
+.checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin: 0;
+    width: auto;
+}
+
+.checkbox-label span {
+    display: inline-block;
+}
