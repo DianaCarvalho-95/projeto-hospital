@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MedTech Solutions</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="../frontend/assets/bootstrap/bootstrap.min.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../frontend/assets/fontawesome/all.min.css">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="../frontend/assets/img/hospital125.png">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="container-fluid mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-6 col-sm-8 col-10">
+
+                <div class="card p-4">
+
+                    <!-- LOGO + TÍTULO -->
+                    <div class="d-flex align-items-center justify-content-center my-4">
+                        <img src="../frontend/assets/img/hospital125.png" alt="Logo" style="width: 80px;">
+                        <h2 class="ms-2"><strong>MedTech Solutions</strong></h2>
+                    </div>
+
+                    <!-- FORM -->
+                    <form action="../backend/index.html" method="post">
+
+                        <!-- Utilizador -->
+                        <div class="mb-3">
+                            <label class="form-label">Utilizador</label>
+                            <input type="email" class="form-control">
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control">
+                        </div>
+
+                        <!-- Botão -->
+                        <div class="mb-3 text-center">
+                            <button type="submit" class="btn btn-secondary">
+                                Entrar <i class="fa-solid fa-right-to-bracket ms-2"></i>
+                            </button>
+                        </div>
+
+                        <!-- Erro -->
+                        <div class="alert alert-danger p-2 text-center">
+                            Erro: Utilizador não registado
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="../frontend/assets/bootstrap/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
