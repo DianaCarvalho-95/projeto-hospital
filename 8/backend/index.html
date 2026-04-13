@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedTech Solutions</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="assets/bootstrap/bootstrap.min.css">
+
+    <!-- CSS (opcional, podes manter) -->
+    <link rel="stylesheet" href="assets/css/admin.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="assets/fontawesome/all.min.css">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="assets/img/hospital125.png">
+</head>
+
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+    <header class="container-fluid bg-dark text-white">
+        <div class="row align-items-center">
+
+            <!-- LOGO -->
+            <div class="col-6 d-flex align-items-center p-3">
+                <a href="index.html">
+                    <img src="assets/img/hospital125.png" height="40" class="me-3">
+                </a>
+                <h3 class="mb-0">MedTech Solutions</h3>
+            </div>
+
+            <!-- UTILIZADOR -->
+            <div class="col-6 text-end p-3">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fa-regular fa-user me-2"></i> Utilizador
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="fa-solid fa-key me-2"></i>Alterar password
+                            </a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" href="../login/login.html">
+                                <i class="fa-solid fa-right-from-bracket me-2"></i>Sair
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ================= LAYOUT ================= -->
+    <div class="container-fluid">
+        <div class="row">
+
+            <!-- ================= SIDEBAR ================= -->
+            <aside class="col-md-3 col-lg-2 bg-secondary text-white p-3 min-vh-100">
+                <h4>Menu</h4>
+
+                <nav>
+
+                    <a href="views/equipamentos/lista.html" class="nav-link text-white px-0 mb-2 d-block">
+                        <i class="fas fa-cogs me-2"></i> Equipamentos
+                    </a>
+
+                    <a href="views/localizacoes/lista.html" class="nav-link text-white px-0 mb-2 d-block">
+                        <i class="fas fa-location-dot me-2"></i> Localizações
+                    </a>
+
+                    <a href="views/fornecedores/lista.html" class="nav-link text-white px-0 mb-2 d-block">
+                        <i class="fas fa-truck-medical me-2"></i> Fornecedores
+                    </a>
+
+                    <a href="views/documentacao/lista.html" class="nav-link text-white px-0 mb-2 d-block">
+                        <i class="fas fa-file-medical me-2"></i> Documentação
+                    </a>
+
+                    <a href="views/dashboard/dashboard.html" class="nav-link text-white px-0 mb-2 d-block">
+                        <i class="fas fa-chart-line me-2"></i> Dashboard
+                    </a>
+
+                    <a href="views/ferramentas/ferramentas.html" class="nav-link text-white px-0 mb-2 d-block">
+                        <i class="fas fa-screwdriver-wrench me-2"></i> Ferramentas
+                    </a>
+
+                </nav>
+            </aside>
+
+            <!-- ================= CONTEÚDO ================= -->
+            <main class="col-md-9 col-lg-10 p-4">
+
+                <section>
+                    <h2>MedTech Solutions</h2>
+                    <p>Escolhe uma opção no menu lateral para continuar.</p>
+                </section>
+
+            </main>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="assets/bootstrap/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

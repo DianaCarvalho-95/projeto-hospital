@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação Técnica - MedTech Solutions</title>
+
+    <link rel="shortcut icon" href="../../assets/img/hospital125.png" type="image/png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,700;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../assets/css/admin.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <header class="bng-navbar-menu">
+        <div>
+            <a href="../../index.html">
+                <img src="../../assets/img/hospital255.png" alt="Logo MedTech Solutions">
+            </a>
+            <h3>MedTech Solutions</h3>
+        </div>
+
+        <div>
+            <button>Utilizador</button>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h4>Menu</h4>
+        <nav>
+            <a href="../equipamentos/lista.html"><i class="fas fa-cogs"></i><span>Equipamentos</span></a>
+            <a href="../localizacoes/lista.html"><i class="fas fa-location-dot"></i><span>Localizações</span></a>
+            <a href="../fornecedores/lista.html"><i class="fas fa-truck-medical"></i><span>Fornecedores</span></a>
+            <a href="../documentacao/lista.html"><i class="fas fa-file-medical"></i><span>Documentação</span></a>
+            <a href="../dashboard/dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+            <a href="ferramentas.html"><i class="fas fa-screwdriver-wrench"></i><span>Ferramentas</span></a>
+        </nav>
+    </aside>
+
+    <!-- CONTEÚDO -->
+    <main class="content">
+        <section>
+            <h2>Avaliação Técnica</h2>
+            <p>
+                Utiliza esta ferramenta para avaliar rapidamente o estado técnico do equipamento
+                e obter uma recomendação automática.
+            </p>
+        </section>
+
+
+        <div class="form-wrapper">
+            <h2><strong><i class="fa-solid fa-stethoscope"></i> Avaliação Técnica do Equipamento</strong></h2>
+            <hr>
+            <form oninput="avaliarEstadoTecnico()">
+                <div>
+                    <input type="checkbox" id="precisaCalibracao" name="avaliacao">
+                    <label for="precisaCalibracao">Precisa de calibração</label><br>
+
+                    <input type="checkbox" id="emManutencao" name="avaliacao">
+                    <label for="emManutencao">Está em manutenção</label><br>
+
+                    <input type="checkbox" id="avariaReportada" name="avaliacao">
+                    <label for="avariaReportada">Tem avaria reportada</label>
+                </div>
+
+                <div class="form-group">
+                    <label>Recomendação:</label>
+                    <div id="mensagemTecnica" class="alert text-center"></div>
+                </div>
+            </form>
+        </div>
+
+        </form>
+        </div>
+    </main>
+
+    <!-- JS GLOBAL -->
+    <script src="../../includes/js/funcoes.js"></script>
+
+</body>
+
+</html>
