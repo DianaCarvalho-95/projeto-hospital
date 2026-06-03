@@ -13,8 +13,8 @@ try {
 
     $ligacao = new PDO(
         "mysql:host=" . MYSQL_HOST .
-        ";dbname=" . MYSQL_DATABASE .
-        ";charset=utf8",
+            ";dbname=" . MYSQL_DATABASE .
+            ";charset=utf8",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
     );
@@ -26,12 +26,10 @@ try {
         ->fetchAll(PDO::FETCH_OBJ);
 
     $erro = '';
-
 } catch (PDOException $err) {
 
     $erro = 'Aconteceu um erro na ligação à base de dados.';
     $resultados = [];
-
 }
 
 $ligacao = null;
@@ -101,16 +99,28 @@ $ligacao = null;
                                         <td><?= htmlspecialchars($equipamento->estado) ?></td>
 
                                         <td>
-                                            <a href="detalhes.php?id=<?= $equipamento->id ?>" class="text-decoration-none me-2">
-                                                <i class="fa-solid fa-eye"></i> Consultar
+                                            <a href="detalhes.php?id=<?= $equipamento->id ?>"
+                                                class="text-success text-decoration-none me-3">
+
+                                                <i class="fa-solid fa-eye"></i>
+                                                Consultar
+
                                             </a>
 
-                                            <a href="editar.php?id=<?= $equipamento->id ?>" class="text-decoration-none me-2">
-                                                <i class="fa-regular fa-pen-to-square"></i> Editar
+                                            <a href="editar.php?id=<?= $equipamento->id ?>"
+                                                class="text-warning text-decoration-none me-3">
+
+                                                <i class="fa-regular fa-pen-to-square"></i>
+                                                Editar
+
                                             </a>
 
-                                            <a href="apagar.php?id=<?= $equipamento->id ?>" class="text-decoration-none text-danger">
-                                                <i class="fa-solid fa-trash-can"></i> Eliminar
+                                            <a href="apagar.php?id=<?= $equipamento->id ?>"
+                                                class="text-danger text-decoration-none">
+
+                                                <i class="fa-solid fa-trash-can"></i>
+                                                Eliminar
+
                                             </a>
                                         </td>
                                     </tr>
