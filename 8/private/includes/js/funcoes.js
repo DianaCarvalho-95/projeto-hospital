@@ -38,3 +38,27 @@ function logout_and_redirect($redirect_to = '/public/login.php')
     header('Location: ' . BASE_URL . $redirect_to);
     exit;
 }
+
+// Encripta um valor
+function aes_encrypt($valor)
+{
+    return openssl_encrypt(
+        $valor,
+        OPENSSL_METHOD,
+        OPENSSL_KEY,
+        0,
+        OPENSSL_IV
+    );
+}
+
+// Desencripta um valor
+function aes_decrypt($valor)
+{
+    return openssl_decrypt(
+        $valor,
+        OPENSSL_METHOD,
+        OPENSSL_KEY,
+        0,
+        OPENSSL_IV
+    );
+}

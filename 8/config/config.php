@@ -15,3 +15,7 @@ define('MYSQL_USERNAME', 'root');
 define('MYSQL_PASSWORD', '');
 define('MYSQL_AES_KEY', 'medtech2025');
 
+// Segurança - Encriptação com OpenSSL
+define('OPENSSL_METHOD', 'AES-256-CBC');
+define('OPENSSL_KEY', 'MedTechSolutionsKey2025Secure01');
+define('OPENSSL_IV', 'MedTechInitVet01');
