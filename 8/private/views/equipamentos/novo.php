@@ -51,8 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $ligacao = new PDO(
                 "mysql:host=" . MYSQL_HOST .
-                ";dbname=" . MYSQL_DATABASE .
-                ";charset=utf8",
+                    ";dbname=" . MYSQL_DATABASE .
+                    ";charset=utf8",
                 MYSQL_USERNAME,
                 MYSQL_PASSWORD
             );
@@ -103,7 +103,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $estado = '';
             $criticidade = '';
             $observacoes = '';
-
         } catch (PDOException $err) {
 
             $erros[] = 'Não foi possível inserir o equipamento.';
@@ -132,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <hr>
 
             <?php if (!empty($erros)) : ?>
-                <div class="alert alert-danger">
+                <div class="mensagem-erro">
                     <?php foreach ($erros as $erro) : ?>
                         <div><?= htmlspecialchars($erro) ?></div>
                     <?php endforeach; ?>
@@ -140,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endif; ?>
 
             <?php if (!empty($sucesso)) : ?>
-                <div class="alert alert-success">
+                <div class="mensagem-sucesso">
                     <?= htmlspecialchars($sucesso) ?>
                 </div>
             <?php endif; ?>

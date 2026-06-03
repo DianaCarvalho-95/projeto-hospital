@@ -284,9 +284,9 @@ td span {
 .alert {
     margin-top: 20px;
     padding: 10px;
-    background-color: #f8d7da;
-    color: #842029;
-    border-radius: 5px;
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
 }
 
 .text-center {
@@ -390,3 +390,21 @@ td span {
     min-height: 24px;
 }
 
+/* Mensagem apresentada quando o registo é guardado com sucesso */
+.mensagem-sucesso {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 16px;
+}
+
+/* Mensagem apresentada quando o registo dá erro */
+.mensagem-erro {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 16px;
