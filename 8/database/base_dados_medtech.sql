@@ -105,3 +105,4 @@ CREATE TABLE garantias_contratos (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
