@@ -2,8 +2,11 @@
     <div class="row align-items-center">
 
         <div class="col-6 d-flex align-items-center p-3">
-            <a href="/9/private/index.php">
-                <img src="/9/private/assets/img/hospital125.png" alt="Logo MedTech Solutions" height="40" class="me-3">
+            <a href="/PROJETO-HOSPITAL/8/private/index.php">
+                <img src="/PROJETO-HOSPITAL/8/private/assets/img/hospital125.png"
+                     alt="Logo MedTech Solutions"
+                     height="40"
+                     class="me-3">
             </a>
 
             <h3 class="mb-0"><?php echo APP_NAME; ?></h3>
@@ -25,7 +28,7 @@
                     <li><hr class="dropdown-divider"></li>
 
                     <li>
-                        <a class="dropdown-item" href="/9/public/login.php">
+                        <a class="dropdown-item" href="/PROJETO-HOSPITAL/8/public/login.php">
                             <i class="fa-solid fa-right-from-bracket me-2"></i>Sair
                         </a>
                     </li>

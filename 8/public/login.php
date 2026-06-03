@@ -1,92 +1,75 @@
-<!DOCTYPE html>
-<html lang="pt">
+<?php
+session_start();
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - MedTech Solutions</title>
+$validation_errors = [];
+$server_error = '';
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="/9/public/assets/bootstrap/bootstrap.min.css">
+if (!empty($_SESSION['validation_errors'])) {
+    $validation_errors = $_SESSION['validation_errors'];
+    unset($_SESSION['validation_errors']);
+}
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="/9/public/assets/fontawesome/all.min.css">
+if (!empty($_SESSION['server_error'])) {
+    $server_error = $_SESSION['server_error'];
+    unset($_SESSION['server_error']);
+}
 
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="/9/public/assets/img/hospital125.png" type="image/png">
-</head>
+include '../private/includes/header.php';
+?>
 
-<body>
+<div class="container-fluid mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-6 col-sm-8 col-10">
 
-    <div class="container-fluid mt-5">
-        <div class="row justify-content-center">
+            <div class="card p-4">
 
-            <div class="col-lg-5 col-md-6 col-sm-8 col-10">
+                <div class="d-flex align-items-center justify-content-center my-4">
+                    <img src="/PROJETO-HOSPITAL/8/private/assets/img/hospital125.png"
+                         alt="Logo MedTech Solutions"
+                         width="80"
+                         class="me-3">
 
-                <div class="card p-4">
+                    <h2><strong><?php echo APP_NAME; ?></strong></h2>
+                </div>
 
-                    <!-- Logo -->
-                    <div class="d-flex align-items-center justify-content-center my-4">
-                        <img src="/9/public/assets/img/hospital125.png"
-                            alt="Logo MedTech Solutions"
-                            width="80"
-                            class="me-3">
+                <form action="/PROJETO-HOSPITAL/8/private/index.php" method="post">
 
-                        <h2>
-                            <strong>MedTech Solutions</strong>
-                        </h2>
+                    <div class="mb-3">
+                        <label class="form-label">Utilizador</label>
+                        <input type="email" class="form-control" name="text_username">
                     </div>
 
-                    <!-- Formulário -->
-                    <form action="/9/private/index.php" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" name="text_password">
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="email" class="form-label">
-                                Utilizador
-                            </label>
+                    <div class="mb-3 text-center">
+                        <button type="submit" class="btn btn-secondary px-4">
+                            Entrar <i class="fa-solid fa-right-to-bracket ms-2"></i>
+                        </button>
+                    </div>
 
-                            <input
-                                type="email"
-                                name="email"
-                                id="email"
-                                class="form-control">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">
-                                Password
-                            </label>
-
-                            <input
-                                type="password"
-                                name="password"
-                                id="password"
-                                class="form-control">
-                        </div>
-
-                        <div class="mb-3 text-center">
-                            <button type="submit" class="btn btn-secondary px-4">
-                                Entrar
-                                <i class="fa-solid fa-right-to-bracket ms-2"></i>
-                            </button>
-                        </div>
-
+                    <?php if (!empty($validation_errors)) : ?>
                         <div class="alert alert-danger p-2 text-center">
-                            Erro: Utilizador não registado
+                            <?php foreach ($validation_errors as $error) : ?>
+                                <div><?= htmlspecialchars($error) ?></div>
+                            <?php endforeach; ?>
                         </div>
+                    <?php endif; ?>
 
-                    </form>
+                    <?php if (!empty($server_error)) : ?>
+                        <div class="alert alert-danger p-2 text-center">
+                            <?= htmlspecialchars($server_error) ?>
+                        </div>
+                    <?php endif; ?>
 
-                </div>
+                </form>
 
             </div>
 
         </div>
     </div>
+</div>
 
-    <!-- Bootstrap JS -->
-    <script src="/9/public/assets/bootstrap/bootstrap.bundle.min.js"></script>
-
-</body>
-
-</html>
+<?php include '../private/includes/footer.php'; ?>
