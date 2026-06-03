@@ -8,6 +8,21 @@ redirect_if_not_logged();
 $erros = [];
 $sucesso = '';
 
+$codigo = '';
+$designacao = '';
+$categoria = '';
+$marca = '';
+$modelo = '';
+$numero_serie = '';
+$fabricante = '';
+$data_aquisicao = '';
+$ano_fabrico = '';
+$custo_aquisicao = '';
+$tipo_entrada = '';
+$estado = '';
+$criticidade = '';
+$observacoes = '';
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $codigo = isset($_POST['codigo']) ? trim($_POST['codigo']) : '';
@@ -45,7 +60,59 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $erros[] = 'A criticidade é obrigatória.';
     }
 
+    if (!empty($ano_fabrico)) {
+        if (!is_numeric($ano_fabrico) || strlen($ano_fabrico) != 4) {
+            $erros[] = 'O ano de fabrico deve ter 4 dígitos.';
+        }
+    }
+
+    if (!empty($custo_aquisicao)) {
+        $custo_aquisicao = str_replace(',', '.', $custo_aquisicao);
+
+        if (!is_numeric($custo_aquisicao)) {
+            $erros[] = 'O custo de aquisição deve ser um valor numérico.';
+        }
+    }
+
+    if (!empty($data_aquisicao)) {
+        $partes_data = explode('-', $data_aquisicao);
+
+        if (
+            count($partes_data) != 3 ||
+            !checkdate(
+                (int)$partes_data[1],
+                (int)$partes_data[2],
+                (int)$partes_data[0]
+            )
+        ) {
+            $erros[] = 'A data de aquisição não é válida.';
+        }
+    }
+
     if (empty($erros)) {
+
+        $codigo = strtoupper($codigo);
+        $designacao = ucwords(strtolower($designacao));
+        $categoria = ucfirst(strtolower($categoria));
+        $marca = ucwords(strtolower($marca));
+        $modelo = strtoupper($modelo);
+        $numero_serie = strtoupper($numero_serie);
+        $fabricante = ucwords(strtolower($fabricante));
+        $tipo_entrada = ucfirst(strtolower($tipo_entrada));
+        $estado = ucfirst(strtolower($estado));
+        $criticidade = ucfirst(strtolower($criticidade));
+
+        if ($estado == 'Em manutenção') {
+            $estado = 'Em manutenção';
+        }
+
+        if ($estado == 'Em calibração') {
+            $estado = 'Em calibração';
+        }
+
+        if ($criticidade == 'Suporte de vida') {
+            $criticidade = 'Suporte de vida';
+        }
 
         try {
 
@@ -103,6 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $estado = '';
             $criticidade = '';
             $observacoes = '';
+
         } catch (PDOException $err) {
 
             $erros[] = 'Não foi possível inserir o equipamento.';
@@ -132,9 +200,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <?php if (!empty($erros)) : ?>
                 <div class="mensagem-erro">
-                    <?php foreach ($erros as $erro) : ?>
-                        <div><?= htmlspecialchars($erro) ?></div>
-                    <?php endforeach; ?>
+                    <strong>Foram encontrados os seguintes erros:</strong>
+
+                    <ul class="mb-0 mt-2">
+                        <?php foreach ($erros as $erro) : ?>
+                            <li><?= htmlspecialchars($erro) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
             <?php endif; ?>
 
@@ -144,75 +216,75 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
             <?php endif; ?>
 
-            <form action="novo.php" method="post">
+            <form action="novo.php" method="post" novalidate>
 
                 <div class="mb-3">
                     <label class="form-label">Código Interno de Inventário</label>
-                    <input type="text" name="codigo" class="form-control" value="<?= htmlspecialchars($codigo ?? '') ?>">
+                    <input type="text" name="codigo" class="form-control" value="<?= htmlspecialchars($codigo) ?>">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Designação do Equipamento</label>
-                    <input type="text" name="designacao" class="form-control" value="<?= htmlspecialchars($designacao ?? '') ?>">
+                    <input type="text" name="designacao" class="form-control" value="<?= htmlspecialchars($designacao) ?>">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Categoria</label>
                     <select name="categoria" class="form-control">
                         <option value="">Escolha uma opção</option>
-                        <option value="Monitorização">Monitorização</option>
-                        <option value="Suporte de vida">Suporte de vida</option>
-                        <option value="Terapia">Terapia</option>
-                        <option value="Diagnóstico">Diagnóstico</option>
-                        <option value="Laboratório">Laboratório</option>
-                        <option value="Esterilização">Esterilização</option>
-                        <option value="Reabilitação">Reabilitação</option>
+                        <option value="Monitorização" <?= $categoria == 'Monitorização' ? 'selected' : '' ?>>Monitorização</option>
+                        <option value="Suporte de vida" <?= $categoria == 'Suporte de vida' ? 'selected' : '' ?>>Suporte de vida</option>
+                        <option value="Terapia" <?= $categoria == 'Terapia' ? 'selected' : '' ?>>Terapia</option>
+                        <option value="Diagnóstico" <?= $categoria == 'Diagnóstico' ? 'selected' : '' ?>>Diagnóstico</option>
+                        <option value="Laboratório" <?= $categoria == 'Laboratório' ? 'selected' : '' ?>>Laboratório</option>
+                        <option value="Esterilização" <?= $categoria == 'Esterilização' ? 'selected' : '' ?>>Esterilização</option>
+                        <option value="Reabilitação" <?= $categoria == 'Reabilitação' ? 'selected' : '' ?>>Reabilitação</option>
                     </select>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Marca</label>
-                    <input type="text" name="marca" class="form-control" value="<?= htmlspecialchars($marca ?? '') ?>">
+                    <input type="text" name="marca" class="form-control" value="<?= htmlspecialchars($marca) ?>">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Modelo</label>
-                    <input type="text" name="modelo" class="form-control" value="<?= htmlspecialchars($modelo ?? '') ?>">
+                    <input type="text" name="modelo" class="form-control" value="<?= htmlspecialchars($modelo) ?>">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Número de Série</label>
-                    <input type="text" name="numero_serie" class="form-control" value="<?= htmlspecialchars($numero_serie ?? '') ?>">
+                    <input type="text" name="numero_serie" class="form-control" value="<?= htmlspecialchars($numero_serie) ?>">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Fabricante</label>
-                    <input type="text" name="fabricante" class="form-control" value="<?= htmlspecialchars($fabricante ?? '') ?>">
+                    <input type="text" name="fabricante" class="form-control" value="<?= htmlspecialchars($fabricante) ?>">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Data de Aquisição</label>
-                    <input type="date" name="data_aquisicao" class="form-control" value="<?= htmlspecialchars($data_aquisicao ?? '') ?>">
+                    <input type="date" name="data_aquisicao" class="form-control" value="<?= htmlspecialchars($data_aquisicao) ?>">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Ano de Fabrico</label>
-                    <input type="number" name="ano_fabrico" class="form-control" value="<?= htmlspecialchars($ano_fabrico ?? '') ?>">
+                    <input type="number" name="ano_fabrico" class="form-control" value="<?= htmlspecialchars($ano_fabrico) ?>">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Custo de Aquisição</label>
-                    <input type="text" name="custo_aquisicao" class="form-control" value="<?= htmlspecialchars($custo_aquisicao ?? '') ?>">
+                    <input type="text" name="custo_aquisicao" class="form-control" value="<?= htmlspecialchars($custo_aquisicao) ?>">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Tipo de Entrada</label>
                     <select name="tipo_entrada" class="form-control">
                         <option value="">Escolha uma opção</option>
-                        <option value="Compra">Compra</option>
-                        <option value="Doação">Doação</option>
-                        <option value="Aluguer">Aluguer</option>
-                        <option value="Empréstimo">Empréstimo</option>
+                        <option value="Compra" <?= $tipo_entrada == 'Compra' ? 'selected' : '' ?>>Compra</option>
+                        <option value="Doação" <?= $tipo_entrada == 'Doação' ? 'selected' : '' ?>>Doação</option>
+                        <option value="Aluguer" <?= $tipo_entrada == 'Aluguer' ? 'selected' : '' ?>>Aluguer</option>
+                        <option value="Empréstimo" <?= $tipo_entrada == 'Empréstimo' ? 'selected' : '' ?>>Empréstimo</option>
                     </select>
                 </div>
 
@@ -220,11 +292,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label class="form-label">Estado Atual</label>
                     <select name="estado" class="form-control">
                         <option value="">Escolha uma opção</option>
-                        <option value="Ativo">Ativo</option>
-                        <option value="Inativo">Inativo</option>
-                        <option value="Em manutenção">Em manutenção</option>
-                        <option value="Em calibração">Em calibração</option>
-                        <option value="Abatido">Abatido</option>
+                        <option value="Ativo" <?= $estado == 'Ativo' ? 'selected' : '' ?>>Ativo</option>
+                        <option value="Inativo" <?= $estado == 'Inativo' ? 'selected' : '' ?>>Inativo</option>
+                        <option value="Em manutenção" <?= $estado == 'Em manutenção' ? 'selected' : '' ?>>Em manutenção</option>
+                        <option value="Em calibração" <?= $estado == 'Em calibração' ? 'selected' : '' ?>>Em calibração</option>
+                        <option value="Abatido" <?= $estado == 'Abatido' ? 'selected' : '' ?>>Abatido</option>
                     </select>
                 </div>
 
@@ -232,16 +304,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label class="form-label">Criticidade</label>
                     <select name="criticidade" class="form-control">
                         <option value="">Escolha uma opção</option>
-                        <option value="Baixa">Baixa</option>
-                        <option value="Média">Média</option>
-                        <option value="Alta">Alta</option>
-                        <option value="Suporte de vida">Suporte de vida</option>
+                        <option value="Baixa" <?= $criticidade == 'Baixa' ? 'selected' : '' ?>>Baixa</option>
+                        <option value="Média" <?= $criticidade == 'Média' ? 'selected' : '' ?>>Média</option>
+                        <option value="Alta" <?= $criticidade == 'Alta' ? 'selected' : '' ?>>Alta</option>
+                        <option value="Suporte de vida" <?= $criticidade == 'Suporte de vida' ? 'selected' : '' ?>>Suporte de vida</option>
                     </select>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Observações</label>
-                    <textarea name="observacoes" rows="4" class="form-control"><?= htmlspecialchars($observacoes ?? '') ?></textarea>
+                    <textarea name="observacoes" rows="4" class="form-control"><?= htmlspecialchars($observacoes) ?></textarea>
                 </div>
 
                 <div class="mb-3">

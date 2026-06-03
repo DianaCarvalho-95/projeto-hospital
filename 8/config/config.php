@@ -14,3 +14,4 @@ define('MYSQL_DATABASE', 'inventario_hospitalar');
 define('MYSQL_USERNAME', 'root');
 define('MYSQL_PASSWORD', '');
 define('MYSQL_AES_KEY', 'medtech2025');
+
