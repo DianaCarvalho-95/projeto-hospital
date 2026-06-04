@@ -99,6 +99,27 @@ $ligacao = null;
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
 
+<style>
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 22px;
+        margin-bottom: 14px;
+    }
+
+    .pagination .page-link {
+        color: #0d6efd;
+        border-radius: 8px;
+        margin: 0 2px;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+    }
+</style>
+
 <div class="container-fluid">
     <div class="row">
 
@@ -220,22 +241,24 @@ $ligacao = null;
 
                     <?php if ($total_paginas > 1) : ?>
 
-                        <nav>
-                            <ul class="pagination">
+                        <div class="pagination-wrapper">
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
 
-                                <?php for ($i = 1; $i <= $total_paginas; $i++) : ?>
+                                    <?php for ($i = 1; $i <= $total_paginas; $i++) : ?>
 
-                                    <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
-                                        <a class="page-link"
-                                           href="?pagina=<?= $i ?>&pesquisa=<?= urlencode($pesquisa) ?>&estado=<?= urlencode($estado) ?>">
-                                            <?= $i ?>
-                                        </a>
-                                    </li>
+                                        <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
+                                            <a class="page-link"
+                                               href="?pagina=<?= $i ?>&pesquisa=<?= urlencode($pesquisa) ?>&estado=<?= urlencode($estado) ?>">
+                                                <?= $i ?>
+                                            </a>
+                                        </li>
 
-                                <?php endfor; ?>
+                                    <?php endfor; ?>
 
-                            </ul>
-                        </nav>
+                                </ul>
+                            </nav>
+                        </div>
 
                     <?php endif; ?>
 

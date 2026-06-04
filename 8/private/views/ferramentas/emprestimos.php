@@ -22,16 +22,18 @@ $registos_por_pagina = 5;
 $colunas_permitidas = [
     'codigo' => 'e.codigo_inventario',
     'equipamento' => 'e.designacao',
-    'origem' => 'mv.local_origem',
-    'destino' => 'mv.local_destino',
-    'data' => 'mv.data_movimentacao',
-    'responsavel' => 'mv.responsavel',
-    'motivo' => 'mv.motivo'
+    'origem' => 'ep.servico_origem',
+    'destino' => 'ep.servico_destino',
+    'data' => 'ep.data_emprestimo',
+    'prevista' => 'ep.data_prevista_devolucao',
+    'devolucao' => 'ep.data_devolucao',
+    'responsavel' => 'ep.responsavel',
+    'estado' => 'ep.estado'
 ];
 
 $coluna_sql = isset($colunas_permitidas[$ordenar])
     ? $colunas_permitidas[$ordenar]
-    : 'mv.data_movimentacao';
+    : 'ep.data_emprestimo';
 
 try {
 
@@ -46,17 +48,17 @@ try {
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     /*
-        Consulta das movimentações dos equipamentos.
-        Junta a tabela movimentacoes com equipamentos para mostrar
-        o código e a designação do equipamento movimentado.
+        Consulta dos empréstimos entre serviços.
+        Junta a tabela emprestimos com equipamentos para apresentar
+        o código e a designação do equipamento.
     */
     $sql = "SELECT
-                mv.*,
+                ep.*,
                 e.codigo_inventario,
                 e.designacao
-            FROM movimentacoes mv
+            FROM emprestimos ep
             INNER JOIN equipamentos e
-                ON mv.equipamento_id = e.id
+                ON ep.equipamento_id = e.id
             ORDER BY $coluna_sql $direcao";
 
     $stmt = $ligacao->prepare($sql);
@@ -66,16 +68,35 @@ try {
 
 } catch (PDOException $err) {
 
-    $erro = 'Aconteceu um erro ao carregar o histórico de movimentações.';
+    $erro = 'Aconteceu um erro ao carregar os empréstimos entre serviços.';
 }
 
 $ligacao = null;
 
 /*
-    Gera o link de ordenação das colunas.
-    Ao clicar novamente na mesma coluna, a direção alterna entre ascendente e descendente.
+    Define a cor da badge consoante o estado do empréstimo.
 */
-function link_ordenacao_movimentacoes($campo, $ordenar, $direcao)
+function classe_estado_emprestimo($estado)
+{
+    if ($estado == 'Devolvido') {
+        return 'success';
+    }
+
+    if ($estado == 'Em atraso') {
+        return 'danger';
+    }
+
+    if ($estado == 'Ativo') {
+        return 'warning';
+    }
+
+    return 'secondary';
+}
+
+/*
+    Gera os links de ordenação das colunas.
+*/
+function link_ordenacao_emprestimos($campo, $ordenar, $direcao)
 {
     $nova_direcao = 'asc';
 
@@ -88,9 +109,9 @@ function link_ordenacao_movimentacoes($campo, $ordenar, $direcao)
 }
 
 /*
-    Mostra o ícone correto nas colunas ordenáveis.
+    Mostra o ícone de ordenação correto.
 */
-function icone_ordenacao_movimentacoes($campo, $ordenar, $direcao)
+function icone_ordenacao_emprestimos($campo, $ordenar, $direcao)
 {
     if ($ordenar != $campo) {
         return '<i class="fa-solid fa-sort ms-1"></i>';
@@ -104,7 +125,7 @@ function icone_ordenacao_movimentacoes($campo, $ordenar, $direcao)
 }
 
 /*
-    Paginação: apresenta apenas 5 registos por página.
+    Paginação: mostra 5 registos por página.
 */
 $total_registos = count($resultados);
 $total_paginas = ceil($total_registos / $registos_por_pagina);
@@ -166,13 +187,13 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
 
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="mb-0">
-                    <i class="fa-solid fa-clock-rotate-left me-2"></i>
-                    Histórico de Movimentações
+                    <i class="fa-solid fa-handshake me-2"></i>
+                    Empréstimos entre Serviços
                 </h2>
             </div>
 
             <p class="text-muted">
-                Consulta das transferências e movimentações dos equipamentos entre serviços hospitalares.
+                Controlo de equipamentos emprestados entre serviços hospitalares.
             </p>
 
             <?php if (!empty($erro)) : ?>
@@ -184,7 +205,7 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
             <?php elseif ($total_registos == 0) : ?>
 
                 <div class="alert alert-info">
-                    Não existem movimentações para apresentar.
+                    Não existem empréstimos para apresentar.
                 </div>
 
             <?php else : ?>
@@ -195,51 +216,65 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
                         <thead class="table-dark">
                             <tr>
                                 <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('codigo', $ordenar, $direcao) ?>"
+                                    <a href="<?= link_ordenacao_emprestimos('codigo', $ordenar, $direcao) ?>"
                                        class="text-white text-decoration-none">
-                                        Código <?= icone_ordenacao_movimentacoes('codigo', $ordenar, $direcao) ?>
+                                        Código <?= icone_ordenacao_emprestimos('codigo', $ordenar, $direcao) ?>
                                     </a>
                                 </th>
 
                                 <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('equipamento', $ordenar, $direcao) ?>"
+                                    <a href="<?= link_ordenacao_emprestimos('equipamento', $ordenar, $direcao) ?>"
                                        class="text-white text-decoration-none">
-                                        Equipamento <?= icone_ordenacao_movimentacoes('equipamento', $ordenar, $direcao) ?>
+                                        Equipamento <?= icone_ordenacao_emprestimos('equipamento', $ordenar, $direcao) ?>
                                     </a>
                                 </th>
 
                                 <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('origem', $ordenar, $direcao) ?>"
+                                    <a href="<?= link_ordenacao_emprestimos('origem', $ordenar, $direcao) ?>"
                                        class="text-white text-decoration-none">
-                                        Origem <?= icone_ordenacao_movimentacoes('origem', $ordenar, $direcao) ?>
+                                        Origem <?= icone_ordenacao_emprestimos('origem', $ordenar, $direcao) ?>
                                     </a>
                                 </th>
 
                                 <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('destino', $ordenar, $direcao) ?>"
+                                    <a href="<?= link_ordenacao_emprestimos('destino', $ordenar, $direcao) ?>"
                                        class="text-white text-decoration-none">
-                                        Destino <?= icone_ordenacao_movimentacoes('destino', $ordenar, $direcao) ?>
+                                        Destino <?= icone_ordenacao_emprestimos('destino', $ordenar, $direcao) ?>
                                     </a>
                                 </th>
 
                                 <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('data', $ordenar, $direcao) ?>"
+                                    <a href="<?= link_ordenacao_emprestimos('data', $ordenar, $direcao) ?>"
                                        class="text-white text-decoration-none">
-                                        Data <?= icone_ordenacao_movimentacoes('data', $ordenar, $direcao) ?>
+                                        Empréstimo <?= icone_ordenacao_emprestimos('data', $ordenar, $direcao) ?>
                                     </a>
                                 </th>
 
                                 <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('responsavel', $ordenar, $direcao) ?>"
+                                    <a href="<?= link_ordenacao_emprestimos('prevista', $ordenar, $direcao) ?>"
                                        class="text-white text-decoration-none">
-                                        Responsável <?= icone_ordenacao_movimentacoes('responsavel', $ordenar, $direcao) ?>
+                                        Prev. Devolução <?= icone_ordenacao_emprestimos('prevista', $ordenar, $direcao) ?>
                                     </a>
                                 </th>
 
                                 <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('motivo', $ordenar, $direcao) ?>"
+                                    <a href="<?= link_ordenacao_emprestimos('devolucao', $ordenar, $direcao) ?>"
                                        class="text-white text-decoration-none">
-                                        Motivo <?= icone_ordenacao_movimentacoes('motivo', $ordenar, $direcao) ?>
+                                        Devolução <?= icone_ordenacao_emprestimos('devolucao', $ordenar, $direcao) ?>
+                                    </a>
+                                </th>
+
+                                <th>
+                                    <a href="<?= link_ordenacao_emprestimos('responsavel', $ordenar, $direcao) ?>"
+                                       class="text-white text-decoration-none">
+                                        Responsável <?= icone_ordenacao_emprestimos('responsavel', $ordenar, $direcao) ?>
+                                    </a>
+                                </th>
+
+                                <th>
+                                    <a href="<?= link_ordenacao_emprestimos('estado', $ordenar, $direcao) ?>"
+                                       class="text-white text-decoration-none">
+                                        Estado <?= icone_ordenacao_emprestimos('estado', $ordenar, $direcao) ?>
                                     </a>
                                 </th>
 
@@ -249,28 +284,44 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
 
                         <tbody>
 
-                            <?php foreach ($resultados_pagina as $movimentacao) : ?>
+                            <?php foreach ($resultados_pagina as $emprestimo) : ?>
 
                                 <tr>
-                                    <td><?= htmlspecialchars($movimentacao->codigo_inventario) ?></td>
+                                    <td><?= htmlspecialchars($emprestimo->codigo_inventario) ?></td>
 
-                                    <td><?= htmlspecialchars($movimentacao->designacao) ?></td>
+                                    <td><?= htmlspecialchars($emprestimo->designacao) ?></td>
 
-                                    <td><?= htmlspecialchars($movimentacao->local_origem) ?></td>
+                                    <td><?= htmlspecialchars($emprestimo->servico_origem) ?></td>
 
-                                    <td><?= htmlspecialchars($movimentacao->local_destino) ?></td>
+                                    <td><?= htmlspecialchars($emprestimo->servico_destino) ?></td>
 
                                     <td>
-                                        <?= !empty($movimentacao->data_movimentacao)
-                                            ? date('d/m/Y', strtotime($movimentacao->data_movimentacao))
+                                        <?= !empty($emprestimo->data_emprestimo)
+                                            ? date('d/m/Y', strtotime($emprestimo->data_emprestimo))
                                             : '-' ?>
                                     </td>
 
-                                    <td><?= htmlspecialchars($movimentacao->responsavel ?? '-') ?></td>
+                                    <td>
+                                        <?= !empty($emprestimo->data_prevista_devolucao)
+                                            ? date('d/m/Y', strtotime($emprestimo->data_prevista_devolucao))
+                                            : '-' ?>
+                                    </td>
 
-                                    <td><?= htmlspecialchars($movimentacao->motivo ?? '-') ?></td>
+                                    <td>
+                                        <?= !empty($emprestimo->data_devolucao)
+                                            ? date('d/m/Y', strtotime($emprestimo->data_devolucao))
+                                            : '-' ?>
+                                    </td>
 
-                                    <td><?= htmlspecialchars($movimentacao->observacoes ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($emprestimo->responsavel ?? '-') ?></td>
+
+                                    <td>
+                                        <span class="badge bg-<?= classe_estado_emprestimo($emprestimo->estado) ?>">
+                                            <?= htmlspecialchars($emprestimo->estado) ?>
+                                        </span>
+                                    </td>
+
+                                    <td><?= htmlspecialchars($emprestimo->observacoes ?? '-') ?></td>
                                 </tr>
 
                             <?php endforeach; ?>
