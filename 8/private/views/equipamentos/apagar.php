@@ -19,8 +19,8 @@ if ($id <= 0) {
 
         $ligacao = new PDO(
             "mysql:host=" . MYSQL_HOST .
-            ";dbname=" . MYSQL_DATABASE .
-            ";charset=utf8",
+                ";dbname=" . MYSQL_DATABASE .
+                ";charset=utf8",
             MYSQL_USERNAME,
             MYSQL_PASSWORD
         );
@@ -30,15 +30,14 @@ if ($id <= 0) {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $stmt = $ligacao->prepare(
-                "DELETE FROM equipamentos WHERE id = :id"
+                "UPDATE equipamentos SET estado = 'Inativo' WHERE id = :id"
             );
 
             $stmt->execute([
                 ':id' => $id
             ]);
 
-            $sucesso = 'Equipamento eliminado com sucesso.';
-
+            $sucesso = 'Equipamento desativado com sucesso.';
         } else {
 
             $stmt = $ligacao->prepare(
@@ -55,7 +54,6 @@ if ($id <= 0) {
                 $erros[] = 'Equipamento não encontrado.';
             }
         }
-
     } catch (PDOException $err) {
         $erros[] = 'Não foi possível eliminar o equipamento.';
     }
@@ -77,7 +75,7 @@ if ($id <= 0) {
 
             <h2>
                 <i class="fa-solid fa-trash-can me-2"></i>
-                Eliminar Equipamento
+                Desativar Equipamento
             </h2>
 
             <hr>
@@ -111,7 +109,7 @@ if ($id <= 0) {
                 <div class="card p-4">
 
                     <p>
-                        Tens a certeza que pretendes eliminar este equipamento?
+                        Tens a certeza que pretendes desativar este equipamento?
                     </p>
 
                     <p>
@@ -143,7 +141,7 @@ if ($id <= 0) {
 
                         <button type="submit" class="btn btn-danger">
                             <i class="fa-solid fa-trash-can me-1"></i>
-                            Confirmar eliminação
+                            Confirmar desativação
                         </button>
 
                     </form>

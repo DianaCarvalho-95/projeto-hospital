@@ -5,9 +5,20 @@ require_once __DIR__ . '/../../includes/funcoes.php';
 
 redirect_if_not_logged();
 
-// --------------------------------------------------------------------
-// LIGAÇÃO À BASE DE DADOS
-// --------------------------------------------------------------------
+$erro = '';
+$resultados = [];
+
+$pesquisa = isset($_GET['pesquisa']) ? trim($_GET['pesquisa']) : '';
+$estado = isset($_GET['estado']) ? trim($_GET['estado']) : '';
+
+$pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
+
+if ($pagina < 1) {
+    $pagina = 1;
+}
+
+$registos_por_pagina = 5;
+$offset = ($pagina - 1) * $registos_por_pagina;
 
 try {
 
@@ -21,15 +32,64 @@ try {
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $resultados = $ligacao
-        ->query("SELECT * FROM equipamentos")
-        ->fetchAll(PDO::FETCH_OBJ);
+    $where = [];
+    $params = [];
 
-    $erro = '';
+    if (!empty($pesquisa)) {
+        $where[] = "(codigo_inventario LIKE :pesquisa
+                    OR designacao LIKE :pesquisa
+                    OR marca LIKE :pesquisa
+                    OR modelo LIKE :pesquisa)";
+        $params[':pesquisa'] = '%' . $pesquisa . '%';
+    }
+
+    if (!empty($estado)) {
+        $where[] = "estado = :estado";
+        $params[':estado'] = $estado;
+    }
+
+    $sql_where = '';
+
+    if (!empty($where)) {
+        $sql_where = ' WHERE ' . implode(' AND ', $where);
+    }
+
+    $stmt_total = $ligacao->prepare(
+        "SELECT COUNT(*) FROM equipamentos" . $sql_where
+    );
+
+    foreach ($params as $chave => $valor) {
+        $stmt_total->bindValue($chave, $valor);
+    }
+
+    $stmt_total->execute();
+
+    $total_registos = $stmt_total->fetchColumn();
+    $total_paginas = ceil($total_registos / $registos_por_pagina);
+
+    $sql = "SELECT * FROM equipamentos"
+        . $sql_where .
+        " ORDER BY id ASC LIMIT :limite OFFSET :offset";
+
+    $stmt = $ligacao->prepare($sql);
+
+    foreach ($params as $chave => $valor) {
+        $stmt->bindValue($chave, $valor);
+    }
+
+    $stmt->bindValue(':limite', $registos_por_pagina, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+    $stmt->execute();
+
+    $resultados = $stmt->fetchAll(PDO::FETCH_OBJ);
+
 } catch (PDOException $err) {
 
-    $erro = 'Aconteceu um erro na ligação à base de dados.';
+    $erro = 'Aconteceu um erro ao carregar os equipamentos.';
     $resultados = [];
+    $total_registos = 0;
+    $total_paginas = 0;
 }
 
 $ligacao = null;
@@ -56,6 +116,35 @@ $ligacao = null;
                 </a>
             </div>
 
+            <form method="get" class="row mb-3">
+
+                <div class="col-md-6 mb-2">
+                    <input type="text"
+                           name="pesquisa"
+                           class="form-control"
+                           placeholder="Pesquisar por código, designação, marca ou modelo"
+                           value="<?= htmlspecialchars($pesquisa) ?>">
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <select name="estado" class="form-control">
+                        <option value="">Todos os estados</option>
+                        <option value="Ativo" <?= $estado == 'Ativo' ? 'selected' : '' ?>>Ativo</option>
+                        <option value="Em manutenção" <?= $estado == 'Em manutenção' ? 'selected' : '' ?>>Em manutenção</option>
+                        <option value="Inativo" <?= $estado == 'Inativo' ? 'selected' : '' ?>>Inativo</option>
+                        <option value="Em calibração" <?= $estado == 'Em calibração' ? 'selected' : '' ?>>Em calibração</option>
+                        <option value="Abatido" <?= $estado == 'Abatido' ? 'selected' : '' ?>>Abatido</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 mb-2">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        Filtrar
+                    </button>
+                </div>
+
+            </form>
+
             <?php if (!empty($erro)) : ?>
 
                 <p class="text-center text-danger">
@@ -71,6 +160,10 @@ $ligacao = null;
                     </p>
 
                 <?php else : ?>
+
+                    <p class="text-muted">
+                        Total: <?= $total_registos ?> equipamento(s)
+                    </p>
 
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover align-middle">
@@ -100,21 +193,21 @@ $ligacao = null;
 
                                         <td>
                                             <a href="detalhes.php?id=<?= $equipamento->id ?>"
-                                                class="text-success text-decoration-none me-3">
+                                               class="text-success text-decoration-none me-3">
                                                 <i class="fa-solid fa-eye"></i>
                                                 Consultar
                                             </a>
 
                                             <a href="editar.php?id=<?= $equipamento->id ?>"
-                                                class="text-warning text-decoration-none me-3">
+                                               class="text-warning text-decoration-none me-3">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                                 Editar
                                             </a>
 
                                             <a href="apagar.php?id=<?= $equipamento->id ?>"
-                                                class="text-danger text-decoration-none">
+                                               class="text-danger text-decoration-none">
                                                 <i class="fa-solid fa-trash-can"></i>
-                                                Eliminar
+                                                Desativar
                                             </a>
                                         </td>
                                     </tr>
@@ -124,6 +217,27 @@ $ligacao = null;
                             </tbody>
                         </table>
                     </div>
+
+                    <?php if ($total_paginas > 1) : ?>
+
+                        <nav>
+                            <ul class="pagination">
+
+                                <?php for ($i = 1; $i <= $total_paginas; $i++) : ?>
+
+                                    <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
+                                        <a class="page-link"
+                                           href="?pagina=<?= $i ?>&pesquisa=<?= urlencode($pesquisa) ?>&estado=<?= urlencode($estado) ?>">
+                                            <?= $i ?>
+                                        </a>
+                                    </li>
+
+                                <?php endfor; ?>
+
+                            </ul>
+                        </nav>
+
+                    <?php endif; ?>
 
                 <?php endif; ?>
 
