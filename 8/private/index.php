@@ -40,13 +40,10 @@ if (!empty($username) && !filter_var($username, FILTER_VALIDATE_EMAIL)) {
     $validation_errors[] = 'Introduza um email válido.';
 }
 
-if (!empty($password) && (strlen($password) < 6 || strlen($password) > 12)) {
-    $validation_errors[] = 'A password deve ter entre 6 e 12 caracteres.';
+if (!empty($password) && (strlen($password) < 6 || strlen($password) > 20)) {
+    $validation_errors[] = 'A password deve ter entre 6 e 20 caracteres.';
 }
 
-// --------------------------------------------------------------------
-// EXISTEM ERROS?
-// --------------------------------------------------------------------
 if (!empty($validation_errors)) {
     $_SESSION['validation_errors'] = $validation_errors;
     header('Location: ' . BASE_URL . '/public/login.php');
@@ -54,9 +51,60 @@ if (!empty($validation_errors)) {
 }
 
 // --------------------------------------------------------------------
-// CRIAR SESSÃO DO UTILIZADOR
+// VERIFICAÇÃO REAL NA BASE DE DADOS
 // --------------------------------------------------------------------
-$_SESSION['utilizador'] = $username;
+try {
+
+    $ligacao = new PDO(
+        "mysql:host=" . MYSQL_HOST .
+            ";dbname=" . MYSQL_DATABASE .
+            ";charset=utf8",
+        MYSQL_USERNAME,
+        MYSQL_PASSWORD
+    );
+
+    $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $stmt = $ligacao->prepare(
+        "SELECT * FROM agents
+         WHERE name = :username
+         AND passwrd = :password"
+    );
+
+    $stmt->execute([
+        ':username' => $username,
+        ':password' => $password
+    ]);
+
+    $agente = $stmt->fetch(PDO::FETCH_OBJ);
+
+    if (!$agente) {
+        $_SESSION['server_error'] = 'Login inválido.';
+        header('Location: ' . BASE_URL . '/public/login.php');
+        exit;
+    }
+
+    $stmt = $ligacao->prepare(
+        "UPDATE agents
+         SET last_login = NOW()
+         WHERE id = :id"
+    );
+
+    $stmt->execute([
+        ':id' => $agente->id
+    ]);
+
+    $_SESSION['utilizador'] = $agente->name;
+    $_SESSION['profile'] = $agente->profile;
+
+} catch (PDOException $err) {
+
+    $_SESSION['server_error'] = 'Erro ao ligar à base de dados.';
+    header('Location: ' . BASE_URL . '/public/login.php');
+    exit;
+}
+
+$ligacao = null;
 
 ?>
 
@@ -77,7 +125,7 @@ $_SESSION['utilizador'] = $username;
 
                 <div class="alert alert-success mt-3">
                     Login efetuado com sucesso para:
-                    <strong><?php echo htmlspecialchars($username); ?></strong>
+                    <strong><?php echo htmlspecialchars($_SESSION['utilizador']); ?></strong>
                 </div>
             </section>
 
