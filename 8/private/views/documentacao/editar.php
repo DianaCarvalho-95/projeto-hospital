@@ -1,113 +1,282 @@
-<!DOCTYPE html>
-<html lang="pt">
+<?php
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Documento - MedTech Solutions</title>
+require_once __DIR__ . '/../../../config/config.php';
+require_once __DIR__ . '/../../includes/funcoes.php';
 
-    <link rel="shortcut icon" href="../../assets/img/hospital125.png" type="image/png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,700;1,400&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="../../assets/css/admin.css">
-</head>
+redirect_if_not_logged();
 
-<body>
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-    <header class="bng-navbar-menu">
-        <div>
-            <a href="../../index.html">
-                <img src="../../assets/img/hospital255.png" alt="Logo MedTech Solutions">
-            </a>
-            <h3>MedTech Solutions</h3>
-        </div>
-        <div>
-            <button>Utilizador</button>
-        </div>
-    </header>
+$erros = [];
+$sucesso = '';
+$documento = null;
 
-    <aside class="sidebar">
-        <h4>Menu</h4>
-        <nav>
-            <a href="../equipamentos/lista.html"><i class="fas fa-cogs"></i><span>Equipamentos</span></a>
-            <a href="../localizacoes/lista.html"><i class="fas fa-location-dot"></i><span>Localizações</span></a>
-            <a href="../fornecedores/lista.html"><i class="fas fa-truck-medical"></i><span>Fornecedores</span></a>
-            <a href="../documentacao/lista.html"><i class="fas fa-file-medical"></i><span>Documentação</span></a>
-            <a href="../dashboard/dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
-            <a href="../ferramentas/ferramentas.html"><i class="fas fa-screwdriver-wrench"></i><span>Ferramentas</span></a>
-        </nav>
-    </aside>
+$equipamentos = [];
+$fornecedores = [];
 
-    <main class="content">
-        <div class="form-wrapper">
-            <h2><strong><i class="fa-regular fa-pen-to-square"></i> Editar documento</strong></h2>
+if ($id <= 0) {
+    $erros[] = 'Documento inválido.';
+} else {
+
+    try {
+
+        $ligacao = new PDO(
+            "mysql:host=" . MYSQL_HOST .
+                ";dbname=" . MYSQL_DATABASE .
+                ";charset=utf8",
+            MYSQL_USERNAME,
+            MYSQL_PASSWORD
+        );
+
+        $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $stmt_equipamentos = $ligacao->query(
+            "SELECT id, codigo_inventario, designacao
+             FROM equipamentos
+             ORDER BY codigo_inventario"
+        );
+
+        $equipamentos = $stmt_equipamentos->fetchAll(PDO::FETCH_OBJ);
+
+        $stmt_fornecedores = $ligacao->query(
+            "SELECT id, nome_empresa
+             FROM fornecedores
+             ORDER BY nome_empresa"
+        );
+
+        $fornecedores = $stmt_fornecedores->fetchAll(PDO::FETCH_OBJ);
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+            $nome_documento = isset($_POST['nome_documento']) ? trim($_POST['nome_documento']) : '';
+            $tipo_documento = isset($_POST['tipo_documento']) ? trim($_POST['tipo_documento']) : '';
+            $equipamento_id = isset($_POST['equipamento_id']) ? intval($_POST['equipamento_id']) : '';
+            $fornecedor_id = isset($_POST['fornecedor_id']) ? intval($_POST['fornecedor_id']) : '';
+            $data_documento = isset($_POST['data_documento']) ? trim($_POST['data_documento']) : '';
+            $data_validade = isset($_POST['data_validade']) ? trim($_POST['data_validade']) : '';
+            $caminho_ficheiro = isset($_POST['caminho_ficheiro']) ? trim($_POST['caminho_ficheiro']) : '';
+
+            if (empty($nome_documento)) {
+                $erros[] = 'O nome do documento é obrigatório.';
+            }
+
+            if (empty($tipo_documento)) {
+                $erros[] = 'O tipo de documento é obrigatório.';
+            }
+
+            if (empty($equipamento_id)) {
+                $erros[] = 'O equipamento associado é obrigatório.';
+            }
+
+            if (!empty($data_documento)) {
+                $partes_data = explode('-', $data_documento);
+
+                if (
+                    count($partes_data) != 3 ||
+                    !checkdate(
+                        (int)$partes_data[1],
+                        (int)$partes_data[2],
+                        (int)$partes_data[0]
+                    )
+                ) {
+                    $erros[] = 'A data do documento não é válida.';
+                }
+            }
+
+            if (!empty($data_validade)) {
+                $partes_data = explode('-', $data_validade);
+
+                if (
+                    count($partes_data) != 3 ||
+                    !checkdate(
+                        (int)$partes_data[1],
+                        (int)$partes_data[2],
+                        (int)$partes_data[0]
+                    )
+                ) {
+                    $erros[] = 'A data de validade não é válida.';
+                }
+            }
+
+            if (empty($erros)) {
+
+                $nome_documento = ucwords(strtolower($nome_documento));
+
+                $sql = "UPDATE documentacao SET
+                            tipo_documento = :tipo_documento,
+                            nome_documento = :nome_documento,
+                            data_documento = :data_documento,
+                            data_validade = :data_validade,
+                            caminho_ficheiro = :caminho_ficheiro,
+                            equipamento_id = :equipamento_id,
+                            fornecedor_id = :fornecedor_id
+                        WHERE id = :id";
+
+                $stmt = $ligacao->prepare($sql);
+
+                $stmt->execute([
+                    ':tipo_documento' => $tipo_documento,
+                    ':nome_documento' => $nome_documento,
+                    ':data_documento' => !empty($data_documento) ? $data_documento : null,
+                    ':data_validade' => !empty($data_validade) ? $data_validade : null,
+                    ':caminho_ficheiro' => $caminho_ficheiro,
+                    ':equipamento_id' => $equipamento_id,
+                    ':fornecedor_id' => !empty($fornecedor_id) ? $fornecedor_id : null,
+                    ':id' => $id
+                ]);
+
+                $sucesso = 'Documento atualizado com sucesso.';
+            }
+        }
+
+        $stmt = $ligacao->prepare(
+            "SELECT * FROM documentacao
+             WHERE id = :id"
+        );
+
+        $stmt->execute([
+            ':id' => $id
+        ]);
+
+        $documento = $stmt->fetch(PDO::FETCH_OBJ);
+
+        if (!$documento) {
+            $erros[] = 'Documento não encontrado.';
+        }
+
+    } catch (PDOException $err) {
+
+        $erros[] = 'Não foi possível atualizar o documento.';
+    }
+
+    $ligacao = null;
+}
+
+?>
+
+<?php include '../../includes/header.php'; ?>
+<?php include '../../includes/nav.php'; ?>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <?php include '../../includes/sidebar.php'; ?>
+
+        <main class="col-md-9 col-lg-10 p-4">
+
+            <h2>
+                <i class="fa-regular fa-pen-to-square me-2"></i>
+                Editar Documento
+            </h2>
+
             <hr>
 
-            <form action="#" method="post" novalidate>
-                <div class="form-group">
-                    <label for="nome_documento">Nome do Documento</label>
-                    <input type="text" id="nome_documento" name="nome_documento" value="Manual de Utilização" required>
+            <?php if (!empty($erros)) : ?>
+                <div class="mensagem-erro">
+                    <?php foreach ($erros as $erro) : ?>
+                        <div><?= htmlspecialchars($erro) ?></div>
+                    <?php endforeach; ?>
                 </div>
+            <?php endif; ?>
 
-                <div class="form-group">
-                    <label for="tipo_documento">Tipo de Documento</label>
-                    <select id="tipo_documento" name="tipo_documento">
-                        <option>Escolha uma opção</option>
-                        <option value="manual" selected>Manual</option>
-                        <option value="certificado">Certificado</option>
-                        <option value="contrato">Contrato</option>
-                        <option value="relatorio">Relatório</option>
-                        <option value="ficha_tecnica">Ficha Técnica</option>
-                        <option value="outro">Outro</option>
-                    </select>
+            <?php if (!empty($sucesso)) : ?>
+                <div class="mensagem-sucesso">
+                    <?= htmlspecialchars($sucesso) ?>
                 </div>
+            <?php endif; ?>
 
-                <div class="form-group">
-                    <label for="equipamento">Equipamento Associado</label>
-                    <input type="text" id="equipamento" name="equipamento" value="Monitor Multiparamétrico">
-                </div>
+            <?php if ($documento) : ?>
 
-                <div class="form-group">
-                    <label for="fornecedor">Fornecedor Associado</label>
-                    <input type="text" id="fornecedor" name="fornecedor" value="MedEquip Portugal">
-                </div>
+                <form action="editar.php?id=<?= $documento->id ?>" method="post" novalidate>
 
-                <div class="form-group">
-                    <label for="data_documento">Data do Documento</label>
-                    <input type="date" id="data_documento" name="data_documento" value="2024-01-10">
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Documento</label>
+                        <input type="text" name="nome_documento" class="form-control"
+                               value="<?= htmlspecialchars($documento->nome_documento) ?>">
+                    </div>
 
-                <div class="form-group">
-                    <label for="validade">Data de Validade</label>
-                    <input type="date" id="validade" name="validade" value="2026-01-10">
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Documento</label>
+                        <select name="tipo_documento" class="form-control">
+                            <option value="">Escolha uma opção</option>
+                            <option value="Manual" <?= $documento->tipo_documento == 'Manual' ? 'selected' : '' ?>>Manual</option>
+                            <option value="Certificado" <?= $documento->tipo_documento == 'Certificado' ? 'selected' : '' ?>>Certificado</option>
+                            <option value="Contrato" <?= $documento->tipo_documento == 'Contrato' ? 'selected' : '' ?>>Contrato</option>
+                            <option value="Relatório" <?= $documento->tipo_documento == 'Relatório' ? 'selected' : '' ?>>Relatório</option>
+                            <option value="Ficha Técnica" <?= $documento->tipo_documento == 'Ficha Técnica' ? 'selected' : '' ?>>Ficha Técnica</option>
+                            <option value="Outro" <?= $documento->tipo_documento == 'Outro' ? 'selected' : '' ?>>Outro</option>
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label for="ficheiro">Nome / Caminho do Ficheiro</label>
-                    <input type="text" id="ficheiro" name="ficheiro" value="manual_monitor_mp5.pdf">
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Equipamento Associado</label>
+                        <select name="equipamento_id" class="form-control">
+                            <option value="">Escolha um equipamento</option>
 
-                <div class="form-group">
-                    <label for="descricao">Descrição</label>
-                    <textarea id="descricao" name="descricao"
-                        rows="4">Documento técnico associado ao equipamento.</textarea>
-                </div>
+                            <?php foreach ($equipamentos as $equipamento) : ?>
+                                <option value="<?= $equipamento->id ?>" <?= $documento->equipamento_id == $equipamento->id ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars(
+                                        $equipamento->codigo_inventario .
+                                        ' - ' .
+                                        $equipamento->designacao
+                                    ) ?>
+                                </option>
+                            <?php endforeach; ?>
 
-                <div class="form-buttons">
-                    <a href="lista.html"><i class="fa-solid fa-xmark"></i> Cancelar</a>
-                    <button type="submit"><i class="fa-regular fa-floppy-disk"></i> Guardar alterações</button>
-                </div>
+                        </select>
+                    </div>
 
-                <div class="alert text-center">
-                    Erro simples
-                </div>
-            </form>
-        </div>
-    </main>
+                    <div class="mb-3">
+                        <label class="form-label">Fornecedor Associado</label>
+                        <select name="fornecedor_id" class="form-control">
+                            <option value="">Sem fornecedor associado</option>
 
-</body>
+                            <?php foreach ($fornecedores as $fornecedor) : ?>
+                                <option value="<?= $fornecedor->id ?>" <?= $documento->fornecedor_id == $fornecedor->id ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($fornecedor->nome_empresa) ?>
+                                </option>
+                            <?php endforeach; ?>
 
-</html>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Data do Documento</label>
+                        <input type="date" name="data_documento" class="form-control"
+                               value="<?= htmlspecialchars($documento->data_documento) ?>">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Data de Validade</label>
+                        <input type="date" name="data_validade" class="form-control"
+                               value="<?= htmlspecialchars($documento->data_validade) ?>">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nome / Caminho do Ficheiro</label>
+                        <input type="text" name="caminho_ficheiro" class="form-control"
+                               value="<?= htmlspecialchars($documento->caminho_ficheiro) ?>">
+                    </div>
+
+                    <div class="mb-3">
+                        <a href="lista.php" class="btn btn-secondary">
+                            <i class="fa-solid fa-xmark me-1"></i>
+                            Cancelar
+                        </a>
+
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-regular fa-floppy-disk me-1"></i>
+                            Guardar alterações
+                        </button>
+                    </div>
+
+                </form>
+
+            <?php endif; ?>
+
+        </main>
+
+    </div>
+</div>
+
+<?php include '../../includes/footer.php'; ?>

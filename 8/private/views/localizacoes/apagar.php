@@ -7,12 +7,13 @@ redirect_if_not_logged();
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-$erro = '';
-$sucesso = '';
 $localizacao = null;
+$erro = '';
 
 if ($id <= 0) {
+
     $erro = 'Localização inválida.';
+
 } else {
 
     try {
@@ -27,7 +28,6 @@ if ($id <= 0) {
 
         $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        // ELIMINAR
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $stmt = $ligacao->prepare(
@@ -43,7 +43,6 @@ if ($id <= 0) {
             exit;
         }
 
-        // CARREGAR LOCALIZAÇÃO
         $stmt = $ligacao->prepare(
             "SELECT *
              FROM localizacoes
@@ -102,17 +101,30 @@ if ($id <= 0) {
                 <div class="card p-4">
 
                     <p>
-                        Tem a certeza que pretende eliminar a localização
-                        <strong>
-                            <?= htmlspecialchars($localizacao->edificio) ?>
-                            -
-                            Piso <?= htmlspecialchars($localizacao->piso) ?>
-                            -
-                            <?= htmlspecialchars($localizacao->sala) ?>
-                        </strong>?
+                        Tem a certeza que pretende eliminar esta localização?
                     </p>
 
-                    <form method="post">
+                    <p>
+                        <strong>Edifício:</strong>
+                        <?= htmlspecialchars($localizacao->edificio) ?>
+                    </p>
+
+                    <p>
+                        <strong>Piso:</strong>
+                        <?= htmlspecialchars($localizacao->piso) ?>
+                    </p>
+
+                    <p>
+                        <strong>Serviço:</strong>
+                        <?= htmlspecialchars($localizacao->servico) ?>
+                    </p>
+
+                    <p>
+                        <strong>Sala:</strong>
+                        <?= htmlspecialchars($localizacao->sala) ?>
+                    </p>
+
+                    <form action="apagar.php?id=<?= $localizacao->id ?>" method="post">
 
                         <a href="lista.php" class="btn btn-secondary">
                             <i class="fa-solid fa-xmark me-1"></i>

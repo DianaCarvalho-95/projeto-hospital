@@ -1,60 +1,124 @@
-<!DOCTYPE html>
-<html lang="pt">
+<?php
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eliminar Documento - MedTech Solutions</title>
+require_once __DIR__ . '/../../../config/config.php';
+require_once __DIR__ . '/../../includes/funcoes.php';
 
-    <link rel="shortcut icon" href="../../assets/img/hospital125.png" type="image/png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,700;1,400&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="../../assets/css/admin.css">
-</head>
+redirect_if_not_logged();
 
-<body>
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-    <header class="bng-navbar-menu">
-        <div>
-            <a href="../../index.html">
-                <img src="../../assets/img/hospital255.png" alt="Logo MedTech Solutions">
-            </a>
-            <h3>MedTech Solutions</h3>
-        </div>
-        <div>
-            <button>Utilizador</button>
-        </div>
-    </header>
+$erro = '';
+$documento = null;
 
-    <aside class="sidebar">
-        <h4>Menu</h4>
-        <nav>
-            <a href="../equipamentos/lista.html"><i class="fas fa-cogs"></i><span>Equipamentos</span></a>
-            <a href="../localizacoes/lista.html"><i class="fas fa-location-dot"></i><span>Localizações</span></a>
-            <a href="../fornecedores/lista.html"><i class="fas fa-truck-medical"></i><span>Fornecedores</span></a>
-            <a href="../documentacao/lista.html"><i class="fas fa-file-medical"></i><span>Documentação</span></a>
-            <a href="../dashboard/dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
-            <a href="../ferramentas/ferramentas.html"><i class="fas fa-screwdriver-wrench"></i><span>Ferramentas</span></a>
-        </nav>
-    </aside>
+if ($id <= 0) {
+    $erro = 'Documento inválido.';
+} else {
 
-    <main class="content">
-        <div class="form-wrapper">
-            <h2><strong><i class="fa-solid fa-trash-can"></i> Eliminar documento</strong></h2>
+    try {
+
+        $ligacao = new PDO(
+            "mysql:host=" . MYSQL_HOST .
+            ";dbname=" . MYSQL_DATABASE .
+            ";charset=utf8",
+            MYSQL_USERNAME,
+            MYSQL_PASSWORD
+        );
+
+        $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+            $stmt = $ligacao->prepare("DELETE FROM documentacao WHERE id = :id");
+
+            $stmt->execute([
+                ':id' => $id
+            ]);
+
+            header('Location: lista.php');
+            exit;
+        }
+
+        $stmt = $ligacao->prepare(
+            "SELECT * FROM documentacao WHERE id = :id"
+        );
+
+        $stmt->execute([
+            ':id' => $id
+        ]);
+
+        $documento = $stmt->fetch(PDO::FETCH_OBJ);
+
+        if (!$documento) {
+            $erro = 'Documento não encontrado.';
+        }
+
+    } catch (PDOException $err) {
+
+        $erro = 'Não foi possível eliminar o documento.';
+    }
+
+    $ligacao = null;
+}
+
+?>
+
+<?php include '../../includes/header.php'; ?>
+<?php include '../../includes/nav.php'; ?>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <?php include '../../includes/sidebar.php'; ?>
+
+        <main class="col-md-9 col-lg-10 p-4">
+
+            <h2>
+                <i class="fa-solid fa-trash-can me-2"></i>
+                Eliminar Documento
+            </h2>
+
             <hr>
 
-            <p>Tem a certeza que pretende eliminar o documento <strong>Manual de Utilização</strong>?</p>
+            <?php if (!empty($erro)) : ?>
 
-            <div class="form-buttons">
-                <a href="lista.html"><i class="fa-solid fa-xmark"></i> Cancelar</a>
-                <button type="button"><i class="fa-solid fa-trash-can"></i> Confirmar eliminação</button>
-            </div>
-        </div>
-    </main>
+                <div class="mensagem-erro">
+                    <?= htmlspecialchars($erro) ?>
+                </div>
 
-</body>
+                <a href="lista.php" class="btn btn-secondary">
+                    Voltar
+                </a>
 
-</html>
+            <?php elseif ($documento) : ?>
+
+                <div class="card p-4">
+
+                    <p>
+                        Tem a certeza que pretende eliminar o documento
+                        <strong><?= htmlspecialchars($documento->nome_documento) ?></strong>?
+                    </p>
+
+                    <form action="apagar.php?id=<?= $documento->id ?>" method="post">
+
+                        <a href="lista.php" class="btn btn-secondary">
+                            <i class="fa-solid fa-xmark me-1"></i>
+                            Cancelar
+                        </a>
+
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fa-solid fa-trash-can me-1"></i>
+                            Confirmar eliminação
+                        </button>
+
+                    </form>
+
+                </div>
+
+            <?php endif; ?>
+
+        </main>
+
+    </div>
+</div>
+
+<?php include '../../includes/footer.php'; ?>

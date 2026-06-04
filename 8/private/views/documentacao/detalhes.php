@@ -1,67 +1,143 @@
-<!DOCTYPE html>
-<html lang="pt">
+<?php
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhes do Documento - MedTech Solutions</title>
+require_once __DIR__ . '/../../../config/config.php';
+require_once __DIR__ . '/../../includes/funcoes.php';
 
-    <link rel="shortcut icon" href="../../assets/img/hospital125.png" type="image/png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,700;1,400&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="../../assets/css/admin.css">
-</head>
+redirect_if_not_logged();
 
-<body>
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-    <header class="bng-navbar-menu">
-        <div>
-            <a href="../../index.html">
-                <img src="../../assets/img/hospital255.png" alt="Logo MedTech Solutions">
-            </a>
-            <h3>MedTech Solutions</h3>
-        </div>
-        <div>
-            <button>Utilizador</button>
-        </div>
-    </header>
+$documento = null;
+$erro = '';
 
-    <aside class="sidebar">
-        <h4>Menu</h4>
-        <nav>
-            <a href="../equipamentos/lista.html"><i class="fas fa-cogs"></i><span>Equipamentos</span></a>
-            <a href="../localizacoes/lista.html"><i class="fas fa-location-dot"></i><span>Localizações</span></a>
-            <a href="../fornecedores/lista.html"><i class="fas fa-truck-medical"></i><span>Fornecedores</span></a>
-            <a href="../documentacao/lista.html"><i class="fas fa-file-medical"></i><span>Documentação</span></a>
-            <a href="../dashboard/dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
-            <a href="../ferramentas/ferramentas.html"><i class="fas fa-screwdriver-wrench"></i><span>Ferramentas</span></a>
-        </nav>
-    </aside>
+if ($id <= 0) {
 
-    <main class="content">
-        <div class="form-wrapper">
-            <h2><strong><i class="fa-solid fa-eye"></i> Detalhes do documento</strong></h2>
+    $erro = 'Documento inválido.';
+
+} else {
+
+    try {
+
+        $ligacao = new PDO(
+            "mysql:host=" . MYSQL_HOST .
+            ";dbname=" . MYSQL_DATABASE .
+            ";charset=utf8",
+            MYSQL_USERNAME,
+            MYSQL_PASSWORD
+        );
+
+        $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $stmt = $ligacao->prepare(
+            "SELECT
+                d.*,
+                e.codigo_inventario,
+                e.designacao,
+                f.nome_empresa
+             FROM documentacao d
+             INNER JOIN equipamentos e ON d.equipamento_id = e.id
+             LEFT JOIN fornecedores f ON d.fornecedor_id = f.id
+             WHERE d.id = :id"
+        );
+
+        $stmt->execute([
+            ':id' => $id
+        ]);
+
+        $documento = $stmt->fetch(PDO::FETCH_OBJ);
+
+        if (!$documento) {
+            $erro = 'Documento não encontrado.';
+        }
+
+    } catch (PDOException $err) {
+
+        $erro = 'Aconteceu um erro ao consultar o documento.';
+    }
+
+    $ligacao = null;
+}
+
+?>
+
+<?php include '../../includes/header.php'; ?>
+<?php include '../../includes/nav.php'; ?>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <?php include '../../includes/sidebar.php'; ?>
+
+        <main class="col-md-9 col-lg-10 p-4">
+
+            <h2>
+                <i class="fa-solid fa-eye me-2"></i>
+                Detalhes do Documento
+            </h2>
+
             <hr>
 
-            <p><strong>Nome:</strong> Manual de Utilização</p>
-            <p><strong>Tipo:</strong> Manual</p>
-            <p><strong>Equipamento:</strong> Monitor Multiparamétrico</p>
-            <p><strong>Fornecedor:</strong> MedEquip Portugal</p>
-            <p><strong>Data do Documento:</strong> 10/01/2024</p>
-            <p><strong>Validade:</strong> 10/01/2026</p>
-            <p><strong>Ficheiro:</strong> manual_monitor_mp5.pdf</p>
-            <p><strong>Descrição:</strong> Documento técnico associado ao equipamento.</p>
+            <?php if (!empty($erro)) : ?>
 
-            <div class="form-buttons">
-                <a href="lista.html"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
-                <a href="editar.html"><i class="fa-regular fa-pen-to-square"></i> Editar</a>
-            </div>
-        </div>
-    </main>
+                <div class="mensagem-erro">
+                    <?= htmlspecialchars($erro) ?>
+                </div>
 
-</body>
+                <a href="lista.php" class="btn btn-secondary">
+                    Voltar
+                </a>
 
-</html>
+            <?php else : ?>
+
+                <div class="card p-4">
+
+                    <p><strong>Nome:</strong> <?= htmlspecialchars($documento->nome_documento) ?></p>
+
+                    <p><strong>Tipo:</strong> <?= htmlspecialchars($documento->tipo_documento) ?></p>
+
+                    <p>
+                        <strong>Equipamento:</strong>
+                        <?= htmlspecialchars($documento->codigo_inventario) ?>
+                        -
+                        <?= htmlspecialchars($documento->designacao) ?>
+                    </p>
+
+                    <p>
+                        <strong>Fornecedor:</strong>
+                        <?php if (!empty($documento->nome_empresa)) : ?>
+                            <?= htmlspecialchars($documento->nome_empresa) ?>
+                        <?php else : ?>
+                            Sem fornecedor associado
+                        <?php endif; ?>
+                    </p>
+
+                    <p><strong>Data do documento:</strong> <?= htmlspecialchars($documento->data_documento) ?></p>
+
+                    <p><strong>Validade:</strong> <?= htmlspecialchars($documento->data_validade) ?></p>
+
+                    <p><strong>Ficheiro:</strong> <?= htmlspecialchars($documento->caminho_ficheiro) ?></p>
+
+                    <div class="mt-3">
+
+                        <a href="lista.php" class="btn btn-secondary">
+                            <i class="fa-solid fa-arrow-left me-1"></i>
+                            Voltar
+                        </a>
+
+                        <a href="editar.php?id=<?= $documento->id ?>" class="btn btn-warning">
+                            <i class="fa-regular fa-pen-to-square me-1"></i>
+                            Editar
+                        </a>
+
+                    </div>
+
+                </div>
+
+            <?php endif; ?>
+
+        </main>
+
+    </div>
+</div>
+
+<?php include '../../includes/footer.php'; ?>
