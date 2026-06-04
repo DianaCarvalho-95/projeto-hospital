@@ -10,6 +10,7 @@ $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $erros = [];
 $sucesso = '';
 $equipamento = null;
+$localizacoes = [];
 
 if ($id <= 0) {
     $erros[] = 'Equipamento inválido.';
@@ -26,6 +27,13 @@ if ($id <= 0) {
 
         $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+        $stmt_localizacoes = $ligacao->query(
+            "SELECT * FROM localizacoes
+             ORDER BY edificio, piso, servico, sala"
+        );
+
+        $localizacoes = $stmt_localizacoes->fetchAll(PDO::FETCH_OBJ);
+
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $codigo = isset($_POST['codigo']) ? trim($_POST['codigo']) : '';
@@ -41,6 +49,7 @@ if ($id <= 0) {
             $tipo_entrada = isset($_POST['tipo_entrada']) ? trim($_POST['tipo_entrada']) : '';
             $estado = isset($_POST['estado']) ? trim($_POST['estado']) : '';
             $criticidade = isset($_POST['criticidade']) ? trim($_POST['criticidade']) : '';
+            $localizacao_id = isset($_POST['localizacao_id']) ? intval($_POST['localizacao_id']) : null;
             $observacoes = isset($_POST['observacoes']) ? trim($_POST['observacoes']) : '';
 
             if (empty($codigo)) {
@@ -79,6 +88,7 @@ if ($id <= 0) {
                             tipo_entrada = :tipo_entrada,
                             estado = :estado,
                             criticidade = :criticidade,
+                            localizacao_id = :localizacao_id,
                             observacoes = :observacoes
                         WHERE id = :id";
 
@@ -98,6 +108,7 @@ if ($id <= 0) {
                     ':tipo_entrada' => $tipo_entrada,
                     ':estado' => $estado,
                     ':criticidade' => $criticidade,
+                    ':localizacao_id' => !empty($localizacao_id) ? $localizacao_id : null,
                     ':observacoes' => $observacoes,
                     ':id' => $id
                 ]);
@@ -116,6 +127,7 @@ if ($id <= 0) {
         if (!$equipamento) {
             $erros[] = 'Equipamento não encontrado.';
         }
+
     } catch (PDOException $err) {
         $erros[] = 'Não foi possível atualizar o equipamento.';
     }
@@ -259,6 +271,29 @@ if ($id <= 0) {
                             <option value="Média" <?= $equipamento->criticidade == 'Média' ? 'selected' : '' ?>>Média</option>
                             <option value="Alta" <?= $equipamento->criticidade == 'Alta' ? 'selected' : '' ?>>Alta</option>
                             <option value="Suporte de vida" <?= $equipamento->criticidade == 'Suporte de vida' ? 'selected' : '' ?>>Suporte de vida</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Localização</label>
+
+                        <select name="localizacao_id" class="form-control">
+                            <option value="">Escolha uma localização</option>
+
+                            <?php foreach ($localizacoes as $localizacao) : ?>
+                                <option value="<?= $localizacao->id ?>" <?= $equipamento->localizacao_id == $localizacao->id ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars(
+                                        $localizacao->edificio .
+                                        ' - ' .
+                                        $localizacao->piso .
+                                        ' - ' .
+                                        $localizacao->servico .
+                                        ' - ' .
+                                        $localizacao->sala
+                                    ) ?>
+                                </option>
+                            <?php endforeach; ?>
+
                         </select>
                     </div>
 

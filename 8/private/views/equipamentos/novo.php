@@ -7,6 +7,8 @@ redirect_if_not_logged();
 
 $erros = [];
 $sucesso = '';
+$localizacoes = [];
+$fornecedores = [];
 
 $codigo = '';
 $designacao = '';
@@ -21,7 +23,43 @@ $custo_aquisicao = '';
 $tipo_entrada = '';
 $estado = '';
 $criticidade = '';
+$localizacao_id = '';
+$fornecedor_id = '';
 $observacoes = '';
+
+try {
+
+    $ligacao_dados = new PDO(
+        "mysql:host=" . MYSQL_HOST .
+            ";dbname=" . MYSQL_DATABASE .
+            ";charset=utf8",
+        MYSQL_USERNAME,
+        MYSQL_PASSWORD
+    );
+
+    $ligacao_dados->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $stmt_localizacoes = $ligacao_dados->query(
+        "SELECT * FROM localizacoes
+         ORDER BY edificio, piso, servico, sala"
+    );
+
+    $localizacoes = $stmt_localizacoes->fetchAll(PDO::FETCH_OBJ);
+
+    $stmt_fornecedores = $ligacao_dados->query(
+        "SELECT * FROM fornecedores
+         ORDER BY nome_empresa"
+    );
+
+    $fornecedores = $stmt_fornecedores->fetchAll(PDO::FETCH_OBJ);
+
+} catch (PDOException $err) {
+
+    $localizacoes = [];
+    $fornecedores = [];
+}
+
+$ligacao_dados = null;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -38,6 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $tipo_entrada = isset($_POST['tipo_entrada']) ? trim($_POST['tipo_entrada']) : '';
     $estado = isset($_POST['estado']) ? trim($_POST['estado']) : '';
     $criticidade = isset($_POST['criticidade']) ? trim($_POST['criticidade']) : '';
+    $localizacao_id = isset($_POST['localizacao_id']) ? intval($_POST['localizacao_id']) : '';
+    $fornecedor_id = isset($_POST['fornecedor_id']) ? intval($_POST['fornecedor_id']) : '';
     $observacoes = isset($_POST['observacoes']) ? trim($_POST['observacoes']) : '';
 
     if (empty($codigo)) {
@@ -129,11 +169,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $sql = "INSERT INTO equipamentos
                     (codigo_inventario, designacao, categoria, marca, modelo,
                      numero_serie, fabricante, data_aquisicao, ano_fabrico,
-                     custo_aquisicao, tipo_entrada, estado, criticidade, observacoes)
+                     custo_aquisicao, tipo_entrada, estado, criticidade,
+                     localizacao_id, fornecedor_id, observacoes)
                     VALUES
                     (:codigo, :designacao, :categoria, :marca, :modelo,
                      :numero_serie, :fabricante, :data_aquisicao, :ano_fabrico,
-                     :custo_aquisicao, :tipo_entrada, :estado, :criticidade, :observacoes)";
+                     :custo_aquisicao, :tipo_entrada, :estado, :criticidade,
+                     :localizacao_id, :fornecedor_id, :observacoes)";
 
             $stmt = $ligacao->prepare($sql);
 
@@ -151,6 +193,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 ':tipo_entrada' => $tipo_entrada,
                 ':estado' => $estado,
                 ':criticidade' => $criticidade,
+                ':localizacao_id' => !empty($localizacao_id) ? $localizacao_id : null,
+                ':fornecedor_id' => !empty($fornecedor_id) ? $fornecedor_id : null,
                 ':observacoes' => $observacoes
             ]);
 
@@ -169,6 +213,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $tipo_entrada = '';
             $estado = '';
             $criticidade = '';
+            $localizacao_id = '';
+            $fornecedor_id = '';
             $observacoes = '';
 
         } catch (PDOException $err) {
@@ -308,6 +354,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="Média" <?= $criticidade == 'Média' ? 'selected' : '' ?>>Média</option>
                         <option value="Alta" <?= $criticidade == 'Alta' ? 'selected' : '' ?>>Alta</option>
                         <option value="Suporte de vida" <?= $criticidade == 'Suporte de vida' ? 'selected' : '' ?>>Suporte de vida</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Localização</label>
+
+                    <select name="localizacao_id" class="form-control">
+                        <option value="">Escolha uma localização</option>
+
+                        <?php foreach ($localizacoes as $localizacao) : ?>
+                            <option value="<?= $localizacao->id ?>" <?= $localizacao_id == $localizacao->id ? 'selected' : '' ?>>
+                                <?= htmlspecialchars(
+                                    $localizacao->edificio .
+                                    ' - ' .
+                                    $localizacao->piso .
+                                    ' - ' .
+                                    $localizacao->servico .
+                                    ' - ' .
+                                    $localizacao->sala
+                                ) ?>
+                            </option>
+                        <?php endforeach; ?>
+
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Fornecedor</label>
+
+                    <select name="fornecedor_id" class="form-control">
+                        <option value="">Escolha um fornecedor</option>
+
+                        <?php foreach ($fornecedores as $fornecedor) : ?>
+                            <option value="<?= $fornecedor->id ?>" <?= $fornecedor_id == $fornecedor->id ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($fornecedor->nome_empresa) ?>
+                            </option>
+                        <?php endforeach; ?>
+
                     </select>
                 </div>
 

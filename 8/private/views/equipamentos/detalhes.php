@@ -10,10 +10,13 @@ $equipamento = null;
 $erro = '';
 
 if ($id <= 0) {
+
     $erro = 'Equipamento inválido.';
+
 } else {
 
     try {
+
         $ligacao = new PDO(
             "mysql:host=" . MYSQL_HOST .
             ";dbname=" . MYSQL_DATABASE .
@@ -24,7 +27,22 @@ if ($id <= 0) {
 
         $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $stmt = $ligacao->prepare("SELECT * FROM equipamentos WHERE id = :id");
+        $stmt = $ligacao->prepare(
+            "SELECT
+                e.*,
+                l.edificio,
+                l.piso,
+                l.servico,
+                l.sala,
+                f.nome_empresa
+            FROM equipamentos e
+            LEFT JOIN localizacoes l
+                ON e.localizacao_id = l.id
+            LEFT JOIN fornecedores f
+                ON e.fornecedor_id = f.id
+            WHERE e.id = :id"
+        );
+
         $stmt->execute([
             ':id' => $id
         ]);
@@ -36,6 +54,7 @@ if ($id <= 0) {
         }
 
     } catch (PDOException $err) {
+
         $erro = 'Aconteceu um erro ao consultar o equipamento.';
     }
 
@@ -76,21 +95,73 @@ if ($id <= 0) {
                 <div class="card p-4">
 
                     <p><strong>Código interno:</strong> <?= htmlspecialchars($equipamento->codigo_inventario) ?></p>
+
                     <p><strong>Designação:</strong> <?= htmlspecialchars($equipamento->designacao) ?></p>
+
                     <p><strong>Categoria:</strong> <?= htmlspecialchars($equipamento->categoria) ?></p>
+
                     <p><strong>Marca:</strong> <?= htmlspecialchars($equipamento->marca) ?></p>
+
                     <p><strong>Modelo:</strong> <?= htmlspecialchars($equipamento->modelo) ?></p>
+
                     <p><strong>Número de série:</strong> <?= htmlspecialchars($equipamento->numero_serie) ?></p>
+
                     <p><strong>Fabricante:</strong> <?= htmlspecialchars($equipamento->fabricante) ?></p>
+
                     <p><strong>Data de aquisição:</strong> <?= htmlspecialchars($equipamento->data_aquisicao) ?></p>
+
                     <p><strong>Ano de fabrico:</strong> <?= htmlspecialchars($equipamento->ano_fabrico) ?></p>
+
                     <p><strong>Custo de aquisição:</strong> <?= htmlspecialchars($equipamento->custo_aquisicao) ?> €</p>
+
                     <p><strong>Tipo de entrada:</strong> <?= htmlspecialchars($equipamento->tipo_entrada) ?></p>
+
                     <p><strong>Estado:</strong> <?= htmlspecialchars($equipamento->estado) ?></p>
+
                     <p><strong>Criticidade:</strong> <?= htmlspecialchars($equipamento->criticidade) ?></p>
+
+                    <p>
+                        <strong>Localização:</strong>
+
+                        <?php if (!empty($equipamento->edificio)) : ?>
+
+                            <?= htmlspecialchars(
+                                $equipamento->edificio .
+                                ' - ' .
+                                $equipamento->piso .
+                                ' - ' .
+                                $equipamento->servico .
+                                ' - ' .
+                                $equipamento->sala
+                            ) ?>
+
+                        <?php else : ?>
+
+                            Sem localização associada
+
+                        <?php endif; ?>
+
+                    </p>
+
+                    <p>
+                        <strong>Fornecedor:</strong>
+
+                        <?php if (!empty($equipamento->nome_empresa)) : ?>
+
+                            <?= htmlspecialchars($equipamento->nome_empresa) ?>
+
+                        <?php else : ?>
+
+                            Sem fornecedor associado
+
+                        <?php endif; ?>
+
+                    </p>
+
                     <p><strong>Observações:</strong> <?= htmlspecialchars($equipamento->observacoes) ?></p>
 
                     <div class="mt-3">
+
                         <a href="lista.php" class="btn btn-secondary">
                             <i class="fa-solid fa-arrow-left me-1"></i>
                             Voltar
@@ -100,6 +171,7 @@ if ($id <= 0) {
                             <i class="fa-regular fa-pen-to-square me-1"></i>
                             Editar
                         </a>
+
                     </div>
 
                 </div>
