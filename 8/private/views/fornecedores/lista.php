@@ -1,8 +1,36 @@
 <?php
 
+require_once __DIR__ . '/../../../config/config.php';
 require_once __DIR__ . '/../../includes/funcoes.php';
 
 redirect_if_not_logged();
+
+$erro = '';
+$resultados = [];
+
+try {
+
+    $ligacao = new PDO(
+        "mysql:host=" . MYSQL_HOST .
+            ";dbname=" . MYSQL_DATABASE .
+            ";charset=utf8",
+        MYSQL_USERNAME,
+        MYSQL_PASSWORD
+    );
+
+    $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $resultados = $ligacao
+        ->query("SELECT * FROM fornecedores ORDER BY nome_empresa")
+        ->fetchAll(PDO::FETCH_OBJ);
+
+} catch (PDOException $err) {
+
+    $erro = 'Aconteceu um erro ao carregar os fornecedores.';
+    $resultados = [];
+}
+
+$ligacao = null;
 
 ?>
 
@@ -26,45 +54,80 @@ redirect_if_not_logged();
                 </a>
             </div>
 
-            <p>Não existem fornecedores registados.</p>
+            <?php if (!empty($erro)) : ?>
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Empresa</th>
-                            <th>NIF</th>
-                            <th>Email</th>
-                            <th>Telefone</th>
-                            <th>Tipo</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
+                <p class="text-center text-danger">
+                    <?= htmlspecialchars($erro) ?>
+                </p>
 
-                    <tbody>
-                        <tr>
-                            <td>[Nome Empresa]</td>
-                            <td>[NIF]</td>
-                            <td>[email]</td>
-                            <td>[telefone]</td>
-                            <td>[tipo_fornecedor]</td>
-                            <td>
-                                <a href="detalhes.php" class="text-decoration-none me-2">
-                                    <i class="fa-solid fa-eye"></i> Consultar
-                                </a>
+            <?php else : ?>
 
-                                <a href="editar.php" class="text-decoration-none me-2">
-                                    <i class="fa-regular fa-pen-to-square"></i> Editar
-                                </a>
+                <?php if (count($resultados) == 0) : ?>
 
-                                <a href="apagar.php" class="text-decoration-none text-danger">
-                                    <i class="fa-solid fa-trash-can"></i> Eliminar
-                                </a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                    <p class="text-muted">
+                        Não existem fornecedores registados.
+                    </p>
+
+                <?php else : ?>
+
+                    <p class="text-muted">
+                        Total: <?= count($resultados) ?> fornecedor(es)
+                    </p>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Empresa</th>
+                                    <th>NIF</th>
+                                    <th>Email</th>
+                                    <th>Telefone</th>
+                                    <th>Tipo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                <?php foreach ($resultados as $fornecedor) : ?>
+
+                                    <tr>
+                                        <td><?= htmlspecialchars($fornecedor->nome_empresa) ?></td>
+                                        <td><?= htmlspecialchars($fornecedor->nif) ?></td>
+                                        <td><?= htmlspecialchars($fornecedor->email) ?></td>
+                                        <td><?= htmlspecialchars($fornecedor->telefone) ?></td>
+                                        <td><?= htmlspecialchars($fornecedor->tipo_fornecedor) ?></td>
+
+                                        <td>
+                                            <a href="detalhes.php?id=<?= $fornecedor->id ?>"
+                                               class="text-success text-decoration-none me-3">
+                                                <i class="fa-solid fa-eye"></i>
+                                                Consultar
+                                            </a>
+
+                                            <a href="editar.php?id=<?= $fornecedor->id ?>"
+                                               class="text-warning text-decoration-none me-3">
+                                                <i class="fa-regular fa-pen-to-square"></i>
+                                                Editar
+                                            </a>
+
+                                            <a href="apagar.php?id=<?= $fornecedor->id ?>"
+                                               class="text-danger text-decoration-none">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                                Eliminar
+                                            </a>
+                                        </td>
+                                    </tr>
+
+                                <?php endforeach; ?>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                <?php endif; ?>
+
+            <?php endif; ?>
 
         </main>
 

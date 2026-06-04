@@ -11,6 +11,7 @@ $erros = [];
 $sucesso = '';
 $equipamento = null;
 $localizacoes = [];
+$fornecedores = [];
 
 if ($id <= 0) {
     $erros[] = 'Equipamento inválido.';
@@ -34,6 +35,13 @@ if ($id <= 0) {
 
         $localizacoes = $stmt_localizacoes->fetchAll(PDO::FETCH_OBJ);
 
+        $stmt_fornecedores = $ligacao->query(
+            "SELECT * FROM fornecedores
+             ORDER BY nome_empresa"
+        );
+
+        $fornecedores = $stmt_fornecedores->fetchAll(PDO::FETCH_OBJ);
+
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $codigo = isset($_POST['codigo']) ? trim($_POST['codigo']) : '';
@@ -50,6 +58,7 @@ if ($id <= 0) {
             $estado = isset($_POST['estado']) ? trim($_POST['estado']) : '';
             $criticidade = isset($_POST['criticidade']) ? trim($_POST['criticidade']) : '';
             $localizacao_id = isset($_POST['localizacao_id']) ? intval($_POST['localizacao_id']) : null;
+            $fornecedor_id = isset($_POST['fornecedor_id']) ? intval($_POST['fornecedor_id']) : null;
             $observacoes = isset($_POST['observacoes']) ? trim($_POST['observacoes']) : '';
 
             if (empty($codigo)) {
@@ -89,6 +98,7 @@ if ($id <= 0) {
                             estado = :estado,
                             criticidade = :criticidade,
                             localizacao_id = :localizacao_id,
+                            fornecedor_id = :fornecedor_id,
                             observacoes = :observacoes
                         WHERE id = :id";
 
@@ -109,6 +119,7 @@ if ($id <= 0) {
                     ':estado' => $estado,
                     ':criticidade' => $criticidade,
                     ':localizacao_id' => !empty($localizacao_id) ? $localizacao_id : null,
+                    ':fornecedor_id' => !empty($fornecedor_id) ? $fornecedor_id : null,
                     ':observacoes' => $observacoes,
                     ':id' => $id
                 ]);
@@ -291,6 +302,21 @@ if ($id <= 0) {
                                         ' - ' .
                                         $localizacao->sala
                                     ) ?>
+                                </option>
+                            <?php endforeach; ?>
+
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Fornecedor</label>
+
+                        <select name="fornecedor_id" class="form-control">
+                            <option value="">Escolha um fornecedor</option>
+
+                            <?php foreach ($fornecedores as $fornecedor) : ?>
+                                <option value="<?= $fornecedor->id ?>" <?= $equipamento->fornecedor_id == $fornecedor->id ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($fornecedor->nome_empresa) ?>
                                 </option>
                             <?php endforeach; ?>
 
