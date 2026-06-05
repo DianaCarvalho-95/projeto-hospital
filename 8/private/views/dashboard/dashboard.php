@@ -49,7 +49,6 @@ try {
 
     /*
         Equipamentos sem documentação associada.
-        Este indicador ajuda a controlar falhas documentais.
     */
     $total_sem_documentacao = $ligacao->query(
         "SELECT COUNT(*)
@@ -144,7 +143,6 @@ try {
          ORDER BY m.proxima_manutencao ASC
          LIMIT 3"
     )->fetchAll(PDO::FETCH_OBJ);
-
 } catch (PDOException $err) {
 
     $erro = 'Aconteceu um erro ao carregar os indicadores do dashboard.';
@@ -171,8 +169,7 @@ function percentagem($valor, $total)
 
 <style>
     /*
-        Fundo limpo da Dashboard.
-        Foi retirada a imagem para o conteúdo ficar mais leve e profissional.
+        Fundo da Dashboard.
     */
     .dashboard-page {
         min-height: 100vh;
@@ -198,9 +195,7 @@ function percentagem($valor, $total)
     }
 
     /*
-        Cartões principais.
-        Fundo branco e borda lateral colorida para contrastar
-        com a sidebar e a navbar.
+        Cartões principais
     */
     .kpi-card {
         border: 1px solid #e5e7eb;
@@ -213,38 +208,28 @@ function percentagem($valor, $total)
         height: 100%;
     }
 
-    .kpi-total {
-        border-left-color: #1E3A5F;
-    }
+    /*
+        Cor dos cartões dos indicadores
+    */
 
-    .kpi-ativos {
-        border-left-color: #198754;
-    }
+    .kpi-total,
+    .kpi-ativos,
+    .kpi-manutencao,
+    .kpi-inativos,
+    .kpi-garantias,
+    .kpi-docs {
 
-    .kpi-manutencao {
-        border-left-color: #fd7e14;
-    }
-
-    .kpi-inativos {
-        border-left-color: #dc3545;
-    }
-
-    .kpi-garantias {
         border-left-color: #2F5D8A;
     }
 
-    .kpi-docs {
-        border-left-color: #6f42c1;
-    }
-
     /*
-        Círculo dos ícones dos cartões.
+        Círculo dos ícones dos cartões
     */
     .kpi-icon-circle {
         width: 44px;
         height: 44px;
         border-radius: 50%;
-        background: #eef6ff;
+        background: #e8f1fb;
         color: #2F5D8A;
         display: flex;
         align-items: center;
@@ -356,7 +341,7 @@ function percentagem($valor, $total)
                 </h2>
 
                 <p class="dashboard-subtitle">
-                    Visão rápida do parque tecnológico hospitalar.
+                    Visão geral do estado dos equipamentos hospitalares.
                 </p>
             </div>
 

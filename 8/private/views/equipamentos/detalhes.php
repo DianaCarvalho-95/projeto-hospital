@@ -17,6 +17,7 @@ if ($id <= 0) {
 
     try {
 
+        /*Ligação à base de dados.*/
         $ligacao = new PDO(
             "mysql:host=" . MYSQL_HOST .
             ";dbname=" . MYSQL_DATABASE .
@@ -27,6 +28,7 @@ if ($id <= 0) {
 
         $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+        /*Consulta do equipamento selecionado*/
         $stmt = $ligacao->prepare(
             "SELECT
                 e.*,
@@ -66,108 +68,301 @@ if ($id <= 0) {
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
 
+<style>
+    /*Fundo da página.*/
+    .detalhes-page {
+        background: #f5f7fa;
+        min-height: 100vh;
+        padding: 24px;
+    }
+
+    /*Título principal*/
+    .page-title {
+        font-weight: 600;
+        color: #1E3A5F;
+        font-size: 1.8rem;
+        margin-bottom: 0;
+    }
+
+    /*Subtítulo*/
+    .page-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+
+    /*Cartão principal*/
+    .content-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+        border: 1px solid #e5e7eb;
+    }
+
+    /*Títulos das secções internas*/
+    .section-title {
+        color: #1E3A5F;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 14px;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+    }
+
+    /*Cada campo de informação*/
+    .info-item {
+        margin-bottom: 10px;
+        font-size: 0.92rem;
+    }
+
+    .info-label {
+        display: block;
+        color: #64748b;
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+
+    .info-value {
+        color: #0f172a;
+        font-weight: 500;
+    }
+
+    /*Botão Editar*/
+    .btn-editar-custom {
+        background: #2F5D8A;
+        border-color: #2F5D8A;
+        color: #ffffff;
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 8px 16px;
+    }
+
+    .btn-editar-custom:hover {
+        background: #1E3A5F;
+        border-color: #1E3A5F;
+        color: #ffffff;
+    }
+
+    /*Botão Voltar*/
+    .btn-voltar-custom {
+        background: #e5e7eb;
+        border-color: #e5e7eb;
+        color: #1E3A5F;
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 8px 16px;
+    }
+
+    .btn-voltar-custom:hover {
+        background: #d1d5db;
+        border-color: #d1d5db;
+        color: #1E3A5F;
+    }
+</style>
+
 <div class="container-fluid">
     <div class="row">
 
         <?php include '../../includes/sidebar.php'; ?>
 
-        <main class="col-md-9 col-lg-10 p-4">
+        <main class="col-md-9 col-lg-10 detalhes-page">
 
-            <h2>
-                <i class="fa-solid fa-eye me-2"></i>
-                Detalhes do Equipamento
-            </h2>
+            <div class="d-flex justify-content-between align-items-start mb-3">
 
-            <hr>
+                <div>
+
+                    <!-- Título principal da página -->
+                    <h2 class="page-title mb-1">
+                        <i class="fa-solid fa-eye me-2"></i>
+                        Detalhes do Equipamento
+                    </h2>
+
+                    <!-- Texto explicativo semelhante ao da Dashboard -->
+                    <p class="page-subtitle">
+                        Consulta detalhada dos dados técnicos, administrativos e logísticos do equipamento.
+                    </p>
+
+                </div>
+
+            </div>
 
             <?php if (!empty($erro)) : ?>
 
-                <div class="mensagem-erro">
+                <div class="alert alert-danger">
                     <?= htmlspecialchars($erro) ?>
                 </div>
 
-                <a href="lista.php" class="btn btn-secondary">
+                <a href="lista.php" class="btn btn-voltar-custom">
+                    <i class="fa-solid fa-arrow-left me-1"></i>
                     Voltar
                 </a>
 
             <?php else : ?>
 
-                <div class="card p-4">
+                <div class="content-card">
 
-                    <p><strong>Código interno:</strong> <?= htmlspecialchars($equipamento->codigo_inventario) ?></p>
+                    <div class="row">
 
-                    <p><strong>Designação:</strong> <?= htmlspecialchars($equipamento->designacao) ?></p>
+                        <!-- Dados gerais do equipamento -->
+                        <div class="col-md-6">
 
-                    <p><strong>Categoria:</strong> <?= htmlspecialchars($equipamento->categoria) ?></p>
+                            <h5 class="section-title">
+                                <i class="fa-solid fa-circle-info me-2"></i>
+                                Dados Gerais
+                            </h5>
 
-                    <p><strong>Marca:</strong> <?= htmlspecialchars($equipamento->marca) ?></p>
+                            <div class="info-item">
+                                <span class="info-label">Código interno</span>
+                                <span class="info-value"><?= htmlspecialchars($equipamento->codigo_inventario) ?></span>
+                            </div>
 
-                    <p><strong>Modelo:</strong> <?= htmlspecialchars($equipamento->modelo) ?></p>
+                            <div class="info-item">
+                                <span class="info-label">Designação</span>
+                                <span class="info-value"><?= htmlspecialchars($equipamento->designacao) ?></span>
+                            </div>
 
-                    <p><strong>Número de série:</strong> <?= htmlspecialchars($equipamento->numero_serie) ?></p>
+                            <div class="info-item">
+                                <span class="info-label">Categoria</span>
+                                <span class="info-value"><?= htmlspecialchars($equipamento->categoria) ?></span>
+                            </div>
 
-                    <p><strong>Fabricante:</strong> <?= htmlspecialchars($equipamento->fabricante) ?></p>
+                            <div class="info-item">
+                                <span class="info-label">Marca</span>
+                                <span class="info-value"><?= htmlspecialchars($equipamento->marca) ?></span>
+                            </div>
 
-                    <p><strong>Data de aquisição:</strong> <?= htmlspecialchars($equipamento->data_aquisicao) ?></p>
+                            <div class="info-item">
+                                <span class="info-label">Modelo</span>
+                                <span class="info-value"><?= htmlspecialchars($equipamento->modelo) ?></span>
+                            </div>
 
-                    <p><strong>Ano de fabrico:</strong> <?= htmlspecialchars($equipamento->ano_fabrico) ?></p>
+                            <div class="info-item">
+                                <span class="info-label">Número de série</span>
+                                <span class="info-value"><?= htmlspecialchars($equipamento->numero_serie) ?></span>
+                            </div>
 
-                    <p><strong>Custo de aquisição:</strong> <?= htmlspecialchars($equipamento->custo_aquisicao) ?> €</p>
+                            <div class="info-item">
+                                <span class="info-label">Fabricante</span>
+                                <span class="info-value"><?= htmlspecialchars($equipamento->fabricante) ?></span>
+                            </div>
 
-                    <p><strong>Tipo de entrada:</strong> <?= htmlspecialchars($equipamento->tipo_entrada) ?></p>
+                        </div>
 
-                    <p><strong>Estado:</strong> <?= htmlspecialchars($equipamento->estado) ?></p>
+                        <!-- Estado, localização e dados administrativos -->
+                        <div class="col-md-6">
 
-                    <p><strong>Criticidade:</strong> <?= htmlspecialchars($equipamento->criticidade) ?></p>
+                            <h5 class="section-title">
+                                <i class="fa-solid fa-location-dot me-2"></i>
+                                Estado e Localização
+                            </h5>
 
-                    <p>
-                        <strong>Localização:</strong>
+                            <div class="info-item">
+                                <span class="info-label">Estado</span>
+                                <span class="info-value"><?= htmlspecialchars($equipamento->estado) ?></span>
+                            </div>
 
-                        <?php if (!empty($equipamento->edificio)) : ?>
+                            <div class="info-item">
+                                <span class="info-label">Criticidade</span>
+                                <span class="info-value"><?= htmlspecialchars($equipamento->criticidade) ?></span>
+                            </div>
 
-                            <?= htmlspecialchars(
-                                $equipamento->edificio .
-                                ' - ' .
-                                $equipamento->piso .
-                                ' - ' .
-                                $equipamento->servico .
-                                ' - ' .
-                                $equipamento->sala
-                            ) ?>
+                            <div class="info-item">
+                                <span class="info-label">Localização</span>
 
-                        <?php else : ?>
+                                <span class="info-value">
+                                    <?php if (!empty($equipamento->edificio)) : ?>
 
-                            Sem localização associada
+                                        <?= htmlspecialchars(
+                                            $equipamento->edificio .
+                                            ' - ' .
+                                            $equipamento->piso .
+                                            ' - ' .
+                                            $equipamento->servico .
+                                            ' - ' .
+                                            $equipamento->sala
+                                        ) ?>
 
-                        <?php endif; ?>
+                                    <?php else : ?>
 
-                    </p>
+                                        Sem localização associada
 
-                    <p>
-                        <strong>Fornecedor:</strong>
+                                    <?php endif; ?>
+                                </span>
+                            </div>
 
-                        <?php if (!empty($equipamento->nome_empresa)) : ?>
+                            <div class="info-item">
+                                <span class="info-label">Fornecedor</span>
 
-                            <?= htmlspecialchars($equipamento->nome_empresa) ?>
+                                <span class="info-value">
+                                    <?php if (!empty($equipamento->nome_empresa)) : ?>
 
-                        <?php else : ?>
+                                        <?= htmlspecialchars($equipamento->nome_empresa) ?>
 
-                            Sem fornecedor associado
+                                    <?php else : ?>
 
-                        <?php endif; ?>
+                                        Sem fornecedor associado
 
-                    </p>
+                                    <?php endif; ?>
+                                </span>
+                            </div>
 
-                    <p><strong>Observações:</strong> <?= htmlspecialchars($equipamento->observacoes) ?></p>
+                            <div class="info-item">
+                                <span class="info-label">Data de aquisição</span>
+                                <span class="info-value">
+                                    <?= !empty($equipamento->data_aquisicao)
+                                        ? date('d/m/Y', strtotime($equipamento->data_aquisicao))
+                                        : '-' ?>
+                                </span>
+                            </div>
 
+                            <div class="info-item">
+                                <span class="info-label">Ano de fabrico</span>
+                                <span class="info-value"><?= htmlspecialchars($equipamento->ano_fabrico) ?></span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">Custo de aquisição</span>
+                                <span class="info-value">
+                                    <?= htmlspecialchars($equipamento->custo_aquisicao) ?> €
+                                </span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">Tipo de entrada</span>
+                                <span class="info-value"><?= htmlspecialchars($equipamento->tipo_entrada) ?></span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Observações -->
                     <div class="mt-3">
 
-                        <a href="lista.php" class="btn btn-secondary">
+                        <h5 class="section-title">
+                            <i class="fa-solid fa-note-sticky me-2"></i>
+                            Observações
+                        </h5>
+
+                        <p class="mb-0">
+                            <?= !empty($equipamento->observacoes)
+                                ? htmlspecialchars($equipamento->observacoes)
+                                : 'Sem observações registadas.' ?>
+                        </p>
+
+                    </div>
+
+                    <!-- Botões de ação -->
+                    <div class="mt-4 d-flex gap-2">
+
+                        <a href="lista.php" class="btn btn-voltar-custom">
                             <i class="fa-solid fa-arrow-left me-1"></i>
                             Voltar
                         </a>
 
-                        <a href="editar.php?id=<?= $equipamento->id ?>" class="btn btn-warning">
+                        <a href="editar.php?id=<?= $equipamento->id ?>" class="btn btn-editar-custom">
                             <i class="fa-regular fa-pen-to-square me-1"></i>
                             Editar
                         </a>
