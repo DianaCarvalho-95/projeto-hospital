@@ -24,6 +24,9 @@ $proximas_manutencoes = [];
 
 try {
 
+    /*
+        Ligação à base de dados para obter os indicadores principais apresentados na Dashboard.
+    */
     $ligacao = new PDO(
         "mysql:host=" . MYSQL_HOST .
             ";dbname=" . MYSQL_DATABASE .
@@ -34,6 +37,9 @@ try {
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    /*
+        Indicadores gerais dos equipamentos.
+    */
     $total_equipamentos = $ligacao->query("SELECT COUNT(*) FROM equipamentos")->fetchColumn();
 
     $total_ativos = $ligacao->query("SELECT COUNT(*) FROM equipamentos WHERE estado = 'Ativo'")->fetchColumn();
@@ -44,6 +50,9 @@ try {
 
     $total_suporte_vida = $ligacao->query("SELECT COUNT(*) FROM equipamentos WHERE criticidade = 'Suporte de vida'")->fetchColumn();
 
+    /*
+        Conta equipamentos sem documentação associada.
+    */
     $total_sem_documentacao = $ligacao->query(
         "SELECT COUNT(*)
          FROM equipamentos e
@@ -51,6 +60,9 @@ try {
          WHERE d.id IS NULL"
     )->fetchColumn();
 
+    /*
+        Indicadores de garantias e contratos.
+    */
     $total_garantias_expiradas = $ligacao->query(
         "SELECT COUNT(*)
          FROM garantias_contratos
@@ -72,6 +84,9 @@ try {
          AND (data_fim IS NULL OR data_fim >= CURDATE())"
     )->fetchColumn();
 
+    /*
+        Distribuição dos equipamentos por criticidade.
+    */
     $equipamentos_por_criticidade = $ligacao->query(
         "SELECT criticidade, COUNT(*) AS total
          FROM equipamentos
@@ -79,6 +94,9 @@ try {
          ORDER BY total DESC"
     )->fetchAll(PDO::FETCH_OBJ);
 
+    /*
+        Top 5 serviços com mais equipamentos associados.
+    */
     $equipamentos_por_servico = $ligacao->query(
         "SELECT 
             COALESCE(l.servico, 'Sem localização') AS servico,
@@ -90,6 +108,9 @@ try {
          LIMIT 5"
     )->fetchAll(PDO::FETCH_OBJ);
 
+    /*
+        Lista curta de garantias que terminam nos próximos 30 dias.
+    */
     $garantias_a_expirar = $ligacao->query(
         "SELECT 
             gc.tipo_contrato,
@@ -103,24 +124,27 @@ try {
          WHERE gc.data_fim IS NOT NULL
          AND gc.data_fim BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
          ORDER BY gc.data_fim ASC
-         LIMIT 4"
+         LIMIT 3"
     )->fetchAll(PDO::FETCH_OBJ);
 
+    /*
+        Próximas manutenções a partir da data atual.
+    */
     $proximas_manutencoes = $ligacao->query(
         "SELECT 
-        m.tipo_manutencao,
-        m.proxima_manutencao,
-        m.responsavel,
-        e.codigo_inventario,
-        e.designacao,
-        f.nome_empresa
-     FROM manutencoes m
-     INNER JOIN equipamentos e ON m.equipamento_id = e.id
-     LEFT JOIN fornecedores f ON m.fornecedor_id = f.id
-     WHERE m.proxima_manutencao IS NOT NULL
-     AND m.proxima_manutencao >= CURDATE()
-     ORDER BY m.proxima_manutencao ASC
-     LIMIT 4"
+            m.tipo_manutencao,
+            m.proxima_manutencao,
+            m.responsavel,
+            e.codigo_inventario,
+            e.designacao,
+            f.nome_empresa
+         FROM manutencoes m
+         INNER JOIN equipamentos e ON m.equipamento_id = e.id
+         LEFT JOIN fornecedores f ON m.fornecedor_id = f.id
+         WHERE m.proxima_manutencao IS NOT NULL
+         AND m.proxima_manutencao >= CURDATE()
+         ORDER BY m.proxima_manutencao ASC
+         LIMIT 3"
     )->fetchAll(PDO::FETCH_OBJ);
 } catch (PDOException $err) {
 
@@ -129,6 +153,9 @@ try {
 
 $ligacao = null;
 
+/*
+    Função auxiliar para calcular percentagens nas barras visuais.
+*/
 function percentagem($valor, $total)
 {
     if ($total == 0) {
@@ -144,113 +171,132 @@ function percentagem($valor, $total)
 <?php include '../../includes/nav.php'; ?>
 
 <style>
+    /*
+        Fundo geral da Dashboard.
+    */
+    .dashboard-page {
+        min-height: calc(100vh - 76px);
+        background-image: url('../../assets/img/fundo_login.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        padding: 18px;
+    }
+
+    /*
+        Títulos principais.
+    */
     .dashboard-title {
-        font-weight: 700;
+        font-weight: 800;
+        color: #0f172a;
         margin-bottom: 0;
+        font-size: 1.8rem;
     }
 
     .dashboard-subtitle {
-        color: #6c757d;
-        margin-bottom: 16px;
+        color: #64748b;
+        margin-bottom: 14px;
+        font-size: 0.95rem;
     }
 
+    /*
+        Cartões de indicadores principais.
+    */
     .kpi-card {
-        border: none;
+        border: 1px solid #e5efff;
         border-radius: 18px;
-        padding: 16px;
-        min-height: 118px;
-        color: #fff;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
+        padding: 14px;
+        min-height: 105px;
+        background: rgba(255, 255, 255, 0.93);
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+        height: 100%;
     }
 
-    .kpi-card h6 {
-        font-size: 0.8rem;
-        opacity: 0.9;
+    .kpi-icon-circle {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: #e8f2ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
         margin-bottom: 8px;
     }
 
-    .kpi-number {
-        font-size: 2rem;
+    .kpi-card h6 {
+        color: #475569;
+        font-size: 0.78rem;
+        margin-bottom: 4px;
         font-weight: 700;
+    }
+
+    .kpi-number {
+        color: #0f172a;
+        font-size: 1.75rem;
+        font-weight: 800;
         line-height: 1;
     }
 
-    .kpi-icon {
-        font-size: 1.7rem;
-        opacity: 0.75;
-    }
-
-    .kpi-dark {
-        background: linear-gradient(135deg, #1f2937, #111827);
-    }
-
-    .kpi-green {
-        background: linear-gradient(135deg, #198754, #0f5132);
-    }
-
-    .kpi-orange {
-        background: linear-gradient(135deg, #f59f00, #d9480f);
-    }
-
-    .kpi-blue {
-        background: linear-gradient(135deg, #0d6efd, #084298);
-    }
-
-    .kpi-red {
-        background: linear-gradient(135deg, #dc3545, #842029);
-    }
-
-    .kpi-purple {
-        background: linear-gradient(135deg, #6f42c1, #3d0a91);
-    }
-
+    /*
+        Caixas inferiores da Dashboard.
+    */
     .dashboard-box {
-        border: none;
+        border: 1px solid #e5efff;
         border-radius: 18px;
-        padding: 16px;
-        background: #fff;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
         height: 100%;
     }
 
     .dashboard-box h5 {
-        font-weight: 700;
+        font-weight: 800;
+        color: #0f172a;
         margin-bottom: 10px;
-        font-size: 1rem;
+        font-size: 0.98rem;
     }
 
+    /*
+        Itens de alerta.
+    */
     .alert-item {
-        border-left: 4px solid #dc3545;
+        border-left: 4px solid #ef4444;
         background: #fff5f5;
-        padding: 8px 10px;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        font-size: 0.88rem;
+        padding: 7px 9px;
+        border-radius: 9px;
+        margin-bottom: 7px;
+        font-size: 0.84rem;
     }
 
     .maintenance-item {
         border-left: 4px solid #0d6efd;
-        background: #f4f8ff;
-        padding: 8px 10px;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        font-size: 0.88rem;
+        background: #f3f8ff;
+        padding: 7px 9px;
+        border-radius: 9px;
+        margin-bottom: 7px;
+        font-size: 0.84rem;
     }
 
+    /*
+        Linhas e barras usadas nas distribuições.
+    */
     .mini-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 6px;
-        font-size: 0.88rem;
+        margin-bottom: 4px;
+        font-size: 0.84rem;
+        color: #334155;
     }
 
     .mini-bar {
-        height: 7px;
-        background: #e9ecef;
+        height: 6px;
+        background: #e5edf7;
         border-radius: 20px;
         overflow: hidden;
-        margin-bottom: 9px;
+        margin-bottom: 8px;
     }
 
     .mini-bar-fill {
@@ -259,10 +305,31 @@ function percentagem($valor, $total)
         border-radius: 20px;
     }
 
+    /*
+        Tabela compacta para ocupar menos espaço vertical.
+    */
     .compact-table td,
     .compact-table th {
         padding: 6px;
-        font-size: 0.88rem;
+        font-size: 0.83rem;
+    }
+
+    .compact-table thead {
+        background: #0d6efd;
+        color: white;
+    }
+
+    /*
+        Reduz o scroll em ecrãs grandes.
+    */
+    @media (min-width: 992px) {
+        .dashboard-page {
+            padding-top: 14px;
+        }
+
+        .row-compact {
+            row-gap: 12px;
+        }
     }
 </style>
 
@@ -271,11 +338,11 @@ function percentagem($valor, $total)
 
         <?php include '../../includes/sidebar.php'; ?>
 
-        <main class="col-md-9 col-lg-10 p-4">
+        <main class="col-md-9 col-lg-10 dashboard-page">
 
             <div class="mb-2">
                 <h2 class="dashboard-title">
-                    <i class="fas fa-chart-line me-2"></i>Dashboard
+                    <i class="fas fa-chart-line me-2 text-primary"></i>Dashboard
                 </h2>
 
                 <p class="dashboard-subtitle">
@@ -284,88 +351,78 @@ function percentagem($valor, $total)
             </div>
 
             <?php if (!empty($erro)) : ?>
-                <div class="mensagem-erro">
+                <div class="alert alert-danger">
                     <?= htmlspecialchars($erro) ?>
                 </div>
             <?php endif; ?>
 
-            <div class="row g-3 mb-3">
+            <!-- Indicadores principais -->
+            <div class="row g-3 mb-3 row-compact">
 
                 <div class="col-md-2">
-                    <div class="kpi-card kpi-dark">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6>Total</h6>
-                                <div class="kpi-number"><?= $total_equipamentos ?></div>
-                            </div>
-                            <i class="fa-solid fa-cogs kpi-icon"></i>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-circle">
+                            <i class="fa-solid fa-cogs"></i>
                         </div>
+                        <h6>Total</h6>
+                        <div class="kpi-number"><?= $total_equipamentos ?></div>
                     </div>
                 </div>
 
                 <div class="col-md-2">
-                    <div class="kpi-card kpi-green">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6>Ativos</h6>
-                                <div class="kpi-number"><?= $total_ativos ?></div>
-                            </div>
-                            <i class="fa-solid fa-circle-check kpi-icon"></i>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-circle">
+                            <i class="fa-solid fa-circle-check"></i>
                         </div>
+                        <h6>Ativos</h6>
+                        <div class="kpi-number"><?= $total_ativos ?></div>
                     </div>
                 </div>
 
                 <div class="col-md-2">
-                    <div class="kpi-card kpi-orange">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6>Manutenção</h6>
-                                <div class="kpi-number"><?= $total_manutencao ?></div>
-                            </div>
-                            <i class="fa-solid fa-screwdriver-wrench kpi-icon"></i>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-circle">
+                            <i class="fa-solid fa-screwdriver-wrench"></i>
                         </div>
+                        <h6>Manutenção</h6>
+                        <div class="kpi-number"><?= $total_manutencao ?></div>
                     </div>
                 </div>
 
                 <div class="col-md-2">
-                    <div class="kpi-card kpi-blue">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6>Inativos</h6>
-                                <div class="kpi-number"><?= $total_inativos ?></div>
-                            </div>
-                            <i class="fa-solid fa-pause kpi-icon"></i>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-circle">
+                            <i class="fa-solid fa-pause"></i>
                         </div>
+                        <h6>Inativos</h6>
+                        <div class="kpi-number"><?= $total_inativos ?></div>
                     </div>
                 </div>
 
                 <div class="col-md-2">
-                    <div class="kpi-card kpi-red">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6>Garantias Exp.</h6>
-                                <div class="kpi-number"><?= $total_garantias_expiradas ?></div>
-                            </div>
-                            <i class="fa-solid fa-shield-halved kpi-icon"></i>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-circle">
+                            <i class="fa-solid fa-shield-halved"></i>
                         </div>
+                        <h6>Garantias Exp.</h6>
+                        <div class="kpi-number"><?= $total_garantias_expiradas ?></div>
                     </div>
                 </div>
 
                 <div class="col-md-2">
-                    <div class="kpi-card kpi-purple">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6>Sem Docs</h6>
-                                <div class="kpi-number"><?= $total_sem_documentacao ?></div>
-                            </div>
-                            <i class="fa-solid fa-file-circle-xmark kpi-icon"></i>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-circle">
+                            <i class="fa-solid fa-file-circle-xmark"></i>
                         </div>
+                        <h6>Sem Docs</h6>
+                        <div class="kpi-number"><?= $total_sem_documentacao ?></div>
                     </div>
                 </div>
 
             </div>
 
-            <div class="row g-3 mb-3">
+            <!-- Alertas e listas rápidas -->
+            <div class="row g-3 mb-3 row-compact">
 
                 <div class="col-md-4">
                     <div class="dashboard-box">
@@ -389,7 +446,7 @@ function percentagem($valor, $total)
                             equipamento(s) sem documentação associada
                         </div>
 
-                        <div class="alert-item">
+                        <div class="alert-item mb-0">
                             <strong><?= $total_contratos_ativos ?></strong>
                             contrato(s) ativo(s)
                         </div>
@@ -445,7 +502,7 @@ function percentagem($valor, $total)
                                     -
                                     <?= htmlspecialchars($manutencao->designacao) ?><br>
                                     <span class="text-primary">
-                                        <?= htmlspecialchars($manutencao->proxima_manutencao) ?>
+                                        <?= date('d/m/Y', strtotime($manutencao->proxima_manutencao)) ?>
                                     </span>
                                 </div>
                             <?php endforeach; ?>
@@ -456,10 +513,14 @@ function percentagem($valor, $total)
 
             </div>
 
+            <!-- Indicadores analíticos -->
             <div class="row g-3">
 
-                <div class="col-md-4">
+                <!-- Criticidade -->
+                <div class="col-lg-4">
+
                     <div class="dashboard-box">
+
                         <h5>
                             <i class="fa-solid fa-layer-group text-primary me-2"></i>
                             Criticidade
@@ -467,54 +528,93 @@ function percentagem($valor, $total)
 
                         <?php foreach ($equipamentos_por_criticidade as $linha) : ?>
 
-                            <?php $perc = percentagem($linha->total, $total_equipamentos); ?>
+                            <?php
+                            $perc = percentagem(
+                                $linha->total,
+                                $total_equipamentos
+                            );
+                            ?>
 
                             <div class="mini-row">
-                                <span><?= htmlspecialchars($linha->criticidade) ?></span>
-                                <strong><?= $linha->total ?></strong>
+
+                                <span>
+                                    <?= htmlspecialchars($linha->criticidade) ?>
+                                </span>
+
+                                <strong>
+                                    <?= $linha->total ?>
+                                </strong>
+
                             </div>
 
                             <div class="mini-bar">
-                                <div class="mini-bar-fill" style="width: <?= $perc ?>%;"></div>
+
+                                <div
+                                    class="mini-bar-fill"
+                                    style="width: <?= $perc ?>%;">
+                                </div>
+
                             </div>
 
                         <?php endforeach; ?>
 
                     </div>
+
                 </div>
 
-                <div class="col-md-4">
+                <!-- Equipamentos por Serviço -->
+                <div class="col-lg-4">
+
                     <div class="dashboard-box">
+
                         <h5>
-                            <i class="fa-solid fa-location-dot text-success me-2"></i>
+                            <i class="fa-solid fa-location-dot text-primary me-2"></i>
                             Equipamentos por Serviço
                         </h5>
 
-                        <table class="table table-bordered table-hover compact-table mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Serviço</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
+                        <?php foreach ($equipamentos_por_servico as $linha) : ?>
 
-                            <tbody>
-                                <?php foreach ($equipamentos_por_servico as $linha) : ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($linha->servico) ?></td>
-                                        <td><?= $linha->total ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                            <?php
+                            $perc = percentagem(
+                                $linha->total,
+                                $total_equipamentos
+                            );
+                            ?>
+
+                            <div class="mini-row">
+
+                                <span>
+                                    <?= htmlspecialchars($linha->servico) ?>
+                                </span>
+
+                                <strong>
+                                    <?= $linha->total ?>
+                                </strong>
+
+                            </div>
+
+                            <div class="mini-bar">
+
+                                <div
+                                    class="mini-bar-fill"
+                                    style="width: <?= $perc ?>%;">
+                                </div>
+
+                            </div>
+
+                        <?php endforeach; ?>
 
                     </div>
+
                 </div>
 
-                <div class="col-md-4">
+                <!-- Estado Operacional -->
+                <div class="col-lg-4">
+
                     <div class="dashboard-box">
+
                         <h5>
-                            <i class="fa-solid fa-heart-pulse text-danger me-2"></i>
+                            <i class="fa-solid fa-heart-pulse text-primary me-2"></i>
                             Estado Operacional
                         </h5>
 
@@ -522,35 +622,52 @@ function percentagem($valor, $total)
                             <span>Ativos</span>
                             <strong><?= $total_ativos ?></strong>
                         </div>
+
                         <div class="mini-bar">
-                            <div class="mini-bar-fill" style="width: <?= percentagem($total_ativos, $total_equipamentos) ?>%; background:#198754;"></div>
+                            <div
+                                class="mini-bar-fill"
+                                style="width: <?= percentagem($total_ativos, $total_equipamentos) ?>%;">
+                            </div>
                         </div>
 
                         <div class="mini-row">
                             <span>Em manutenção</span>
                             <strong><?= $total_manutencao ?></strong>
                         </div>
+
                         <div class="mini-bar">
-                            <div class="mini-bar-fill" style="width: <?= percentagem($total_manutencao, $total_equipamentos) ?>%; background:#f59f00;"></div>
+                            <div
+                                class="mini-bar-fill"
+                                style="width: <?= percentagem($total_manutencao, $total_equipamentos) ?>%;">
+                            </div>
                         </div>
 
                         <div class="mini-row">
                             <span>Inativos</span>
                             <strong><?= $total_inativos ?></strong>
                         </div>
+
                         <div class="mini-bar">
-                            <div class="mini-bar-fill" style="width: <?= percentagem($total_inativos, $total_equipamentos) ?>%; background:#0d6efd;"></div>
+                            <div
+                                class="mini-bar-fill"
+                                style="width: <?= percentagem($total_inativos, $total_equipamentos) ?>%;">
+                            </div>
                         </div>
 
                         <div class="mini-row">
                             <span>Suporte de vida</span>
                             <strong><?= $total_suporte_vida ?></strong>
                         </div>
-                        <div class="mini-bar">
-                            <div class="mini-bar-fill" style="width: <?= percentagem($total_suporte_vida, $total_equipamentos) ?>%; background:#dc3545;"></div>
+
+                        <div class="mini-bar mb-0">
+                            <div
+                                class="mini-bar-fill"
+                                style="width: <?= percentagem($total_suporte_vida, $total_equipamentos) ?>%;">
+                            </div>
                         </div>
 
                     </div>
+
                 </div>
 
             </div>

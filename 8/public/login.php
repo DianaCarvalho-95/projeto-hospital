@@ -19,96 +19,262 @@ include '../private/includes/header.php';
 
 ?>
 
-<div class="container-fluid mt-5">
-    <div class="row justify-content-center">
+<style>
 
-        <div class="col-lg-5 col-md-6 col-sm-8 col-10">
+/*
+|--------------------------------------------------------------------------
+| PÁGINA DE LOGIN
+|--------------------------------------------------------------------------
+*/
 
-            <div class="card p-4">
+.login-page {
 
-                <!-- LOGÓTIPO -->
-                <div class="text-center mb-0">
+    min-height: 100vh;
 
-                    <img src="/PROJETO-HOSPITAL/8/private/assets/img/hospital255.png"
-                         alt="Logo MedTech Solutions"
-                         width="350"
-                         class="mb-0">
+    background-image:
+        url('../private/assets/img/fundo_login.png');
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px;
+}
+
+/*
+|--------------------------------------------------------------------------
+| CARTÃO CENTRAL
+|--------------------------------------------------------------------------
+| Contém o formulário de autenticação.
+|--------------------------------------------------------------------------
+*/
+
+.login-card {
+
+    width: 100%;
+    max-width: 560px;
+
+    background: rgba(255,255,255,0.92);
+
+    backdrop-filter: blur(4px);
+
+    border-radius: 22px;
+
+    padding: 40px;
+
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+
+    border: 1px solid rgba(255,255,255,0.8);
+}
+
+/*
+|--------------------------------------------------------------------------
+| LOGÓTIPO
+|--------------------------------------------------------------------------
+*/
+
+.login-logo {
+
+    width: 240px;
+    max-width: 100%;
+
+    margin-bottom: 25px;
+}
+
+/*
+|--------------------------------------------------------------------------
+| LABELS
+|--------------------------------------------------------------------------
+*/
+
+.login-label {
+
+    font-weight: 600;
+    color: #1f2937;
+}
+
+/*
+|--------------------------------------------------------------------------
+| CAMPOS DE TEXTO
+|--------------------------------------------------------------------------
+*/
+
+.login-input {
+
+    padding: 12px 14px;
+
+    border-radius: 10px;
+
+    border: 1px solid #ced4da;
+}
+
+/*
+|--------------------------------------------------------------------------
+| BOTÃO DE LOGIN
+|--------------------------------------------------------------------------
+*/
+
+.login-button {
+
+    width: 100%;
+
+    padding: 12px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: linear-gradient(
+        135deg,
+        #0d6efd,
+        #084298
+    );
+
+    color: white;
+
+    font-weight: 600;
+
+    transition: 0.2s;
+}
+
+.login-button:hover {
+
+    background: linear-gradient(
+        135deg,
+        #0b5ed7,
+        #052c65
+    );
+
+    color: white;
+}
+
+/*
+|--------------------------------------------------------------------------
+| TEXTO INFERIOR
+|--------------------------------------------------------------------------
+*/
+
+.login-footer {
+
+    margin-top: 20px;
+
+    text-align: center;
+
+    color: #6c757d;
+
+    font-size: 0.9rem;
+}
+
+</style>
+
+<div class="login-page">
+
+    <div class="login-card">
+
+        <!-- Logótipo da aplicação -->
+
+        <div class="text-center">
+
+            <img
+                src="/PROJETO-HOSPITAL/8/private/assets/img/hospital255.png"
+                alt="Logo MedTech Solutions"
+                class="login-logo">
+
+        </div>
+
+        <!-- Formulário de autenticação -->
+
+        <form action="/PROJETO-HOSPITAL/8/private/index.php"
+              method="post">
+
+            <div class="mb-3">
+
+                <label class="form-label login-label">
+
+                    <i class="fa-regular fa-user me-2 text-primary"></i>
+
+                    Utilizador
+
+                </label>
+
+                <input
+                    type="email"
+                    class="form-control login-input"
+                    name="text_username"
+                    placeholder="Introduza o email">
+
+            </div>
+
+            <div class="mb-4">
+
+                <label class="form-label login-label">
+
+                    <i class="fa-solid fa-lock me-2 text-primary"></i>
+
+                    Password
+
+                </label>
+
+                <input
+                    type="password"
+                    class="form-control login-input"
+                    name="text_password"
+                    placeholder="Introduza a password">
+
+            </div>
+
+            <button
+                type="submit"
+                class="login-button">
+
+                Entrar
+
+                <i class="fa-solid fa-right-to-bracket ms-2"></i>
+
+            </button>
+
+            <?php if (!empty($validation_errors)) : ?>
+
+                <div class="alert alert-danger mt-3 text-center">
+
+                    <?php foreach ($validation_errors as $error) : ?>
+
+                        <div>
+                            <?= htmlspecialchars($error) ?>
+                        </div>
+
+                    <?php endforeach; ?>
 
                 </div>
 
-                <!-- FORMULÁRIO -->
-                <form action="/PROJETO-HOSPITAL/8/private/index.php"
-                      method="post">
+            <?php endif; ?>
 
-                    <div class="mb-3">
+            <?php if (!empty($server_error)) : ?>
 
-                        <label class="form-label fw-semibold">
-                            Utilizador
-                        </label>
+                <div class="alert alert-danger mt-3 text-center">
 
-                        <input type="email"
-                               class="form-control"
-                               name="text_username">
+                    <?= htmlspecialchars($server_error) ?>
 
-                    </div>
+                </div>
 
-                    <div class="mb-3">
+            <?php endif; ?>
 
-                        <label class="form-label fw-semibold">
-                            Password
-                        </label>
+        </form>
 
-                        <input type="password"
-                               class="form-control"
-                               name="text_password">
+        <div class="login-footer">
 
-                    </div>
+            <i class="fa-solid fa-shield-halved me-1"></i>
 
-                    <div class="mb-3 text-center">
-
-                        <button type="submit"
-                                class="btn btn-secondary px-4">
-
-                            Entrar
-                            <i class="fa-solid fa-right-to-bracket ms-2"></i>
-
-                        </button>
-
-                    </div>
-
-                    <?php if (!empty($validation_errors)) : ?>
-
-                        <div class="alert alert-danger p-2 text-center">
-
-                            <?php foreach ($validation_errors as $error) : ?>
-
-                                <div>
-                                    <?= htmlspecialchars($error) ?>
-                                </div>
-
-                            <?php endforeach; ?>
-
-                        </div>
-
-                    <?php endif; ?>
-
-                    <?php if (!empty($server_error)) : ?>
-
-                        <div class="alert alert-danger p-2 text-center">
-
-                            <?= htmlspecialchars($server_error) ?>
-
-                        </div>
-
-                    <?php endif; ?>
-
-                </form>
-
-            </div>
+            Acesso restrito. Todos os direitos reservados.
 
         </div>
 
     </div>
+
 </div>
 
 <?php include '../private/includes/footer.php'; ?>
