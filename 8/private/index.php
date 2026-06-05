@@ -106,32 +106,9 @@ try {
 
 $ligacao = null;
 
-?>
-
-<?php include 'includes/header.php'; ?>
-<?php include 'includes/nav.php'; ?>
-
-<div class="container-fluid">
-    <div class="row">
-
-        <?php include 'includes/sidebar.php'; ?>
-
-        <main class="col-md-9 col-lg-10 p-4">
-
-            <section>
-                <h2><?php echo APP_NAME; ?></h2>
-
-                <p>Escolhe uma opção no menu lateral para continuar.</p>
-
-                <div class="alert alert-success mt-3">
-                    Login efetuado com sucesso para:
-                    <strong><?php echo htmlspecialchars($_SESSION['utilizador']); ?></strong>
-                </div>
-            </section>
-
-        </main>
-
-    </div>
-</div>
-
-<?php include 'includes/footer.php'; ?>
+/*
+    Login efetuado com sucesso.
+    Redireciona para a Dashboard.
+*/
+header('Location: ' . BASE_URL . '/private/views/dashboard/dashboard.php');
+exit;

@@ -8,8 +8,8 @@ redirect_if_not_logged();
 $erro = '';
 $resultados = [];
 
-$pesquisa = isset($_GET['pesquisa']) ? trim($_GET['pesquisa']) : '';
-$estado = isset($_GET['estado']) ? trim($_GET['estado']) : '';
+$ordenar = isset($_GET['ordenar']) ? $_GET['ordenar'] : 'id';
+$direcao = isset($_GET['direcao']) && $_GET['direcao'] == 'desc' ? 'desc' : 'asc';
 
 $pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
 
@@ -17,8 +17,23 @@ if ($pagina < 1) {
     $pagina = 1;
 }
 
-$registos_por_pagina = 5;
+$registos_por_pagina = 15;
 $offset = ($pagina - 1) * $registos_por_pagina;
+
+$colunas_permitidas = [
+    'id' => 'e.id',
+    'codigo' => 'e.codigo_inventario',
+    'designacao' => 'e.designacao',
+    'categoria' => 'e.categoria',
+    'marca' => 'e.marca',
+    'modelo' => 'e.modelo',
+    'localizacao' => 'l.servico',
+    'estado' => 'e.estado'
+];
+
+$coluna_sql = isset($colunas_permitidas[$ordenar])
+    ? $colunas_permitidas[$ordenar]
+    : 'e.id';
 
 try {
 
@@ -32,50 +47,22 @@ try {
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $where = [];
-    $params = [];
-
-    if (!empty($pesquisa)) {
-        $where[] = "(codigo_inventario LIKE :pesquisa
-                    OR designacao LIKE :pesquisa
-                    OR marca LIKE :pesquisa
-                    OR modelo LIKE :pesquisa)";
-        $params[':pesquisa'] = '%' . $pesquisa . '%';
-    }
-
-    if (!empty($estado)) {
-        $where[] = "estado = :estado";
-        $params[':estado'] = $estado;
-    }
-
-    $sql_where = '';
-
-    if (!empty($where)) {
-        $sql_where = ' WHERE ' . implode(' AND ', $where);
-    }
-
-    $stmt_total = $ligacao->prepare(
-        "SELECT COUNT(*) FROM equipamentos" . $sql_where
-    );
-
-    foreach ($params as $chave => $valor) {
-        $stmt_total->bindValue($chave, $valor);
-    }
-
-    $stmt_total->execute();
+    $stmt_total = $ligacao->query("SELECT COUNT(*) FROM equipamentos");
 
     $total_registos = $stmt_total->fetchColumn();
     $total_paginas = ceil($total_registos / $registos_por_pagina);
 
-    $sql = "SELECT * FROM equipamentos"
-        . $sql_where .
-        " ORDER BY id ASC LIMIT :limite OFFSET :offset";
+    $sql = "SELECT
+                e.*,
+                l.servico,
+                l.sala
+            FROM equipamentos e
+            LEFT JOIN localizacoes l
+                ON e.localizacao_id = l.id
+            ORDER BY $coluna_sql $direcao
+            LIMIT :limite OFFSET :offset";
 
     $stmt = $ligacao->prepare($sql);
-
-    foreach ($params as $chave => $valor) {
-        $stmt->bindValue($chave, $valor);
-    }
 
     $stmt->bindValue(':limite', $registos_por_pagina, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -93,6 +80,31 @@ try {
 }
 
 $ligacao = null;
+
+function link_ordenacao_equipamentos($campo, $ordenar, $direcao)
+{
+    $nova_direcao = 'asc';
+
+    if ($ordenar == $campo && $direcao == 'asc') {
+        $nova_direcao = 'desc';
+    }
+
+    return '?ordenar=' . $campo .
+        '&direcao=' . $nova_direcao;
+}
+
+function icone_ordenacao_equipamentos($campo, $ordenar, $direcao)
+{
+    if ($ordenar != $campo) {
+        return '<i class="fa-solid fa-sort ms-1"></i>';
+    }
+
+    if ($direcao == 'asc') {
+        return '<i class="fa-solid fa-sort-up ms-1"></i>';
+    }
+
+    return '<i class="fa-solid fa-sort-down ms-1"></i>';
+}
 
 ?>
 
@@ -137,35 +149,6 @@ $ligacao = null;
                 </a>
             </div>
 
-            <form method="get" class="row mb-3">
-
-                <div class="col-md-6 mb-2">
-                    <input type="text"
-                           name="pesquisa"
-                           class="form-control"
-                           placeholder="Pesquisar por código, designação, marca ou modelo"
-                           value="<?= htmlspecialchars($pesquisa) ?>">
-                </div>
-
-                <div class="col-md-4 mb-2">
-                    <select name="estado" class="form-control">
-                        <option value="">Todos os estados</option>
-                        <option value="Ativo" <?= $estado == 'Ativo' ? 'selected' : '' ?>>Ativo</option>
-                        <option value="Em manutenção" <?= $estado == 'Em manutenção' ? 'selected' : '' ?>>Em manutenção</option>
-                        <option value="Inativo" <?= $estado == 'Inativo' ? 'selected' : '' ?>>Inativo</option>
-                        <option value="Em calibração" <?= $estado == 'Em calibração' ? 'selected' : '' ?>>Em calibração</option>
-                        <option value="Abatido" <?= $estado == 'Abatido' ? 'selected' : '' ?>>Abatido</option>
-                    </select>
-                </div>
-
-                <div class="col-md-2 mb-2">
-                    <button type="submit" class="btn btn-secondary w-100">
-                        Filtrar
-                    </button>
-                </div>
-
-            </form>
-
             <?php if (!empty($erro)) : ?>
 
                 <p class="text-center text-danger">
@@ -190,12 +173,55 @@ $ligacao = null;
                         <table class="table table-bordered table-hover align-middle">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>Código</th>
-                                    <th>Designação</th>
-                                    <th>Categoria</th>
-                                    <th>Marca</th>
-                                    <th>Modelo</th>
-                                    <th>Estado</th>
+                                    <th>
+                                        <a href="<?= link_ordenacao_equipamentos('codigo', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Código <?= icone_ordenacao_equipamentos('codigo', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
+                                    <th>
+                                        <a href="<?= link_ordenacao_equipamentos('designacao', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Designação <?= icone_ordenacao_equipamentos('designacao', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
+                                    <th>
+                                        <a href="<?= link_ordenacao_equipamentos('categoria', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Categoria <?= icone_ordenacao_equipamentos('categoria', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
+                                    <th>
+                                        <a href="<?= link_ordenacao_equipamentos('marca', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Marca <?= icone_ordenacao_equipamentos('marca', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
+                                    <th>
+                                        <a href="<?= link_ordenacao_equipamentos('modelo', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Modelo <?= icone_ordenacao_equipamentos('modelo', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
+                                    <th>
+                                        <a href="<?= link_ordenacao_equipamentos('localizacao', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Localização <?= icone_ordenacao_equipamentos('localizacao', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
+                                    <th>
+                                        <a href="<?= link_ordenacao_equipamentos('estado', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Estado <?= icone_ordenacao_equipamentos('estado', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -210,6 +236,13 @@ $ligacao = null;
                                         <td><?= htmlspecialchars($equipamento->categoria) ?></td>
                                         <td><?= htmlspecialchars($equipamento->marca) ?></td>
                                         <td><?= htmlspecialchars($equipamento->modelo) ?></td>
+
+                                        <td>
+                                            <?= !empty($equipamento->servico)
+                                                ? htmlspecialchars($equipamento->servico . ' - ' . $equipamento->sala)
+                                                : '-' ?>
+                                        </td>
+
                                         <td><?= htmlspecialchars($equipamento->estado) ?></td>
 
                                         <td>
@@ -249,7 +282,7 @@ $ligacao = null;
 
                                         <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
                                             <a class="page-link"
-                                               href="?pagina=<?= $i ?>&pesquisa=<?= urlencode($pesquisa) ?>&estado=<?= urlencode($estado) ?>">
+                                               href="?pagina=<?= $i ?>&ordenar=<?= urlencode($ordenar) ?>&direcao=<?= urlencode($direcao) ?>">
                                                 <?= $i ?>
                                             </a>
                                         </li>

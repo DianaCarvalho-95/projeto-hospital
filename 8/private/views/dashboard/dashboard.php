@@ -108,20 +108,20 @@ try {
 
     $proximas_manutencoes = $ligacao->query(
         "SELECT 
-            m.tipo_manutencao,
-            m.proxima_manutencao,
-            m.responsavel,
-            e.codigo_inventario,
-            e.designacao,
-            f.nome_empresa
-         FROM manutencoes m
-         INNER JOIN equipamentos e ON m.equipamento_id = e.id
-         LEFT JOIN fornecedores f ON m.fornecedor_id = f.id
-         WHERE m.proxima_manutencao IS NOT NULL
-         ORDER BY m.proxima_manutencao ASC
-         LIMIT 4"
+        m.tipo_manutencao,
+        m.proxima_manutencao,
+        m.responsavel,
+        e.codigo_inventario,
+        e.designacao,
+        f.nome_empresa
+     FROM manutencoes m
+     INNER JOIN equipamentos e ON m.equipamento_id = e.id
+     LEFT JOIN fornecedores f ON m.fornecedor_id = f.id
+     WHERE m.proxima_manutencao IS NOT NULL
+     AND m.proxima_manutencao >= CURDATE()
+     ORDER BY m.proxima_manutencao ASC
+     LIMIT 4"
     )->fetchAll(PDO::FETCH_OBJ);
-
 } catch (PDOException $err) {
 
     $erro = 'Aconteceu um erro ao carregar os indicadores do dashboard.';
@@ -180,12 +180,29 @@ function percentagem($valor, $total)
         opacity: 0.75;
     }
 
-    .kpi-dark { background: linear-gradient(135deg, #1f2937, #111827); }
-    .kpi-green { background: linear-gradient(135deg, #198754, #0f5132); }
-    .kpi-orange { background: linear-gradient(135deg, #f59f00, #d9480f); }
-    .kpi-blue { background: linear-gradient(135deg, #0d6efd, #084298); }
-    .kpi-red { background: linear-gradient(135deg, #dc3545, #842029); }
-    .kpi-purple { background: linear-gradient(135deg, #6f42c1, #3d0a91); }
+    .kpi-dark {
+        background: linear-gradient(135deg, #1f2937, #111827);
+    }
+
+    .kpi-green {
+        background: linear-gradient(135deg, #198754, #0f5132);
+    }
+
+    .kpi-orange {
+        background: linear-gradient(135deg, #f59f00, #d9480f);
+    }
+
+    .kpi-blue {
+        background: linear-gradient(135deg, #0d6efd, #084298);
+    }
+
+    .kpi-red {
+        background: linear-gradient(135deg, #dc3545, #842029);
+    }
+
+    .kpi-purple {
+        background: linear-gradient(135deg, #6f42c1, #3d0a91);
+    }
 
     .dashboard-box {
         border: none;
@@ -256,20 +273,14 @@ function percentagem($valor, $total)
 
         <main class="col-md-9 col-lg-10 p-4">
 
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <div>
-                    <h2 class="dashboard-title">
-                        <i class="fas fa-chart-line me-2"></i>Dashboard
-                    </h2>
-                    <p class="dashboard-subtitle">
-                        Visão rápida do parque tecnológico hospitalar.
-                    </p>
-                </div>
+            <div class="mb-2">
+                <h2 class="dashboard-title">
+                    <i class="fas fa-chart-line me-2"></i>Dashboard
+                </h2>
 
-                <div class="text-muted small">
-                    <i class="fa-regular fa-calendar me-1"></i>
-                    <?= date('d/m/Y') ?>
-                </div>
+                <p class="dashboard-subtitle">
+                    Visão rápida do parque tecnológico hospitalar.
+                </p>
             </div>
 
             <?php if (!empty($erro)) : ?>

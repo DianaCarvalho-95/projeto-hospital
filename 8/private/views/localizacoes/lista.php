@@ -20,8 +20,21 @@ try {
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    /*
+        Lista as localizações e conta quantos equipamentos
+        estão atualmente associados a cada localização.
+    */
     $resultados = $ligacao
-        ->query("SELECT * FROM localizacoes ORDER BY edificio, piso, servico, sala")
+        ->query(
+            "SELECT
+                l.*,
+                COUNT(e.id) AS total_equipamentos
+             FROM localizacoes l
+             LEFT JOIN equipamentos e
+                ON e.localizacao_id = l.id
+             GROUP BY l.id
+             ORDER BY l.edificio, l.piso, l.servico, l.sala"
+        )
         ->fetchAll(PDO::FETCH_OBJ);
 
 } catch (PDOException $err) {
@@ -82,7 +95,7 @@ $ligacao = null;
                                     <th>Piso</th>
                                     <th>Serviço / Departamento</th>
                                     <th>Sala</th>
-                                    <th>Observações</th>
+                                    <th>N.º Equipamentos</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -96,7 +109,7 @@ $ligacao = null;
                                         <td><?= htmlspecialchars($localizacao->piso) ?></td>
                                         <td><?= htmlspecialchars($localizacao->servico) ?></td>
                                         <td><?= htmlspecialchars($localizacao->sala) ?></td>
-                                        <td><?= htmlspecialchars($localizacao->observacoes) ?></td>
+                                        <td><?= $localizacao->total_equipamentos ?></td>
 
                                         <td>
                                             <a href="detalhes.php?id=<?= $localizacao->id ?>"

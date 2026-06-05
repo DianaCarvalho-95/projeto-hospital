@@ -8,6 +8,32 @@ redirect_if_not_logged();
 $erro = '';
 $resultados = [];
 
+$ordenar = isset($_GET['ordenar']) ? $_GET['ordenar'] : 'id';
+$direcao = isset($_GET['direcao']) && $_GET['direcao'] == 'asc' ? 'asc' : 'desc';
+
+$pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
+
+if ($pagina < 1) {
+    $pagina = 1;
+}
+
+$registos_por_pagina = 15;
+$offset = ($pagina - 1) * $registos_por_pagina;
+
+$colunas_permitidas = [
+    'id' => 'd.id',
+    'nome' => 'd.nome_documento',
+    'tipo' => 'd.tipo_documento',
+    'equipamento' => 'e.designacao',
+    'fornecedor' => 'f.nome_empresa',
+    'data' => 'd.data_documento',
+    'validade' => 'd.data_validade'
+];
+
+$coluna_sql = isset($colunas_permitidas[$ordenar])
+    ? $colunas_permitidas[$ordenar]
+    : 'd.id';
+
 try {
 
     $ligacao = new PDO(
@@ -20,6 +46,11 @@ try {
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    $stmt_total = $ligacao->query("SELECT COUNT(*) FROM documentacao");
+
+    $total_registos = $stmt_total->fetchColumn();
+    $total_paginas = ceil($total_registos / $registos_por_pagina);
+
     $sql = "SELECT 
                 d.*,
                 e.codigo_inventario,
@@ -28,9 +59,12 @@ try {
             FROM documentacao d
             INNER JOIN equipamentos e ON d.equipamento_id = e.id
             LEFT JOIN fornecedores f ON d.fornecedor_id = f.id
-            ORDER BY d.id DESC";
+            ORDER BY $coluna_sql $direcao
+            LIMIT :limite OFFSET :offset";
 
     $stmt = $ligacao->prepare($sql);
+    $stmt->bindValue(':limite', $registos_por_pagina, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     $resultados = $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -39,14 +73,62 @@ try {
 
     $erro = 'Aconteceu um erro ao carregar a documentação.';
     $resultados = [];
+    $total_registos = 0;
+    $total_paginas = 0;
 }
 
 $ligacao = null;
+
+function link_ordenacao_documentacao($campo, $ordenar, $direcao)
+{
+    $nova_direcao = 'asc';
+
+    if ($ordenar == $campo && $direcao == 'asc') {
+        $nova_direcao = 'desc';
+    }
+
+    return '?ordenar=' . $campo .
+        '&direcao=' . $nova_direcao;
+}
+
+function icone_ordenacao_documentacao($campo, $ordenar, $direcao)
+{
+    if ($ordenar != $campo) {
+        return '<i class="fa-solid fa-sort ms-1"></i>';
+    }
+
+    if ($direcao == 'asc') {
+        return '<i class="fa-solid fa-sort-up ms-1"></i>';
+    }
+
+    return '<i class="fa-solid fa-sort-down ms-1"></i>';
+}
 
 ?>
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
+
+<style>
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 22px;
+        margin-bottom: 14px;
+    }
+
+    .pagination .page-link {
+        color: #0d6efd;
+        border-radius: 8px;
+        margin: 0 2px;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+    }
+</style>
 
 <div class="container-fluid">
     <div class="row">
@@ -82,19 +164,55 @@ $ligacao = null;
                 <?php else : ?>
 
                     <p class="text-muted">
-                        Total: <?= count($resultados) ?> documento(s)
+                        Total: <?= $total_registos ?> documento(s)
                     </p>
 
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover align-middle">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>Nome</th>
-                                    <th>Tipo</th>
-                                    <th>Equipamento</th>
-                                    <th>Fornecedor</th>
-                                    <th>Data</th>
-                                    <th>Validade</th>
+                                    <th>
+                                        <a href="<?= link_ordenacao_documentacao('nome', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Nome <?= icone_ordenacao_documentacao('nome', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
+                                    <th>
+                                        <a href="<?= link_ordenacao_documentacao('tipo', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Tipo <?= icone_ordenacao_documentacao('tipo', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
+                                    <th>
+                                        <a href="<?= link_ordenacao_documentacao('equipamento', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Equipamento <?= icone_ordenacao_documentacao('equipamento', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
+                                    <th>
+                                        <a href="<?= link_ordenacao_documentacao('fornecedor', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Fornecedor <?= icone_ordenacao_documentacao('fornecedor', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
+                                    <th>
+                                        <a href="<?= link_ordenacao_documentacao('data', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Data <?= icone_ordenacao_documentacao('data', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
+                                    <th>
+                                        <a href="<?= link_ordenacao_documentacao('validade', $ordenar, $direcao) ?>"
+                                           class="text-white text-decoration-none">
+                                            Validade <?= icone_ordenacao_documentacao('validade', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
+
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -118,8 +236,16 @@ $ligacao = null;
                                                 Sem fornecedor
                                             <?php endif; ?>
                                         </td>
-                                        <td><?= htmlspecialchars($documento->data_documento) ?></td>
-                                        <td><?= htmlspecialchars($documento->data_validade) ?></td>
+                                        <td>
+                                            <?= !empty($documento->data_documento)
+                                                ? date('d/m/Y', strtotime($documento->data_documento))
+                                                : '-' ?>
+                                        </td>
+                                        <td>
+                                            <?= !empty($documento->data_validade)
+                                                ? date('d/m/Y', strtotime($documento->data_validade))
+                                                : '-' ?>
+                                        </td>
 
                                         <td>
                                             <a href="detalhes.php?id=<?= $documento->id ?>"
@@ -147,6 +273,29 @@ $ligacao = null;
                             </tbody>
                         </table>
                     </div>
+
+                    <?php if ($total_paginas > 1) : ?>
+
+                        <div class="pagination-wrapper">
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+
+                                    <?php for ($i = 1; $i <= $total_paginas; $i++) : ?>
+
+                                        <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
+                                            <a class="page-link"
+                                               href="?pagina=<?= $i ?>&ordenar=<?= urlencode($ordenar) ?>&direcao=<?= urlencode($direcao) ?>">
+                                                <?= $i ?>
+                                            </a>
+                                        </li>
+
+                                    <?php endfor; ?>
+
+                                </ul>
+                            </nav>
+                        </div>
+
+                    <?php endif; ?>
 
                 <?php endif; ?>
 
