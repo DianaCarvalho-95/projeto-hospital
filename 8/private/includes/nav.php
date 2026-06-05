@@ -4,7 +4,7 @@
         <div class="col-6 d-flex align-items-center p-3">
 
             <a href="<?php echo BASE_URL; ?>/private/views/dashboard/dashboard.php">
-                <img src="<?php echo BASE_URL; ?>/private/assets/img/hospital125.png"
+                <img src="<?php echo BASE_URL; ?>/private/assets/img/hospital255.png"
                     alt="Logo MedTech Solutions"
                     height="40"
                     class="me-3">
