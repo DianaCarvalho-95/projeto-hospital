@@ -10,42 +10,43 @@ redirect_if_not_logged();
 <?php include '../../includes/nav.php'; ?>
 
 <style>
-    /*
-        Título e subtítulo da página de ferramentas.
-        Mantém o mesmo estilo visual usado na dashboard.
-    */
-    .ferramentas-title {
-        font-weight: 700;
+    /* Fundo da página */
+    .ferramentas-page {
+        background: #f5f7fa;
+        min-height: 100vh;
+        padding: 24px;
+    }
+
+    /* Título principal */
+    .page-title {
+        font-weight: 600;
+        color: #1E3A5F;
+        font-size: 1.8rem;
         margin-bottom: 0;
     }
 
-    .ferramentas-subtitle {
-        color: #6c757d;
-        margin-bottom: 24px;
+    /* Subtítulo da página */
+    .page-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-bottom: 0;
     }
 
-    /*
-        Link que envolve cada cartão.
-        O display:block permite que o cartão inteiro seja clicável.
-    */
+    /* Link que envolve cada cartão */
     .tool-card {
         display: block;
         height: 100%;
         text-decoration: none;
     }
 
-    /*
-        Cartão principal de cada ferramenta.
-        Usa gradientes, cantos arredondados e sombra para manter
-        coerência com o visual da dashboard.
-    */
+    /* Cartão de cada ferramenta */
     .tool-box {
-        border: none;
-        border-radius: 18px;
-        padding: 24px;
-        min-height: 165px;
-        color: #fff;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 22px;
+        min-height: 155px;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
         transition: all 0.2s ease-in-out;
 
         display: flex;
@@ -53,71 +54,48 @@ redirect_if_not_logged();
         justify-content: center;
         align-items: center;
         text-align: center;
-
-        position: relative;
-        overflow: hidden;
     }
 
-    /*
-        Efeito visual ao passar o rato por cima do cartão.
-    */
+    /* Efeito ao passar o rato */
     .tool-box:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.10);
+        border-color: #d6e7ff;
     }
 
-    .tool-box i {
-        font-size: 2.1rem;
-        opacity: 0.9;
-        margin-bottom: 18px;
+    /* Ícone circular no topo do cartão */
+    .tool-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: #edf4ff;
+        color: #2F5D8A;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 1.45rem;
+        margin-bottom: 14px;
     }
 
+    /* Título do cartão */
     .tool-box h5 {
-        font-weight: 700;
+        color: #1E3A5F;
+        font-weight: 600;
+        font-size: 1rem;
         margin-bottom: 8px;
-        text-align: center;
     }
 
+    /* Texto do cartão */
     .tool-box p {
+        color: #64748b;
         margin-bottom: 0;
-        font-size: 0.9rem;
-        opacity: 0.9;
-        text-align: center;
+        font-size: 0.88rem;
+        line-height: 1.35;
     }
 
-    /*
-        Cores dos cartões.
-        Cada ferramenta tem uma cor distinta para facilitar a identificação.
-    */
-    .tool-dark {
-        background: linear-gradient(135deg, #1f2937, #111827);
-    }
-
-    .tool-green {
-        background: linear-gradient(135deg, #198754, #0f5132);
-    }
-
-    .tool-orange {
-        background: linear-gradient(135deg, #f59f00, #d9480f);
-    }
-
-    .tool-blue {
-        background: linear-gradient(135deg, #0d6efd, #084298);
-    }
-
-    .tool-purple {
-        background: linear-gradient(135deg, #6f42c1, #3d0a91);
-    }
-
-    .tool-red {
-        background: linear-gradient(135deg, #dc3545, #842029);
-    }
-
-    /*
-        Área dos cartões.
-        O justify-content-center garante que os cartões ficam centrados
-        mesmo quando o número de cartões não preenche a linha toda.
-    */
+    /* Alinhamento dos cartões */
     .tools-wrapper {
         justify-content: center;
     }
@@ -128,81 +106,133 @@ redirect_if_not_logged();
 
         <?php include '../../includes/sidebar.php'; ?>
 
-        <main class="col-md-9 col-lg-10 p-4">
+        <main class="col-md-9 col-lg-10 ferramentas-page">
 
             <section class="mb-4">
-                <h2 class="ferramentas-title">
+
+                <h2 class="page-title mb-1">
                     <i class="fa-solid fa-screwdriver-wrench me-2"></i>
                     Ferramentas
                 </h2>
 
-                <p class="ferramentas-subtitle">
+                <p class="page-subtitle">
                     Centro de apoio à gestão técnica dos equipamentos hospitalares.
                 </p>
+
             </section>
 
-            <!--
-                Cartões das ferramentas técnicas.
-                Cada cartão encaminha para uma funcionalidade específica.
-            -->
             <div class="row g-3 tools-wrapper">
 
+                <!-- Próxima Manutenção -->
                 <div class="col-md-4">
                     <a href="proxima-manutencao.php" class="tool-card">
-                        <div class="tool-box tool-blue">
-                            <i class="fa-solid fa-calendar-check"></i>
+                        <div class="tool-box">
+
+                            <div class="tool-icon">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </div>
+
                             <h5>Próximas Manutenções</h5>
-                            <p>Consulta rápida das manutenções previstas.</p>
+
+                            <p>
+                                Consulta rápida das manutenções previstas.
+                            </p>
+
                         </div>
                     </a>
                 </div>
 
+                <!-- Avaliação Técnica -->
                 <div class="col-md-4">
                     <a href="avaliacao-tecnica.php" class="tool-card">
-                        <div class="tool-box tool-green">
-                            <i class="fa-solid fa-stethoscope"></i>
+                        <div class="tool-box">
+
+                            <div class="tool-icon">
+                                <i class="fa-solid fa-stethoscope"></i>
+                            </div>
+
                             <h5>Avaliação Técnica</h5>
-                            <p>Apoio à avaliação do estado técnico dos equipamentos.</p>
+
+                            <p>
+                                Apoio à avaliação do estado técnico dos equipamentos.
+                            </p>
+
                         </div>
                     </a>
                 </div>
 
+                <!-- Estimativa/Custo -->
                 <div class="col-md-4">
                     <a href="estimativa-custo.php" class="tool-card">
-                        <div class="tool-box tool-orange">
-                            <i class="fa-solid fa-euro-sign"></i>
+                        <div class="tool-box">
+
+                            <div class="tool-icon">
+                                <i class="fa-solid fa-euro-sign"></i>
+                            </div>
+
                             <h5>Estimativa de Custo</h5>
-                            <p>Resumo dos custos associados às intervenções.</p>
+
+                            <p>
+                                Resumo dos custos associados às intervenções.
+                            </p>
+
                         </div>
                     </a>
                 </div>
 
+                 <!-- Garantias/Contratos -->
                 <div class="col-md-4">
                     <a href="garantias-contratos.php" class="tool-card">
-                        <div class="tool-box tool-purple">
-                            <i class="fa-solid fa-file-signature"></i>
+                        <div class="tool-box">
+
+                            <div class="tool-icon">
+                                <i class="fa-solid fa-file-signature"></i>
+                            </div>
+
                             <h5>Garantias e Contratos</h5>
-                            <p>Consulta de garantias, contratos e datas de validade.</p>
+
+                            <p>
+                                Consulta de garantias, contratos e datas de validade.
+                            </p>
+
                         </div>
                     </a>
                 </div>
 
+                 <!-- Histórico -->
                 <div class="col-md-4">
                     <a href="historico.php" class="tool-card">
-                        <div class="tool-box tool-dark">
-                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        <div class="tool-box">
+
+                            <div class="tool-icon">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </div>
+
                             <h5>Histórico de Movimentações</h5>
-                            <p>Consulta das transferências de equipamentos entre serviços.</p>
+
+                            <p>
+                                Consulta das transferências de equipamentos entre serviços.
+                            </p>
+
                         </div>
                     </a>
                 </div>
 
+                 <!-- Empréstimos -->
                 <div class="col-md-4">
                     <a href="emprestimos.php" class="tool-card">
-                        <div class="tool-box tool-red">
-                            <i class="fa-solid fa-handshake"></i>
+                        <div class="tool-box">
+
+                            <div class="tool-icon">
+                                <i class="fa-solid fa-handshake"></i>
+                            </div>
+
                             <h5>Empréstimos entre Serviços</h5>
-                            <p>Controlo de equipamentos emprestados e devoluções.</p>
+
+                            <p>
+                                Controlo de equipamentos emprestados e devoluções.
+                            </p>
+
                         </div>
                     </a>
                 </div>

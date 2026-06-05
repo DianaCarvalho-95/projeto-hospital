@@ -250,6 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                     <div class="row">
 
+                        <!-- Edifício -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Edifício</label>
 
@@ -262,6 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </div>
 
+                         <!-- Piso -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Piso</label>
 
@@ -276,6 +278,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </div>
 
+                         <!-- Serviço/Departamento -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Serviço / Departamento</label>
 
@@ -295,6 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </div>
 
+                         <!-- Sala -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Sala</label>
 
@@ -305,11 +309,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    placeholder="Ex.: U01, BO01, LAB02">
                         </div>
 
+                         <!-- Observações -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Observações</label>
 
                             <textarea name="observacoes"
-                                      rows="2"
+                                      rows="1"
                                       class="form-control"><?= htmlspecialchars($observacoes) ?></textarea>
                         </div>
 

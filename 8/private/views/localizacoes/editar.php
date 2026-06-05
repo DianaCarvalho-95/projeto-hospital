@@ -325,7 +325,7 @@ if ($id <= 0) {
                                 <label class="form-label">Observações</label>
 
                                 <textarea name="observacoes"
-                                          rows="2"
+                                          rows="1"
                                           class="form-control"><?= htmlspecialchars($localizacao->observacoes) ?></textarea>
                             </div>
 

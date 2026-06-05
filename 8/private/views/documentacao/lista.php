@@ -17,9 +17,10 @@ if ($pagina < 1) {
     $pagina = 1;
 }
 
-$registos_por_pagina = 15;
+$registos_por_pagina = 14;
 $offset = ($pagina - 1) * $registos_por_pagina;
 
+/*Colunas permitidas para ordenação*/
 $colunas_permitidas = [
     'id' => 'd.id',
     'nome' => 'd.nome_documento',
@@ -36,6 +37,7 @@ $coluna_sql = isset($colunas_permitidas[$ordenar])
 
 try {
 
+    /*Ligação à base de dados*/
     $ligacao = new PDO(
         "mysql:host=" . MYSQL_HOST .
             ";dbname=" . MYSQL_DATABASE .
@@ -46,11 +48,13 @@ try {
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    /*Conta o total de documentos para calcular a paginação*/
     $stmt_total = $ligacao->query("SELECT COUNT(*) FROM documentacao");
 
     $total_registos = $stmt_total->fetchColumn();
     $total_paginas = ceil($total_registos / $registos_por_pagina);
 
+    /*Consulta principal da documentação*/
     $sql = "SELECT 
                 d.*,
                 e.codigo_inventario,
@@ -63,8 +67,10 @@ try {
             LIMIT :limite OFFSET :offset";
 
     $stmt = $ligacao->prepare($sql);
+
     $stmt->bindValue(':limite', $registos_por_pagina, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
     $stmt->execute();
 
     $resultados = $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -79,6 +85,7 @@ try {
 
 $ligacao = null;
 
+/*Cria o link de ordenação - Ao clicar novamente na mesma coluna, alterna entre ascendente e descendente*/
 function link_ordenacao_documentacao($campo, $ordenar, $direcao)
 {
     $nova_direcao = 'asc';
@@ -91,6 +98,7 @@ function link_ordenacao_documentacao($campo, $ordenar, $direcao)
         '&direcao=' . $nova_direcao;
 }
 
+/*Mostra o ícone correto da ordenação*/
 function icone_ordenacao_documentacao($campo, $ordenar, $direcao)
 {
     if ($ordenar != $campo) {
@@ -110,23 +118,131 @@ function icone_ordenacao_documentacao($campo, $ordenar, $direcao)
 <?php include '../../includes/nav.php'; ?>
 
 <style>
+    /*Fundo da página*/
+    .documentacao-page {
+        background: #f5f7fa;
+        min-height: 100vh;
+        padding: 24px;
+    }
+
+    /*Título principal*/
+    .page-title {
+        font-weight: 600;
+        color: #1E3A5F;
+        font-size: 1.8rem;
+        margin-bottom: 0;
+    }
+
+    /*Subtítulo*/
+    .page-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+
+    /*Botão principal da página*/
+    .novo-btn {
+        background: #2F5D8A;
+        border-color: #2F5D8A;
+        color: #fff;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .novo-btn:hover {
+        background: #1E3A5F;
+        border-color: #1E3A5F;
+        color: #fff;
+    }
+
+    /*Cartão branco que envolve a tabela*/
+    .content-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+        border: 1px solid #e5e7eb;
+    }
+
+    /*Cabeçalho da tabela*/
+    .table-primary-custom th {
+        background: #2F5D8A !important;
+        color: #ffffff !important;
+        border-color: #2F5D8A !important;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .table-primary-custom a {
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .table td {
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+
+    /*Botões de ação*/
+    .action-btn {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-decoration: none;
+        margin-right: 4px;
+        transition: 0.2s;
+        white-space: nowrap;
+    }
+
+    .action-consultar {
+        background: #e8f5ee;
+        color: #198754;
+    }
+
+    .action-editar {
+        background: #fff6dd;
+        color: #c79200;
+    }
+
+    .action-eliminar {
+        background: #fdeaea;
+        color: #dc3545;
+    }
+
+    .action-btn:hover {
+        opacity: 0.85;
+    }
+
+    /*Paginação centrada*/
     .pagination-wrapper {
         display: flex;
         justify-content: center;
         margin-top: 22px;
-        margin-bottom: 14px;
+        margin-bottom: 6px;
     }
 
     .pagination .page-link {
-        color: #0d6efd;
+        color: #2F5D8A;
         border-radius: 8px;
         margin: 0 2px;
     }
 
     .pagination .page-item.active .page-link {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
+        background-color: #2F5D8A;
+        border-color: #2F5D8A;
         color: #fff;
+    }
+
+    /*Mensagem de erro*/
+    .mensagem-erro-custom {
+        background: #fdeaea;
+        color: #bb2d3b;
+        border: 1px solid #f8d3d3;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 16px;
     }
 </style>
 
@@ -135,143 +251,161 @@ function icone_ordenacao_documentacao($campo, $ordenar, $direcao)
 
         <?php include '../../includes/sidebar.php'; ?>
 
-        <main class="col-md-9 col-lg-10 p-4">
+        <main class="col-md-9 col-lg-10 documentacao-page">
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0">
-                    <i class="fas fa-file-medical me-2"></i>Listagem de Documentação
-                </h2>
+            <div class="d-flex justify-content-between align-items-start mb-3">
 
-                <a href="novo.php" class="btn btn-success btn-sm">
-                    <i class="fa-solid fa-plus me-1"></i>Novo documento
+                <div>
+
+                    <!-- Título principal -->
+                    <h2 class="page-title mb-1">
+                        <i class="fas fa-file-medical me-2"></i>
+                        Listagem de Documentação
+                    </h2>
+
+                    <!-- Subtítulo explicativo -->
+                    <p class="page-subtitle">
+                        Gestão da documentação técnica, contratos, certificados e manuais associados aos equipamentos médicos.
+                    </p>
+
+                </div>
+
+                <!-- Botão para criar novo documento -->
+                <a href="novo.php" class="btn btn-sm novo-btn">
+                    <i class="fa-solid fa-plus me-1"></i>
+                    Novo documento
                 </a>
+
             </div>
 
             <?php if (!empty($erro)) : ?>
 
-                <p class="text-center text-danger">
+                <div class="mensagem-erro-custom text-center">
                     <?= htmlspecialchars($erro) ?>
-                </p>
+                </div>
 
             <?php else : ?>
 
                 <?php if (count($resultados) == 0) : ?>
 
-                    <p class="text-muted">
+                    <div class="alert alert-info">
                         Não existem documentos registados.
-                    </p>
+                    </div>
 
                 <?php else : ?>
 
-                    <p class="text-muted">
-                        Total: <?= $total_registos ?> documento(s)
-                    </p>
+                    <div class="content-card">
 
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>
-                                        <a href="<?= link_ordenacao_documentacao('nome', $ordenar, $direcao) ?>"
-                                           class="text-white text-decoration-none">
-                                            Nome <?= icone_ordenacao_documentacao('nome', $ordenar, $direcao) ?>
-                                        </a>
-                                    </th>
+                        <div class="table-responsive">
 
-                                    <th>
-                                        <a href="<?= link_ordenacao_documentacao('tipo', $ordenar, $direcao) ?>"
-                                           class="text-white text-decoration-none">
-                                            Tipo <?= icone_ordenacao_documentacao('tipo', $ordenar, $direcao) ?>
-                                        </a>
-                                    </th>
+                            <table class="table table-bordered table-hover align-middle mb-0">
 
-                                    <th>
-                                        <a href="<?= link_ordenacao_documentacao('equipamento', $ordenar, $direcao) ?>"
-                                           class="text-white text-decoration-none">
-                                            Equipamento <?= icone_ordenacao_documentacao('equipamento', $ordenar, $direcao) ?>
-                                        </a>
-                                    </th>
-
-                                    <th>
-                                        <a href="<?= link_ordenacao_documentacao('fornecedor', $ordenar, $direcao) ?>"
-                                           class="text-white text-decoration-none">
-                                            Fornecedor <?= icone_ordenacao_documentacao('fornecedor', $ordenar, $direcao) ?>
-                                        </a>
-                                    </th>
-
-                                    <th>
-                                        <a href="<?= link_ordenacao_documentacao('data', $ordenar, $direcao) ?>"
-                                           class="text-white text-decoration-none">
-                                            Data <?= icone_ordenacao_documentacao('data', $ordenar, $direcao) ?>
-                                        </a>
-                                    </th>
-
-                                    <th>
-                                        <a href="<?= link_ordenacao_documentacao('validade', $ordenar, $direcao) ?>"
-                                           class="text-white text-decoration-none">
-                                            Validade <?= icone_ordenacao_documentacao('validade', $ordenar, $direcao) ?>
-                                        </a>
-                                    </th>
-
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-
-                                <?php foreach ($resultados as $documento) : ?>
-
+                                <thead class="table-primary-custom">
                                     <tr>
-                                        <td><?= htmlspecialchars($documento->nome_documento) ?></td>
-                                        <td><?= htmlspecialchars($documento->tipo_documento) ?></td>
-                                        <td>
-                                            <?= htmlspecialchars($documento->codigo_inventario) ?>
-                                            -
-                                            <?= htmlspecialchars($documento->designacao) ?>
-                                        </td>
-                                        <td>
-                                            <?php if (!empty($documento->nome_empresa)) : ?>
-                                                <?= htmlspecialchars($documento->nome_empresa) ?>
-                                            <?php else : ?>
-                                                Sem fornecedor
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <?= !empty($documento->data_documento)
-                                                ? date('d/m/Y', strtotime($documento->data_documento))
-                                                : '-' ?>
-                                        </td>
-                                        <td>
-                                            <?= !empty($documento->data_validade)
-                                                ? date('d/m/Y', strtotime($documento->data_validade))
-                                                : '-' ?>
-                                        </td>
-
-                                        <td>
-                                            <a href="detalhes.php?id=<?= $documento->id ?>"
-                                               class="text-success text-decoration-none me-3">
-                                                <i class="fa-solid fa-eye"></i>
-                                                Consultar
+                                        <th>
+                                            <a href="<?= link_ordenacao_documentacao('nome', $ordenar, $direcao) ?>">
+                                                Nome <?= icone_ordenacao_documentacao('nome', $ordenar, $direcao) ?>
                                             </a>
+                                        </th>
 
-                                            <a href="editar.php?id=<?= $documento->id ?>"
-                                               class="text-warning text-decoration-none me-3">
-                                                <i class="fa-regular fa-pen-to-square"></i>
-                                                Editar
+                                        <th>
+                                            <a href="<?= link_ordenacao_documentacao('tipo', $ordenar, $direcao) ?>">
+                                                Tipo <?= icone_ordenacao_documentacao('tipo', $ordenar, $direcao) ?>
                                             </a>
+                                        </th>
 
-                                            <a href="apagar.php?id=<?= $documento->id ?>"
-                                               class="text-danger text-decoration-none">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                                Eliminar
+                                        <th>
+                                            <a href="<?= link_ordenacao_documentacao('equipamento', $ordenar, $direcao) ?>">
+                                                Equipamento <?= icone_ordenacao_documentacao('equipamento', $ordenar, $direcao) ?>
                                             </a>
-                                        </td>
+                                        </th>
+
+                                        <th>
+                                            <a href="<?= link_ordenacao_documentacao('fornecedor', $ordenar, $direcao) ?>">
+                                                Fornecedor <?= icone_ordenacao_documentacao('fornecedor', $ordenar, $direcao) ?>
+                                            </a>
+                                        </th>
+
+                                        <th>
+                                            <a href="<?= link_ordenacao_documentacao('data', $ordenar, $direcao) ?>">
+                                                Data <?= icone_ordenacao_documentacao('data', $ordenar, $direcao) ?>
+                                            </a>
+                                        </th>
+
+                                        <th>
+                                            <a href="<?= link_ordenacao_documentacao('validade', $ordenar, $direcao) ?>">
+                                                Validade <?= icone_ordenacao_documentacao('validade', $ordenar, $direcao) ?>
+                                            </a>
+                                        </th>
+
+                                        <th>Ações</th>
                                     </tr>
+                                </thead>
 
-                                <?php endforeach; ?>
+                                <tbody>
 
-                            </tbody>
-                        </table>
+                                    <?php foreach ($resultados as $documento) : ?>
+
+                                        <tr>
+                                            <td><?= htmlspecialchars($documento->nome_documento) ?></td>
+
+                                            <td><?= htmlspecialchars($documento->tipo_documento) ?></td>
+
+                                            <td>
+                                                <?= htmlspecialchars($documento->codigo_inventario) ?>
+                                                -
+                                                <?= htmlspecialchars($documento->designacao) ?>
+                                            </td>
+
+                                            <td>
+                                                <?php if (!empty($documento->nome_empresa)) : ?>
+                                                    <?= htmlspecialchars($documento->nome_empresa) ?>
+                                                <?php else : ?>
+                                                    Sem fornecedor
+                                                <?php endif; ?>
+                                            </td>
+
+                                            <td>
+                                                <?= !empty($documento->data_documento)
+                                                    ? date('d/m/Y', strtotime($documento->data_documento))
+                                                    : '-' ?>
+                                            </td>
+
+                                            <td>
+                                                <?= !empty($documento->data_validade)
+                                                    ? date('d/m/Y', strtotime($documento->data_validade))
+                                                    : '-' ?>
+                                            </td>
+
+                                            <td>
+                                                <a href="detalhes.php?id=<?= $documento->id ?>"
+                                                   class="action-btn action-consultar">
+                                                    <i class="fa-solid fa-eye me-1"></i>
+                                                    Consultar
+                                                </a>
+
+                                                <a href="editar.php?id=<?= $documento->id ?>"
+                                                   class="action-btn action-editar">
+                                                    <i class="fa-regular fa-pen-to-square me-1"></i>
+                                                    Editar
+                                                </a>
+
+                                                <a href="apagar.php?id=<?= $documento->id ?>"
+                                                   class="action-btn action-eliminar">
+                                                    <i class="fa-solid fa-trash-can me-1"></i>
+                                                    Eliminar
+                                                </a>
+                                            </td>
+                                        </tr>
+
+                                    <?php endforeach; ?>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
                     </div>
 
                     <?php if ($total_paginas > 1) : ?>
