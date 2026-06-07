@@ -14,6 +14,7 @@ $total_custo = 0;
 $custo_medio = 0;
 $total_manutencoes = 0;
 
+
 /* Paginação da tabela de detalhe */
 $pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
 
@@ -29,6 +30,7 @@ $total_paginas = 0;
 
 try {
 
+
     /* Ligação à base de dados */
     $ligacao = new PDO(
         "mysql:host=" . MYSQL_HOST .
@@ -39,6 +41,7 @@ try {
     );
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
 
     /* Indicadores principais */
     $total_custo = $ligacao
@@ -52,6 +55,7 @@ try {
     $total_manutencoes = $ligacao
         ->query("SELECT COUNT(*) FROM manutencoes")
         ->fetchColumn();
+
 
     /* Custo agrupado por tipo de manutenção */
     $resultados_tipo = $ligacao
@@ -88,6 +92,7 @@ try {
     $total_registos = $stmt_total->fetchColumn();
     $total_paginas = ceil($total_registos / $registos_por_pagina);
 
+    
     /* Detalhe de custos com paginação */
     $sql = "SELECT
                 m.*,
@@ -136,6 +141,20 @@ $ligacao = null;
     .page-subtitle {
         color: #64748b;
         font-size: 0.95rem;
+    }
+
+    .exportar-btn {
+        background: #e8f5ee;
+        border: 1px solid #cfead9;
+        color: #198754;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .exportar-btn:hover {
+        background: #d9f0e3;
+        border-color: #badfc9;
+        color: #146c43;
     }
 
     .summary-card {
@@ -262,10 +281,27 @@ $ligacao = null;
 
             <div class="mb-4">
 
-                <h2 class="page-title mb-1">
-                    <i class="fa-solid fa-euro-sign me-2"></i>
-                    Estimativa de Custo
-                </h2>
+                <div class="d-flex justify-content-between align-items-start mb-4">
+
+                    <div>
+
+                        <h2 class="page-title mb-1">
+                            <i class="fa-solid fa-euro-sign me-2"></i>
+                            Estimativa de Custo
+                        </h2>
+
+                        <p class="page-subtitle mb-0">
+                            Análise dos custos associados às manutenções registadas.
+                        </p>
+
+                    </div>
+
+                    <a href="exportar-custos.php" class="btn btn-sm exportar-btn">
+                        <i class="fa-solid fa-file-excel me-1"></i>
+                        Exportar Excel
+                    </a>
+
+                </div>
 
                 <p class="page-subtitle mb-0">
                     Análise dos custos associados às manutenções registadas.

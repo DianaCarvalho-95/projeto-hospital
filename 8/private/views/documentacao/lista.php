@@ -74,7 +74,6 @@ try {
     $stmt->execute();
 
     $resultados = $stmt->fetchAll(PDO::FETCH_OBJ);
-
 } catch (PDOException $err) {
 
     $erro = 'Aconteceu um erro ao carregar a documentação.';
@@ -138,6 +137,20 @@ function icone_ordenacao_documentacao($campo, $ordenar, $direcao)
         color: #64748b;
         font-size: 0.95rem;
         margin-bottom: 0;
+    }
+
+    .exportar-btn {
+        background: #e8f5ee;
+        border: 1px solid #cfead9;
+        color: #198754;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .exportar-btn:hover {
+        background: #d9f0e3;
+        border-color: #badfc9;
+        color: #146c43;
     }
 
     /*Botão principal da página*/
@@ -270,11 +283,22 @@ function icone_ordenacao_documentacao($campo, $ordenar, $direcao)
 
                 </div>
 
-                <!-- Botão para criar novo documento -->
-                <a href="novo.php" class="btn btn-sm novo-btn">
-                    <i class="fa-solid fa-plus me-1"></i>
-                    Novo documento
-                </a>
+                <!-- Botões para criar novo documento/exportar excel -->
+                <div class="d-flex gap-2">
+
+                    <a href="exportar-documentacao.php"
+                        class="btn btn-sm exportar-btn">
+                        <i class="fa-solid fa-file-excel me-1"></i>
+                        Exportar Excel
+                    </a>
+
+                    <a href="novo.php"
+                        class="btn btn-sm novo-btn">
+                        <i class="fa-solid fa-plus me-1"></i>
+                        Novo documento
+                    </a>
+
+                </div>
 
             </div>
 
@@ -379,19 +403,19 @@ function icone_ordenacao_documentacao($campo, $ordenar, $direcao)
 
                                             <td>
                                                 <a href="detalhes.php?id=<?= $documento->id ?>"
-                                                   class="action-btn action-consultar">
+                                                    class="action-btn action-consultar">
                                                     <i class="fa-solid fa-eye me-1"></i>
                                                     Consultar
                                                 </a>
 
                                                 <a href="editar.php?id=<?= $documento->id ?>"
-                                                   class="action-btn action-editar">
+                                                    class="action-btn action-editar">
                                                     <i class="fa-regular fa-pen-to-square me-1"></i>
                                                     Editar
                                                 </a>
 
                                                 <a href="apagar.php?id=<?= $documento->id ?>"
-                                                   class="action-btn action-eliminar">
+                                                    class="action-btn action-eliminar">
                                                     <i class="fa-solid fa-trash-can me-1"></i>
                                                     Eliminar
                                                 </a>
@@ -418,7 +442,7 @@ function icone_ordenacao_documentacao($campo, $ordenar, $direcao)
 
                                         <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
                                             <a class="page-link"
-                                               href="?pagina=<?= $i ?>&ordenar=<?= urlencode($ordenar) ?>&direcao=<?= urlencode($direcao) ?>">
+                                                href="?pagina=<?= $i ?>&ordenar=<?= urlencode($ordenar) ?>&direcao=<?= urlencode($direcao) ?>">
                                                 <?= $i ?>
                                             </a>
                                         </li>

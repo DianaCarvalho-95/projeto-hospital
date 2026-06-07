@@ -67,7 +67,6 @@ try {
     $stmt->execute();
 
     $resultados = $stmt->fetchAll(PDO::FETCH_OBJ);
-
 } catch (PDOException $err) {
 
     $erro = 'Aconteceu um erro ao carregar o histórico de movimentações.';
@@ -161,6 +160,20 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
     .page-subtitle {
         color: #64748b;
         font-size: 0.95rem;
+    }
+
+    .exportar-btn {
+        background: #e8f5ee;
+        border: 1px solid #cfead9;
+        color: #198754;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .exportar-btn:hover {
+        background: #d9f0e3;
+        border-color: #badfc9;
+        color: #146c43;
     }
 
     .summary-card {
@@ -283,16 +296,26 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
 
         <main class="col-md-9 col-lg-10 historico-page">
 
-            <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-start mb-4">
 
-                <h2 class="page-title mb-1">
-                    <i class="fa-solid fa-clock-rotate-left me-2"></i>
-                    Histórico de Movimentações
-                </h2>
+                <div>
 
-                <p class="page-subtitle mb-0">
-                    Consulta das transferências e movimentações dos equipamentos entre serviços hospitalares.
-                </p>
+                    <h2 class="page-title mb-1">
+                        <i class="fa-solid fa-clock-rotate-left me-2"></i>
+                        Histórico de Movimentações
+                    </h2>
+
+                    <p class="page-subtitle mb-0">
+                        Consulta das transferências e movimentações dos equipamentos entre serviços hospitalares.
+                    </p>
+
+                </div>
+
+                <a href="exportar-historico.php"
+                    class="btn btn-sm exportar-btn">
+                    <i class="fa-solid fa-file-excel me-1"></i>
+                    Exportar Excel
+                </a>
 
             </div>
 
@@ -451,7 +474,7 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
 
                                     <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
                                         <a class="page-link"
-                                           href="?pagina=<?= $i ?>&ordenar=<?= urlencode($ordenar) ?>&direcao=<?= urlencode($direcao) ?>">
+                                            href="?pagina=<?= $i ?>&ordenar=<?= urlencode($ordenar) ?>&direcao=<?= urlencode($direcao) ?>">
                                             <?= $i ?>
                                         </a>
                                     </li>
@@ -473,7 +496,6 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
                 </a>
             </div>
 
-            <?php endif; ?>
 
         </main>
 

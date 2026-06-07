@@ -181,6 +181,20 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
         font-size: 0.95rem;
     }
 
+    .exportar-btn {
+        background: #e8f5ee;
+        border: 1px solid #cfead9;
+        color: #198754;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .exportar-btn:hover {
+        background: #d9f0e3;
+        border-color: #badfc9;
+        color: #146c43;
+    }
+
     .summary-card {
         background: #ffffff;
         border: 1px solid #e5e7eb;
@@ -338,16 +352,26 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
 
         <main class="col-md-9 col-lg-10 manutencao-page">
 
-            <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-start mb-4">
 
-                <h2 class="page-title mb-1">
-                    <i class="fa-solid fa-calendar-check me-2"></i>
-                    Próximas Manutenções
-                </h2>
+                <div>
 
-                <p class="page-subtitle mb-0">
-                    Consulta e ordenação das manutenções associadas aos equipamentos.
-                </p>
+                    <h2 class="page-title mb-1">
+                        <i class="fa-solid fa-calendar-check me-2"></i>
+                        Próximas Manutenções
+                    </h2>
+
+                    <p class="page-subtitle mb-0">
+                        Consulta e ordenação das manutenções associadas aos equipamentos.
+                    </p>
+
+                </div>
+
+                <a href="exportar-manutencoes.php"
+                    class="btn btn-sm exportar-btn">
+                    <i class="fa-solid fa-file-excel me-1"></i>
+                    Exportar Excel
+                </a>
 
             </div>
 

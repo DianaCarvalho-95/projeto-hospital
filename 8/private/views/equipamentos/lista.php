@@ -121,8 +121,6 @@ function icone_ordenacao_equipamentos($campo, $ordenar, $direcao)
 <?php include '../../includes/nav.php'; ?>
 
 <style>
-
-
     /*Fundo da página.*/
     .equipamentos-page {
         background: #f5f7fa;
@@ -220,6 +218,21 @@ function icone_ordenacao_equipamentos($campo, $ordenar, $direcao)
         transition: 0.2s;
     }
 
+    /*Botão Excel */
+    .exportar-btn {
+        background: #e8f5ee;
+        border-color: #cfead9;
+        color: #198754;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .exportar-btn:hover {
+        background: #d9f0e3;
+        border-color: #badfc9;
+        color: #146c43;
+    }
+
     /*Consultar*/
     .action-consultar {
         background: #e8f5ee;
@@ -267,11 +280,20 @@ function icone_ordenacao_equipamentos($campo, $ordenar, $direcao)
 
                 </div>
 
-                <!-- Botão para criação de novo equipamento -->
-                <a href="novo.php" class="btn btn-sm novo-btn">
-                    <i class="fa-solid fa-plus me-1"></i>
-                    Novo equipamento
-                </a>
+                <!-- Botões para criação de novo equipamento/exportar -->
+                <div class="d-flex gap-2">
+
+                    <a href="exportar-equipamentos.php" class="btn btn-sm exportar-btn">
+                        <i class="fa-solid fa-file-excel me-1"></i>
+                        Exportar Excel
+                    </a>
+
+                    <a href="novo.php" class="btn btn-sm novo-btn">
+                        <i class="fa-solid fa-plus me-1"></i>
+                        Novo equipamento
+                    </a>
+
+                </div>
 
             </div>
 

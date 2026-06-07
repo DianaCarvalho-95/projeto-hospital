@@ -10,7 +10,7 @@ $resultados = [];
 
 try {
 
-    /*Ligação à base de dados*/
+    /* Ligação à base de dados */
     $ligacao = new PDO(
         "mysql:host=" . MYSQL_HOST .
             ";dbname=" . MYSQL_DATABASE .
@@ -21,7 +21,8 @@ try {
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    /*Consulta dos fornecedores ordenados alfabeticamente*/
+    
+    /* Consulta dos fornecedores ordenados alfabeticamente */
     $resultados = $ligacao
         ->query("SELECT * FROM fornecedores ORDER BY nome_empresa")
         ->fetchAll(PDO::FETCH_OBJ);
@@ -40,14 +41,14 @@ $ligacao = null;
 <?php include '../../includes/nav.php'; ?>
 
 <style>
-    /*Fundo da página*/
+    /* Fundo da página */
     .fornecedores-page {
         background: #f5f7fa;
         min-height: 100vh;
         padding: 24px;
     }
 
-    /*Título principal*/
+    /* Título principal */
     .page-title {
         font-weight: 600;
         color: #1E3A5F;
@@ -55,14 +56,14 @@ $ligacao = null;
         margin-bottom: 0;
     }
 
-    /*Subtítulo*/
+    /* Subtítulo */
     .page-subtitle {
         color: #64748b;
         font-size: 0.95rem;
         margin-bottom: 0;
     }
 
-    /*Botão principal*/
+    /* Botão principal */
     .novo-btn {
         background: #2F5D8A;
         border-color: #2F5D8A;
@@ -77,7 +78,22 @@ $ligacao = null;
         color: #fff;
     }
 
-    /*Cartão branco da tabela*/
+    /* Botão de exportação */
+    .exportar-btn {
+        background: #e8f5ee;
+        border-color: #cfead9;
+        color: #198754;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .exportar-btn:hover {
+        background: #d9f0e3;
+        border-color: #badfc9;
+        color: #146c43;
+    }
+
+    /* Cartão branco da tabela */
     .content-card {
         background: #ffffff;
         border-radius: 16px;
@@ -86,7 +102,7 @@ $ligacao = null;
         border: 1px solid #e5e7eb;
     }
 
-    /*Cabeçalho da tabela*/
+    /* Cabeçalho da tabela */
     .table-primary-custom th {
         background: #2F5D8A !important;
         color: #ffffff !important;
@@ -100,7 +116,7 @@ $ligacao = null;
         vertical-align: middle;
     }
 
-    /*Botões de ação iguais aos usados nos Equipamentos*/
+    /* Botões de ação */
     .action-btn {
         display: inline-block;
         padding: 3px 8px;
@@ -132,7 +148,7 @@ $ligacao = null;
         opacity: 0.85;
     }
 
-    /*Mensagem de erro*/
+    /* Mensagem de erro */
     .mensagem-erro-custom {
         background: #fdeaea;
         color: #bb2d3b;
@@ -165,10 +181,19 @@ $ligacao = null;
 
                 </div>
 
-                <a href="novo.php" class="btn btn-sm novo-btn">
-                    <i class="fa-solid fa-plus me-1"></i>
-                    Novo fornecedor
-                </a>
+                <div class="d-flex gap-2">
+
+                    <a href="exportar-fornecedores.php" class="btn btn-sm exportar-btn">
+                        <i class="fa-solid fa-file-excel me-1"></i>
+                        Exportar Excel
+                    </a>
+
+                    <a href="novo.php" class="btn btn-sm novo-btn">
+                        <i class="fa-solid fa-plus me-1"></i>
+                        Novo fornecedor
+                    </a>
+
+                </div>
 
             </div>
 
