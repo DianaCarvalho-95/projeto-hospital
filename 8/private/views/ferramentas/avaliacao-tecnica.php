@@ -23,10 +23,7 @@ try {
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    /*
-        Lista de equipamentos usada para preencher a caixa de seleção.
-        O utilizador escolhe o equipamento que pretende avaliar.
-    */
+    /* Carrega a lista de equipamentos para a caixa de seleção */
     $equipamentos = $ligacao
         ->query(
             "SELECT id, codigo_inventario, designacao
@@ -37,11 +34,7 @@ try {
 
     if ($equipamento_id > 0) {
 
-        /*
-            Consulta que junta dados do equipamento, garantia/contrato
-            e manutenção. Estes dados serão usados para calcular
-            o índice técnico.
-        */
+        /* Consulta os dados necessários para calcular a avaliação técnica */
         $stmt = $ligacao->prepare(
             "SELECT
                 e.*,
@@ -66,18 +59,10 @@ try {
 
         if ($equipamento) {
 
-            /*
-                O índice técnico começa em 0 e vai aumentado
-                de acordo com critérios técnicos simples.
-                No final, a pontuação máxima é limitada a 100.
-            */
             $pontuacao = 0;
             $observacoes = [];
 
-            /*
-                Critério 1: estado atual do equipamento.
-                Equipamentos ativos recebem maior pontuação.
-            */
+            /* Critério 1: estado operacional */
             if ($equipamento->estado == 'Ativo') {
                 $pontuacao += 40;
                 $observacoes[] = 'Equipamento ativo.';
@@ -92,10 +77,7 @@ try {
                 $observacoes[] = 'Equipamento não se encontra em estado ativo.';
             }
 
-            /*
-                Critério 2: idade do equipamento.
-                Equipamentos mais recentes recebem maior pontuação.
-            */
+            /* Critério 2: idade do equipamento */
             if (!empty($equipamento->ano_fabrico)) {
                 $idade = date('Y') - intval($equipamento->ano_fabrico);
 
@@ -114,10 +96,7 @@ try {
                 $observacoes[] = 'Ano de fabrico não registado.';
             }
 
-            /*
-                Critério 3: garantia ou contrato.
-                Equipamentos com garantia ou contrato ativo têm menor risco operacional.
-            */
+            /* Critério 3: garantia ou contrato */
             if (!empty($equipamento->fim_garantia)) {
                 if ($equipamento->fim_garantia >= date('Y-m-d')) {
                     $pontuacao += 20;
@@ -129,10 +108,7 @@ try {
                 $observacoes[] = 'Sem garantia/contrato associado.';
             }
 
-            /*
-                Critério 4: manutenção.
-                Equipamentos com manutenção realizada no último ano recebem pontuação adicional.
-            */
+            /* Critério 4: manutenção */
             if (!empty($equipamento->data_manutencao)) {
                 $dias = (strtotime(date('Y-m-d')) - strtotime($equipamento->data_manutencao)) / 86400;
 
@@ -146,11 +122,7 @@ try {
                 $observacoes[] = 'Sem manutenção registada.';
             }
 
-            /*
-                Critério 5: criticidade clínica.
-                Equipamentos de criticidade alta ou de suporte de vida
-                exigem maior rigor. Por isso, é aplicada uma penalização.
-            */
+            /* Critério 5: criticidade clínica */
             if ($equipamento->criticidade == 'Alta') {
                 $pontuacao -= 5;
                 $observacoes[] = 'Equipamento de criticidade alta: avaliação mais exigente.';
@@ -159,9 +131,7 @@ try {
                 $observacoes[] = 'Equipamento de suporte de vida: avaliação mais exigente.';
             }
 
-            /*
-                Garante que a pontuação fica entre 0 e 100.
-            */
+            /* Garante que a pontuação fica entre 0 e 100 */
             if ($pontuacao > 100) {
                 $pontuacao = 100;
             }
@@ -170,9 +140,7 @@ try {
                 $pontuacao = 0;
             }
 
-            /*
-                Classificação final com base na pontuação obtida.
-            */
+            /* Classificação final */
             if ($pontuacao >= 85) {
                 $classificacao = 'Excelente';
                 $classe = 'success';
@@ -214,62 +182,193 @@ $ligacao = null;
 <?php include '../../includes/nav.php'; ?>
 
 <style>
-    .avaliacao-card {
-        border: none;
-        border-radius: 18px;
-        padding: 22px;
-        background: #fff;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+    .avaliacao-page {
+        background: #f5f7fa;
+        min-height: 100vh;
+        padding: 24px;
     }
 
+    .page-title {
+        font-weight: 600;
+        color: #1E3A5F;
+        font-size: 1.8rem;
+        margin-bottom: 0;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+
+    .content-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+        border: 1px solid #e5e7eb;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #334155;
+        font-size: 0.88rem;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        border: 1px solid #dbe3ec;
+        font-size: 0.9rem;
+    }
+
+    .form-control:focus {
+        border-color: #2F5D8A;
+        box-shadow: 0 0 0 0.15rem rgba(47, 93, 138, 0.18);
+    }
+
+    .btn-avaliar-custom {
+        background: #edf4ff;
+        border: 1px solid #d6e7ff;
+        color: #2F5D8A;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 8px 16px;
+    }
+
+    .btn-avaliar-custom:hover {
+        background: #dcecff;
+        color: #1E3A5F;
+    }
+
+    .btn-limpar-custom,
+    .btn-voltar-custom {
+        background: #eef2f7;
+        border: 1px solid #dbe3ec;
+        color: #475569;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 8px 16px;
+        text-decoration: none;
+    }
+
+    .btn-limpar-custom:hover,
+    .btn-voltar-custom:hover {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    /* Cartão do índice técnico com azul suave para sobressair */
     .score-box {
-        border-radius: 18px;
-        padding: 24px;
-        color: #fff;
+        background: #f4f8ff;
+        border: 2px solid #bfd7ff;
+        border-radius: 16px;
+        padding: 20px;
         text-align: center;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
+        box-shadow: 0 8px 18px rgba(47, 93, 138, 0.08);
+        height: 100%;
+    }
+
+    .score-label {
+        color: #1E3A5F;
+        font-weight: 600;
+        margin-bottom: 8px;
     }
 
     .score-number {
-        font-size: 3rem;
+        font-size: 4rem;
         font-weight: 700;
         line-height: 1;
     }
 
     .score-success {
-        background: linear-gradient(135deg, #198754, #0f5132);
+        color: #198754;
     }
 
     .score-primary {
-        background: linear-gradient(135deg, #0d6efd, #084298);
+        color: #2F5D8A;
     }
 
     .score-warning {
-        background: linear-gradient(135deg, #f59f00, #d9480f);
+        color: #c79200;
     }
 
     .score-danger {
-        background: linear-gradient(135deg, #dc3545, #842029);
+        color: #dc3545;
     }
 
-    .btn-voltar-wrapper {
-        display: flex;
-        justify-content: center;
-        margin-top: 18px;
+    .classification-badge {
+        display: inline-block;
+        margin-top: 16px;
+        padding: 8px 18px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.95rem;
     }
 
-    .btn-voltar-custom {
-        background: #6c757d;
-        color: #fff;
-        border-radius: 8px;
-        padding: 9px 22px;
-        text-decoration: none;
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+    .badge-success {
+        background: #e8f5ee;
+        color: #198754;
     }
 
-    .btn-voltar-custom:hover {
-        background: #5c636a;
-        color: #fff;
+    .badge-primary {
+        background: #edf4ff;
+        color: #2F5D8A;
+    }
+
+    .badge-warning {
+        background: #fff6dd;
+        color: #c79200;
+    }
+
+    .badge-danger {
+        background: #fdeaea;
+        color: #dc3545;
+    }
+
+    .section-title {
+        color: #1E3A5F;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 14px;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+    }
+
+    .info-item {
+        margin-bottom: 10px;
+        font-size: 0.92rem;
+    }
+
+    .info-label {
+        display: block;
+        color: #64748b;
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+
+    .info-value {
+        color: #0f172a;
+        font-weight: 500;
+    }
+
+    .observacao-item {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 9px 12px;
+        color: #475569;
+        font-size: 0.9rem;
+        height: 100%;
+    }
+
+    .mensagem-erro {
+        background: #fdeaea;
+        color: #bb2d3b;
+        border: 1px solid #f8d3d3;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 16px;
     }
 </style>
 
@@ -278,30 +377,36 @@ $ligacao = null;
 
         <?php include '../../includes/sidebar.php'; ?>
 
-        <main class="col-md-9 col-lg-10 p-4">
+        <main class="col-md-9 col-lg-10 avaliacao-page">
 
-            <h2>
-                <i class="fa-solid fa-stethoscope me-2"></i>
-                Avaliação Técnica
-            </h2>
+            <div class="mb-4">
 
-            <p class="text-muted">
-                Avaliação automática do estado técnico de um equipamento com base no estado,
-                idade, garantia, manutenção e criticidade clínica.
-            </p>
+                <h2 class="page-title mb-1">
+                    <i class="fa-solid fa-stethoscope me-2"></i>
+                    Avaliação Técnica
+                </h2>
+
+                <p class="page-subtitle">
+                    Avaliação automática do estado técnico dos equipamentos médicos.
+                </p>
+
+            </div>
 
             <?php if (!empty($erro)) : ?>
-                <div class="alert alert-danger">
+
+                <div class="mensagem-erro">
                     <?= htmlspecialchars($erro) ?>
                 </div>
+
             <?php endif; ?>
 
-            <div class="avaliacao-card mb-4">
+            <div class="content-card mb-4">
 
                 <form method="get" class="row align-items-end">
 
                     <div class="col-md-8">
                         <label class="form-label">Equipamento</label>
+
                         <select name="equipamento_id" class="form-control">
                             <option value="">Escolha um equipamento</option>
 
@@ -315,13 +420,13 @@ $ligacao = null;
                     </div>
 
                     <div class="col-md-2">
-                        <button type="submit" class="btn btn-secondary w-100">
+                        <button type="submit" class="btn btn-avaliar-custom w-100">
                             Avaliar
                         </button>
                     </div>
 
                     <div class="col-md-2">
-                        <a href="avaliacao-tecnica.php" class="btn btn-outline-secondary w-100">
+                        <a href="avaliacao-tecnica.php" class="btn btn-limpar-custom w-100">
                             Limpar
                         </a>
                     </div>
@@ -335,85 +440,147 @@ $ligacao = null;
                 <div class="row g-3">
 
                     <div class="col-md-4">
-                        <div class="score-box score-<?= $avaliacao['classe'] ?>">
-                            <p class="mb-1">Índice Técnico</p>
-                            <div class="score-number">
+
+                        <div class="score-box">
+
+                            <p class="score-label">
+                                Índice Técnico
+                            </p>
+
+                            <div class="score-number score-<?= $avaliacao['classe'] ?>">
                                 <?= $avaliacao['pontuacao'] ?>
                             </div>
-                            <p class="mb-0">/ 100</p>
-                            <hr>
-                            <h5><?= htmlspecialchars($avaliacao['classificacao']) ?></h5>
+
+                            <p class="text-muted mb-0">
+                                / 100
+                            </p>
+
+                            <div class="classification-badge badge-<?= $avaliacao['classe'] ?>">
+                                <?= htmlspecialchars($avaliacao['classificacao']) ?>
+                            </div>
+
                         </div>
+
                     </div>
 
                     <div class="col-md-8">
-                        <div class="avaliacao-card">
 
-                            <h5>
+                        <div class="content-card h-100">
+
+                            <!-- Resultado da Avaliação -->
+                            <h5 class="section-title">
                                 <i class="fa-solid fa-circle-info me-2"></i>
                                 Resultado da Avaliação
                             </h5>
 
-                            <hr>
+                            <div class="row">
 
-                            <p>
-                                <strong>Equipamento:</strong>
-                                <?= htmlspecialchars($avaliacao['equipamento']->codigo_inventario) ?>
-                                -
-                                <?= htmlspecialchars($avaliacao['equipamento']->designacao) ?>
-                            </p>
+                                <div class="col-md-6">
 
-                            <p>
-                                <strong>Estado atual:</strong>
-                                <?= htmlspecialchars($avaliacao['equipamento']->estado) ?>
-                            </p>
+                                    <!-- Equipamento -->
+                                    <div class="info-item">
+                                        <span class="info-label">Equipamento</span>
+                                        <span class="info-value">
+                                            <?= htmlspecialchars($avaliacao['equipamento']->codigo_inventario) ?>
+                                            -
+                                            <?= htmlspecialchars($avaliacao['equipamento']->designacao) ?>
+                                        </span>
+                                    </div>
 
-                            <p>
-                                <strong>Criticidade:</strong>
-                                <?= htmlspecialchars($avaliacao['equipamento']->criticidade) ?>
-                            </p>
+                                    <!-- Estado atual -->
+                                    <div class="info-item">
+                                        <span class="info-label">Estado atual</span>
+                                        <span class="info-value">
+                                            <?= htmlspecialchars($avaliacao['equipamento']->estado) ?>
+                                        </span>
+                                    </div>
 
-                            <p>
-                                <strong>Idade estimada:</strong>
-                                <?= $avaliacao['idade'] !== null ? $avaliacao['idade'] . ' ano(s)' : 'Não disponível' ?>
-                            </p>
+                                    <!-- Criticidade -->
+                                    <div class="info-item">
+                                        <span class="info-label">Criticidade</span>
+                                        <span class="info-value">
+                                            <?= htmlspecialchars($avaliacao['equipamento']->criticidade) ?>
+                                        </span>
+                                    </div>
 
-                            <p>
-                                <strong>Garantia/Contrato até:</strong>
-                                <?= !empty($avaliacao['equipamento']->fim_garantia)
-                                    ? date('d/m/Y', strtotime($avaliacao['equipamento']->fim_garantia))
-                                    : 'Sem registo' ?>
-                            </p>
+                                </div>
 
-                            <p>
-                                <strong>Última manutenção:</strong>
-                                <?= !empty($avaliacao['equipamento']->data_manutencao)
-                                    ? date('d/m/Y', strtotime($avaliacao['equipamento']->data_manutencao))
-                                    : 'Sem registo' ?>
-                            </p>
+                                <div class="col-md-6">
 
-                            <hr>
+                                    <!-- Idade estimada -->
+                                    <div class="info-item">
+                                        <span class="info-label">Idade estimada</span>
+                                        <span class="info-value">
+                                            <?= $avaliacao['idade'] !== null ? $avaliacao['idade'] . ' ano(s)' : 'Não disponível' ?>
+                                        </span>
+                                    </div>
 
-                            <h6>Observações automáticas:</h6>
+                                    <!-- Garantia/Contrato até -->
+                                    <div class="info-item">
+                                        <span class="info-label">Garantia/Contrato até</span>
+                                        <span class="info-value">
+                                            <?= !empty($avaliacao['equipamento']->fim_garantia)
+                                                ? date('d/m/Y', strtotime($avaliacao['equipamento']->fim_garantia))
+                                                : 'Sem registo' ?>
+                                        </span>
+                                    </div>
 
-                            <ul class="mb-0">
-                                <?php foreach ($avaliacao['observacoes'] as $obs) : ?>
-                                    <li><?= htmlspecialchars($obs) ?></li>
-                                <?php endforeach; ?>
-                            </ul>
+                                    <!-- Última manutenção -->
+                                    <div class="info-item">
+                                        <span class="info-label">Última manutenção</span>
+                                        <span class="info-value">
+                                            <?= !empty($avaliacao['equipamento']->data_manutencao)
+                                                ? date('d/m/Y', strtotime($avaliacao['equipamento']->data_manutencao))
+                                                : 'Sem registo' ?>
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                            </div>
 
                         </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Observações por baixo do índice técnico e do resultado -->
+                <div class="content-card mt-3">
+
+                    <h5 class="section-title">
+                        <i class="fa-solid fa-list-check me-2"></i>
+                        Observações automáticas
+                    </h5>
+
+                    <div class="row g-2">
+
+                        <?php foreach ($avaliacao['observacoes'] as $obs) : ?>
+
+                            <div class="col-md-6">
+
+                                <div class="observacao-item">
+                                    <i class="fa-solid fa-check me-2"></i>
+                                    <?= htmlspecialchars($obs) ?>
+                                </div>
+
+                            </div>
+
+                        <?php endforeach; ?>
+
                     </div>
 
                 </div>
 
             <?php endif; ?>
 
-            <div class="btn-voltar-wrapper">
-                <a href="ferramentas.php" class="btn-voltar-custom">
+            <div class="mt-4 d-flex justify-content-center">
+
+                <a href="ferramentas.php" class="btn btn-voltar-custom">
                     <i class="fa-solid fa-arrow-left me-1"></i>
                     Voltar
                 </a>
+
             </div>
 
         </main>

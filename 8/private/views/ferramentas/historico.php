@@ -8,17 +8,23 @@ redirect_if_not_logged();
 $erro = '';
 $resultados = [];
 
+
+/* Ordenação da tabela */
 $ordenar = isset($_GET['ordenar']) ? $_GET['ordenar'] : 'data';
 $direcao = isset($_GET['direcao']) && $_GET['direcao'] == 'asc' ? 'asc' : 'desc';
 
+
+/* Paginação */
 $pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
 
 if ($pagina < 1) {
     $pagina = 1;
 }
 
-$registos_por_pagina = 5;
+$registos_por_pagina = 8;
 
+
+/* Colunas permitidas para ordenação */
 $colunas_permitidas = [
     'codigo' => 'e.codigo_inventario',
     'equipamento' => 'e.designacao',
@@ -35,6 +41,7 @@ $coluna_sql = isset($colunas_permitidas[$ordenar])
 
 try {
 
+    /* Ligação à base de dados */
     $ligacao = new PDO(
         "mysql:host=" . MYSQL_HOST .
             ";dbname=" . MYSQL_DATABASE .
@@ -45,11 +52,8 @@ try {
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    /*
-        Consulta das movimentações dos equipamentos.
-        Junta a tabela movimentacoes com equipamentos para mostrar
-        o código e a designação do equipamento movimentado.
-    */
+
+    /* Consulta das movimentações dos equipamentos */
     $sql = "SELECT
                 mv.*,
                 e.codigo_inventario,
@@ -71,10 +75,8 @@ try {
 
 $ligacao = null;
 
-/*
-    Gera o link de ordenação das colunas.
-    Ao clicar novamente na mesma coluna, a direção alterna entre ascendente e descendente.
-*/
+
+/* Gera o link de ordenação */
 function link_ordenacao_movimentacoes($campo, $ordenar, $direcao)
 {
     $nova_direcao = 'asc';
@@ -83,13 +85,10 @@ function link_ordenacao_movimentacoes($campo, $ordenar, $direcao)
         $nova_direcao = 'desc';
     }
 
-    return '?ordenar=' . $campo .
-        '&direcao=' . $nova_direcao;
+    return '?ordenar=' . $campo . '&direcao=' . $nova_direcao;
 }
 
-/*
-    Mostra o ícone correto nas colunas ordenáveis.
-*/
+/* Mostra o ícone da ordenação */
 function icone_ordenacao_movimentacoes($campo, $ordenar, $direcao)
 {
     if ($ordenar != $campo) {
@@ -103,9 +102,38 @@ function icone_ordenacao_movimentacoes($campo, $ordenar, $direcao)
     return '<i class="fa-solid fa-sort-down ms-1"></i>';
 }
 
-/*
-    Paginação: apresenta apenas 5 registos por página.
-*/
+
+/* Contadores dos cartões superiores */
+$total_movimentacoes = count($resultados);
+$total_ano = 0;
+$total_mes = 0;
+$total_30_dias = 0;
+
+foreach ($resultados as $movimentacao) {
+
+    if (!empty($movimentacao->data_movimentacao)) {
+
+        $data_movimentacao = strtotime($movimentacao->data_movimentacao);
+
+        if (date('Y', $data_movimentacao) == date('Y')) {
+            $total_ano++;
+        }
+
+        if (
+            date('Y', $data_movimentacao) == date('Y') &&
+            date('m', $data_movimentacao) == date('m')
+        ) {
+            $total_mes++;
+        }
+
+        if ($movimentacao->data_movimentacao >= date('Y-m-d', strtotime('-30 days'))) {
+            $total_30_dias++;
+        }
+    }
+}
+
+
+/* Paginação dos resultados */
 $total_registos = count($resultados);
 $total_paginas = ceil($total_registos / $registos_por_pagina);
 $offset = ($pagina - 1) * $registos_por_pagina;
@@ -116,168 +144,301 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
 
+
 <style>
+    .historico-page {
+        background: #f5f7fa;
+        padding: 24px;
+    }
+
+    .page-title {
+        color: #1E3A5F;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-left: 5px solid #2F5D8A;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+        height: 100%;
+    }
+
+    .summary-title {
+        color: #64748b;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .summary-value {
+        color: #0f172a;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .content-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+        border: 1px solid #e5e7eb;
+    }
+
+    .custom-table {
+        font-size: 0.88rem;
+    }
+
+    .custom-table thead th {
+        background: #2F5D8A;
+        color: #ffffff;
+        border-color: #2F5D8A;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .custom-table thead th a {
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .custom-table tbody td {
+        vertical-align: middle;
+        border-color: #eef2f7;
+    }
+
     .pagination-wrapper {
         display: flex;
         justify-content: center;
         margin-top: 22px;
-        margin-bottom: 14px;
     }
 
     .pagination .page-link {
-        color: #0d6efd;
+        color: #2F5D8A;
         border-radius: 8px;
         margin: 0 2px;
+        font-weight: 600;
     }
 
     .pagination .page-item.active .page-link {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        color: #fff;
+        background-color: #2F5D8A;
+        border-color: #2F5D8A;
+        color: #ffffff;
     }
 
     .btn-voltar-wrapper {
         display: flex;
         justify-content: center;
-        margin-top: 8px;
+        margin-top: 16px;
     }
 
     .btn-voltar-custom {
-        background: #6c757d;
-        color: #fff;
+        background: #eef2f7;
+        border: 1px solid #dbe3ec;
+        color: #475569;
         border-radius: 8px;
-        padding: 9px 22px;
+        font-weight: 600;
+        padding: 8px 18px;
         text-decoration: none;
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
     }
 
     .btn-voltar-custom:hover {
-        background: #5c636a;
-        color: #fff;
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .mensagem-erro {
+        background: #fdeaea;
+        color: #bb2d3b;
+        border: 1px solid #f8d3d3;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 16px;
+    }
+
+    .mensagem-info {
+        background: #edf4ff;
+        color: #2F5D8A;
+        border: 1px solid #d6e7ff;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 16px;
     }
 </style>
+
 
 <div class="container-fluid">
     <div class="row">
 
         <?php include '../../includes/sidebar.php'; ?>
 
-        <main class="col-md-9 col-lg-10 p-4">
+        <main class="col-md-9 col-lg-10 historico-page">
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0">
+            <div class="mb-4">
+
+                <h2 class="page-title mb-1">
                     <i class="fa-solid fa-clock-rotate-left me-2"></i>
                     Histórico de Movimentações
                 </h2>
+
+                <p class="page-subtitle mb-0">
+                    Consulta das transferências e movimentações dos equipamentos entre serviços hospitalares.
+                </p>
+
             </div>
 
-            <p class="text-muted">
-                Consulta das transferências e movimentações dos equipamentos entre serviços hospitalares.
-            </p>
+            <div class="row g-3 mb-4">
+
+                <!-- MOVIMENTAÇÕES TOTAIS -->
+                <div class="col-md-3">
+                    <div class="summary-card">
+                        <div class="summary-title">Movimentações Totais</div>
+                        <div class="summary-value"><?= $total_movimentacoes ?></div>
+                    </div>
+                </div>
+
+                <!-- ESTE ANO -->
+                <div class="col-md-3">
+                    <div class="summary-card">
+                        <div class="summary-title">Este ano</div>
+                        <div class="summary-value"><?= $total_ano ?></div>
+                    </div>
+                </div>
+
+                <!-- ESTE MÊS -->
+                <div class="col-md-3">
+                    <div class="summary-card">
+                        <div class="summary-title">Este mês</div>
+                        <div class="summary-value"><?= $total_mes ?></div>
+                    </div>
+                </div>
+
+                <!-- ÚLTIMOS 30 DIAS -->
+                <div class="col-md-3">
+                    <div class="summary-card">
+                        <div class="summary-title">Últimos 30 dias</div>
+                        <div class="summary-value"><?= $total_30_dias ?></div>
+                    </div>
+                </div>
+
+            </div>
 
             <?php if (!empty($erro)) : ?>
 
-                <div class="alert alert-danger">
+                <div class="mensagem-erro">
                     <?= htmlspecialchars($erro) ?>
                 </div>
 
             <?php elseif ($total_registos == 0) : ?>
 
-                <div class="alert alert-info">
+                <div class="mensagem-info">
                     Não existem movimentações para apresentar.
                 </div>
 
             <?php else : ?>
 
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle">
+                <div class="content-card">
 
-                        <thead class="table-dark">
-                            <tr>
-                                <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('codigo', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Código <?= icone_ordenacao_movimentacoes('codigo', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
+                    <p class="page-subtitle mb-3">
+                        Total: <?= $total_registos ?> registo(s)
+                    </p>
 
-                                <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('equipamento', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Equipamento <?= icone_ordenacao_movimentacoes('equipamento', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
+                    <div class="table-responsive">
 
-                                <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('origem', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Origem <?= icone_ordenacao_movimentacoes('origem', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
+                        <table class="table table-hover align-middle mb-0 custom-table">
 
-                                <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('destino', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Destino <?= icone_ordenacao_movimentacoes('destino', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
-
-                                <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('data', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Data <?= icone_ordenacao_movimentacoes('data', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
-
-                                <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('responsavel', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Responsável <?= icone_ordenacao_movimentacoes('responsavel', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
-
-                                <th>
-                                    <a href="<?= link_ordenacao_movimentacoes('motivo', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Motivo <?= icone_ordenacao_movimentacoes('motivo', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
-
-                                <th>Observações</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            <?php foreach ($resultados_pagina as $movimentacao) : ?>
-
+                            <!-- ORDENAÇÃO DE LISTAS -->
+                            <thead>
                                 <tr>
-                                    <td><?= htmlspecialchars($movimentacao->codigo_inventario) ?></td>
+                                    <th>
+                                        <a href="<?= link_ordenacao_movimentacoes('codigo', $ordenar, $direcao) ?>">
+                                            Código <?= icone_ordenacao_movimentacoes('codigo', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td><?= htmlspecialchars($movimentacao->designacao) ?></td>
+                                    <th>
+                                        <a href="<?= link_ordenacao_movimentacoes('equipamento', $ordenar, $direcao) ?>">
+                                            Equipamento <?= icone_ordenacao_movimentacoes('equipamento', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td><?= htmlspecialchars($movimentacao->local_origem) ?></td>
+                                    <th>
+                                        <a href="<?= link_ordenacao_movimentacoes('origem', $ordenar, $direcao) ?>">
+                                            Origem <?= icone_ordenacao_movimentacoes('origem', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td><?= htmlspecialchars($movimentacao->local_destino) ?></td>
+                                    <th>
+                                        <a href="<?= link_ordenacao_movimentacoes('destino', $ordenar, $direcao) ?>">
+                                            Destino <?= icone_ordenacao_movimentacoes('destino', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td>
-                                        <?= !empty($movimentacao->data_movimentacao)
-                                            ? date('d/m/Y', strtotime($movimentacao->data_movimentacao))
-                                            : '-' ?>
-                                    </td>
+                                    <th>
+                                        <a href="<?= link_ordenacao_movimentacoes('data', $ordenar, $direcao) ?>">
+                                            Data <?= icone_ordenacao_movimentacoes('data', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td><?= htmlspecialchars($movimentacao->responsavel ?? '-') ?></td>
+                                    <th>
+                                        <a href="<?= link_ordenacao_movimentacoes('responsavel', $ordenar, $direcao) ?>">
+                                            Responsável <?= icone_ordenacao_movimentacoes('responsavel', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td><?= htmlspecialchars($movimentacao->motivo ?? '-') ?></td>
+                                    <th>
+                                        <a href="<?= link_ordenacao_movimentacoes('motivo', $ordenar, $direcao) ?>">
+                                            Motivo <?= icone_ordenacao_movimentacoes('motivo', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td><?= htmlspecialchars($movimentacao->observacoes ?? '-') ?></td>
+                                    <th>Observações</th>
                                 </tr>
+                            </thead>
 
-                            <?php endforeach; ?>
+                            <tbody>
 
-                        </tbody>
+                                <?php foreach ($resultados_pagina as $movimentacao) : ?>
 
-                    </table>
+                                    <tr>
+                                        <td><?= htmlspecialchars($movimentacao->codigo_inventario) ?></td>
+
+                                        <td><?= htmlspecialchars($movimentacao->designacao) ?></td>
+
+                                        <td><?= htmlspecialchars($movimentacao->local_origem) ?></td>
+
+                                        <td><?= htmlspecialchars($movimentacao->local_destino) ?></td>
+
+                                        <td>
+                                            <?= !empty($movimentacao->data_movimentacao)
+                                                ? date('d/m/Y', strtotime($movimentacao->data_movimentacao))
+                                                : '-' ?>
+                                        </td>
+
+                                        <td><?= htmlspecialchars($movimentacao->responsavel ?? '-') ?></td>
+
+                                        <td><?= htmlspecialchars($movimentacao->motivo ?? '-') ?></td>
+
+                                        <td><?= htmlspecialchars($movimentacao->observacoes ?? '-') ?></td>
+                                    </tr>
+
+                                <?php endforeach; ?>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
                 </div>
 
                 <?php if ($total_paginas > 1) : ?>
@@ -303,12 +464,14 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
 
                 <?php endif; ?>
 
-                <div class="btn-voltar-wrapper">
-                    <a href="ferramentas.php" class="btn-voltar-custom">
-                        <i class="fa-solid fa-arrow-left me-1"></i>
-                        Voltar
-                    </a>
-                </div>
+            <?php endif; ?>
+
+            <div class="btn-voltar-wrapper">
+                <a href="ferramentas.php" class="btn-voltar-custom">
+                    <i class="fa-solid fa-arrow-left me-1"></i>
+                    Voltar
+                </a>
+            </div>
 
             <?php endif; ?>
 

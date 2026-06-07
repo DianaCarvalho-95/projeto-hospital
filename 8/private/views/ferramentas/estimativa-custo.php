@@ -14,6 +14,7 @@ $total_custo = 0;
 $custo_medio = 0;
 $total_manutencoes = 0;
 
+/* Paginação da tabela de detalhe */
 $pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
 
 if ($pagina < 1) {
@@ -28,6 +29,7 @@ $total_paginas = 0;
 
 try {
 
+    /* Ligação à base de dados */
     $ligacao = new PDO(
         "mysql:host=" . MYSQL_HOST .
             ";dbname=" . MYSQL_DATABASE .
@@ -38,6 +40,7 @@ try {
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    /* Indicadores principais */
     $total_custo = $ligacao
         ->query("SELECT COALESCE(SUM(custo), 0) FROM manutencoes")
         ->fetchColumn();
@@ -50,6 +53,7 @@ try {
         ->query("SELECT COUNT(*) FROM manutencoes")
         ->fetchColumn();
 
+    /* Custo agrupado por tipo de manutenção */
     $resultados_tipo = $ligacao
         ->query(
             "SELECT
@@ -62,6 +66,9 @@ try {
         )
         ->fetchAll(PDO::FETCH_OBJ);
 
+
+
+    /* Custo agrupado por fornecedor */
     $resultados_fornecedor = $ligacao
         ->query(
             "SELECT
@@ -69,24 +76,29 @@ try {
                 COUNT(m.id) AS total,
                 COALESCE(SUM(m.custo), 0) AS custo_total
              FROM manutencoes m
-             LEFT JOIN fornecedores f ON m.fornecedor_id = f.id
+             LEFT JOIN fornecedores f
+                ON m.fornecedor_id = f.id
              GROUP BY f.nome_empresa
              ORDER BY custo_total DESC"
         )
         ->fetchAll(PDO::FETCH_OBJ);
 
+    /* Total de registos para paginação */
     $stmt_total = $ligacao->query("SELECT COUNT(*) FROM manutencoes");
     $total_registos = $stmt_total->fetchColumn();
     $total_paginas = ceil($total_registos / $registos_por_pagina);
 
+    /* Detalhe de custos com paginação */
     $sql = "SELECT
                 m.*,
                 e.codigo_inventario,
                 e.designacao,
                 f.nome_empresa
             FROM manutencoes m
-            INNER JOIN equipamentos e ON m.equipamento_id = e.id
-            LEFT JOIN fornecedores f ON m.fornecedor_id = f.id
+            INNER JOIN equipamentos e
+                ON m.equipamento_id = e.id
+            LEFT JOIN fornecedores f
+                ON m.fornecedor_id = f.id
             ORDER BY m.custo DESC
             LIMIT :limite OFFSET :offset";
 
@@ -96,7 +108,6 @@ try {
     $stmt->execute();
 
     $resultados = $stmt->fetchAll(PDO::FETCH_OBJ);
-
 } catch (PDOException $err) {
 
     $erro = 'Aconteceu um erro ao carregar a estimativa de custos.';
@@ -111,92 +122,134 @@ $ligacao = null;
 
 <style>
     .cost-page {
-        padding-bottom: 20px;
+        background: #f5f7fa;
+        padding: 24px;
     }
 
-    .cost-card {
-        border: none;
-        border-radius: 18px;
-        padding: 20px;
-        color: #fff;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
-        min-height: 115px;
+    .page-title {
+        color: #1E3A5F;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 0;
     }
 
-    .cost-card h6 {
-        font-size: 0.9rem;
-        opacity: 0.9;
-        margin-bottom: 8px;
+    .page-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
     }
 
-    .cost-number {
-        font-size: 1.9rem;
-        font-weight: 700;
-    }
-
-    .cost-dark {
-        background: linear-gradient(135deg, #1f2937, #111827);
-    }
-
-    .cost-blue {
-        background: linear-gradient(135deg, #0d6efd, #084298);
-    }
-
-    .cost-green {
-        background: linear-gradient(135deg, #198754, #0f5132);
-    }
-
-    .summary-box {
-        border: none;
-        border-radius: 18px;
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-left: 5px solid #2F5D8A;
+        border-radius: 16px;
         padding: 18px;
-        background: #fff;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
         height: 100%;
     }
 
-    .summary-box h5 {
-        font-weight: 700;
-        margin-bottom: 12px;
+    .summary-title {
+        color: #64748b;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
     }
 
-    .details-box {
-        border: none;
-        border-radius: 18px;
+    .summary-value {
+        color: #0f172a;
+        font-size: 1.6rem;
+        font-weight: 700;
+    }
+
+    .content-card {
+        background: #ffffff;
+        border-radius: 16px;
         padding: 18px;
-        background: #fff;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+        border: 1px solid #e5e7eb;
+    }
+
+    .section-title {
+        color: #1E3A5F;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 14px;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+    }
+
+    .custom-table {
+        font-size: 0.88rem;
+    }
+
+    .custom-table thead th {
+        background: #2F5D8A;
+        color: #ffffff;
+        border-color: #2F5D8A;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .custom-table tbody td {
+        vertical-align: middle;
+        border-color: #eef2f7;
     }
 
     .pagination-wrapper {
         display: flex;
         justify-content: center;
-        margin-top: 18px;
-        margin-bottom: 12px;
-    }
-
-    .pagination {
-        margin-bottom: 0;
-        flex-wrap: wrap;
-        justify-content: center;
+        margin-top: 22px;
     }
 
     .pagination .page-link {
-        color: #0d6efd;
+        color: #2F5D8A;
         border-radius: 8px;
-        margin: 2px;
+        margin: 0 2px;
+        font-weight: 600;
     }
 
     .pagination .page-item.active .page-link {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        color: #fff;
+        background-color: #2F5D8A;
+        border-color: #2F5D8A;
+        color: #ffffff;
     }
 
-    .back-wrapper {
+    .btn-voltar-wrapper {
         display: flex;
         justify-content: center;
-        margin-top: 8px;
+        margin-top: 16px;
+    }
+
+    .btn-voltar-custom {
+        background: #eef2f7;
+        border: 1px solid #dbe3ec;
+        color: #475569;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 8px 18px;
+        text-decoration: none;
+    }
+
+    .btn-voltar-custom:hover {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .mensagem-erro {
+        background: #fdeaea;
+        color: #bb2d3b;
+        border: 1px solid #f8d3d3;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 16px;
+    }
+
+    .mensagem-info {
+        background: #edf4ff;
+        color: #2F5D8A;
+        border: 1px solid #d6e7ff;
+        border-radius: 10px;
+        padding: 12px;
     }
 </style>
 
@@ -205,20 +258,24 @@ $ligacao = null;
 
         <?php include '../../includes/sidebar.php'; ?>
 
-        <main class="col-md-9 col-lg-10 p-4 cost-page">
+        <main class="col-md-9 col-lg-10 cost-page">
 
-            <h2>
-                <i class="fa-solid fa-euro-sign me-2"></i>
-                Estimativa de Custo
-            </h2>
+            <div class="mb-4">
 
-            <p class="text-muted">
-                Análise dos custos associados às manutenções registadas.
-            </p>
+                <h2 class="page-title mb-1">
+                    <i class="fa-solid fa-euro-sign me-2"></i>
+                    Estimativa de Custo
+                </h2>
+
+                <p class="page-subtitle mb-0">
+                    Análise dos custos associados às manutenções registadas.
+                </p>
+
+            </div>
 
             <?php if (!empty($erro)) : ?>
 
-                <div class="alert alert-danger">
+                <div class="mensagem-erro">
                     <?= htmlspecialchars($erro) ?>
                 </div>
 
@@ -226,28 +283,31 @@ $ligacao = null;
 
                 <div class="row g-3 mb-4">
 
+                    <!-- Custo Total -->
                     <div class="col-md-4">
-                        <div class="cost-card cost-dark">
-                            <h6>Custo Total</h6>
-                            <div class="cost-number">
+                        <div class="summary-card">
+                            <div class="summary-title">Custo Total</div>
+                            <div class="summary-value">
                                 <?= number_format($total_custo, 2, ',', '.') ?> €
                             </div>
                         </div>
                     </div>
 
+                    <!-- Custo Médio -->
                     <div class="col-md-4">
-                        <div class="cost-card cost-blue">
-                            <h6>Custo Médio</h6>
-                            <div class="cost-number">
+                        <div class="summary-card">
+                            <div class="summary-title">Custo Médio</div>
+                            <div class="summary-value">
                                 <?= number_format($custo_medio, 2, ',', '.') ?> €
                             </div>
                         </div>
                     </div>
 
+                    <!-- Total de Manutenções -->
                     <div class="col-md-4">
-                        <div class="cost-card cost-green">
-                            <h6>Total de Manutenções</h6>
-                            <div class="cost-number">
+                        <div class="summary-card">
+                            <div class="summary-title">Total de Manutenções</div>
+                            <div class="summary-value">
                                 <?= $total_manutencoes ?>
                             </div>
                         </div>
@@ -257,86 +317,100 @@ $ligacao = null;
 
                 <div class="row g-3 mb-4">
 
+                    <!-- Custo por Tipo de Manutenção -->
                     <div class="col-md-6">
-                        <div class="summary-box">
-                            <h5>
+                        <div class="content-card">
+
+                            <h5 class="section-title">
                                 <i class="fa-solid fa-screwdriver-wrench me-2"></i>
                                 Custo por Tipo de Manutenção
                             </h5>
 
-                            <table class="table table-bordered table-hover mb-0">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Tipo</th>
-                                        <th>Total</th>
-                                        <th>Custo Total</th>
-                                    </tr>
-                                </thead>
+                            <div class="table-responsive">
 
-                                <tbody>
-                                    <?php foreach ($resultados_tipo as $linha) : ?>
+                                <table class="table table-hover align-middle mb-0 custom-table">
+                                    <thead>
                                         <tr>
-                                            <td><?= htmlspecialchars($linha->tipo_manutencao) ?></td>
-                                            <td><?= $linha->total ?></td>
-                                            <td><?= number_format($linha->custo_total, 2, ',', '.') ?> €</td>
+                                            <th>Tipo</th>
+                                            <th>Total</th>
+                                            <th>Custo Total</th>
                                         </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                                    </thead>
+
+                                    <tbody>
+                                        <?php foreach ($resultados_tipo as $linha) : ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($linha->tipo_manutencao ?? '-') ?></td>
+                                                <td><?= $linha->total ?></td>
+                                                <td><?= number_format($linha->custo_total, 2, ',', '.') ?> €</td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+
+                            </div>
 
                         </div>
                     </div>
 
+                    <!-- Custo por Fornecedor -->
                     <div class="col-md-6">
-                        <div class="summary-box">
-                            <h5>
+                        <div class="content-card">
+
+                            <h5 class="section-title">
                                 <i class="fa-solid fa-truck-medical me-2"></i>
                                 Custo por Fornecedor
                             </h5>
 
-                            <table class="table table-bordered table-hover mb-0">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Fornecedor</th>
-                                        <th>Total</th>
-                                        <th>Custo Total</th>
-                                    </tr>
-                                </thead>
+                            <div class="table-responsive">
 
-                                <tbody>
-                                    <?php foreach ($resultados_fornecedor as $linha) : ?>
+                                <table class="table table-hover align-middle mb-0 custom-table">
+                                    <thead>
                                         <tr>
-                                            <td><?= htmlspecialchars($linha->nome_empresa) ?></td>
-                                            <td><?= $linha->total ?></td>
-                                            <td><?= number_format($linha->custo_total, 2, ',', '.') ?> €</td>
+                                            <th>Fornecedor</th>
+                                            <th>Total</th>
+                                            <th>Custo Total</th>
                                         </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                                    </thead>
+
+                                    <tbody>
+                                        <?php foreach ($resultados_fornecedor as $linha) : ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($linha->nome_empresa) ?></td>
+                                                <td><?= $linha->total ?></td>
+                                                <td><?= number_format($linha->custo_total, 2, ',', '.') ?> €</td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+
+                            </div>
 
                         </div>
                     </div>
 
                 </div>
 
-                <div class="details-box">
+                <!-- Detalhe de Custos -->
+                <div class="content-card">
 
-                    <h5>
+                    <h5 class="section-title">
                         <i class="fa-solid fa-list me-2"></i>
                         Detalhe de Custos
                     </h5>
 
                     <?php if (count($resultados) == 0) : ?>
 
-                        <p class="text-muted">
+                        <div class="mensagem-info">
                             Não existem custos registados.
-                        </p>
+                        </div>
 
                     <?php else : ?>
 
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover align-middle">
-                                <thead class="table-dark">
+
+                            <table class="table table-hover align-middle mb-0 custom-table">
+                                <thead>
                                     <tr>
                                         <th>Código</th>
                                         <th>Equipamento</th>
@@ -352,7 +426,7 @@ $ligacao = null;
                                         <tr>
                                             <td><?= htmlspecialchars($registo->codigo_inventario) ?></td>
                                             <td><?= htmlspecialchars($registo->designacao) ?></td>
-                                            <td><?= htmlspecialchars($registo->tipo_manutencao) ?></td>
+                                            <td><?= htmlspecialchars($registo->tipo_manutencao ?? '-') ?></td>
                                             <td><?= htmlspecialchars($registo->nome_empresa ?? '-') ?></td>
                                             <td>
                                                 <?= !empty($registo->data_manutencao)
@@ -364,12 +438,16 @@ $ligacao = null;
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
+
                         </div>
 
-                        <?php if ($total_paginas > 1) : ?>
+                    <?php endif; ?>
 
-                            <nav class="pagination-wrapper">
-                                <ul class="pagination pagination-sm">
+                    <?php if ($total_paginas > 1) : ?>
+
+                        <div class="pagination-wrapper">
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
 
                                     <?php for ($i = 1; $i <= $total_paginas; $i++) : ?>
 
@@ -383,17 +461,16 @@ $ligacao = null;
 
                                 </ul>
                             </nav>
-
-                        <?php endif; ?>
-
-                        <div class="back-wrapper">
-                            <a href="ferramentas.php" class="btn btn-secondary">
-                                <i class="fa-solid fa-arrow-left me-1"></i>
-                                Voltar
-                            </a>
                         </div>
 
                     <?php endif; ?>
+
+                    <div class="btn-voltar-wrapper">
+                        <a href="ferramentas.php" class="btn-voltar-custom">
+                            <i class="fa-solid fa-arrow-left me-1"></i>
+                            Voltar
+                        </a>
+                    </div>
 
                 </div>
 

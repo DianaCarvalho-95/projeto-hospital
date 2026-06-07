@@ -43,6 +43,7 @@ redirect_if_not_logged();
     .tool-box {
         background: #ffffff;
         border: 1px solid #e5e7eb;
+        border-left: 5px solid #2F5D8A;
         border-radius: 16px;
         padding: 22px;
         min-height: 155px;
@@ -52,21 +53,21 @@ redirect_if_not_logged();
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: center;
-        text-align: center;
+        align-items: flex-start;
+        text-align: left;
     }
 
     /* Efeito ao passar o rato */
     .tool-box:hover {
         transform: translateY(-3px);
         box-shadow: 0 10px 22px rgba(15, 23, 42, 0.10);
-        border-color: #d6e7ff;
+        border-left-color: #1E3A5F;
     }
 
     /* Ícone circular no topo do cartão */
     .tool-icon {
-        width: 54px;
-        height: 54px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         background: #edf4ff;
         color: #2F5D8A;
@@ -75,7 +76,7 @@ redirect_if_not_logged();
         align-items: center;
         justify-content: center;
 
-        font-size: 1.45rem;
+        font-size: 1.25rem;
         margin-bottom: 14px;
     }
 
@@ -85,6 +86,7 @@ redirect_if_not_logged();
         font-weight: 600;
         font-size: 1rem;
         margin-bottom: 8px;
+        text-align: left;
     }
 
     /* Texto do cartão */
@@ -93,6 +95,7 @@ redirect_if_not_logged();
         margin-bottom: 0;
         font-size: 0.88rem;
         line-height: 1.35;
+        text-align: left;
     }
 
     /* Alinhamento dos cartões */
@@ -180,7 +183,7 @@ redirect_if_not_logged();
                     </a>
                 </div>
 
-                 <!-- Garantias/Contratos -->
+                <!-- Garantias/Contratos -->
                 <div class="col-md-4">
                     <a href="garantias-contratos.php" class="tool-card">
                         <div class="tool-box">
@@ -199,7 +202,7 @@ redirect_if_not_logged();
                     </a>
                 </div>
 
-                 <!-- Histórico -->
+                <!-- Histórico -->
                 <div class="col-md-4">
                     <a href="historico.php" class="tool-card">
                         <div class="tool-box">
@@ -218,7 +221,7 @@ redirect_if_not_logged();
                     </a>
                 </div>
 
-                 <!-- Empréstimos -->
+                <!-- Empréstimos -->
                 <div class="col-md-4">
                     <a href="emprestimos.php" class="tool-card">
                         <div class="tool-box">

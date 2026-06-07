@@ -17,7 +17,7 @@ if ($pagina < 1) {
     $pagina = 1;
 }
 
-$registos_por_pagina = 5;
+$registos_por_pagina = 6;
 
 $colunas_permitidas = [
     'codigo' => 'e.codigo_inventario',
@@ -47,11 +47,6 @@ try {
 
     $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    /*
-        Consulta dos empréstimos entre serviços.
-        Junta a tabela emprestimos com equipamentos para apresentar
-        o código e a designação do equipamento.
-    */
     $sql = "SELECT
                 ep.*,
                 e.codigo_inventario,
@@ -68,35 +63,38 @@ try {
 
 } catch (PDOException $err) {
 
-    $erro = 'Aconteceu um erro ao carregar os empréstimos entre serviços.';
+    $erro = 'Aconteceu um erro ao carregar os empréstimos.';
 }
 
 $ligacao = null;
 
-/*
-    Define a cor da badge consoante o estado do empréstimo.
-*/
-function classe_estado_emprestimo($estado)
+function estado_visual($emprestimo)
+{
+    if (
+        $emprestimo->estado == 'Ativo' &&
+        !empty($emprestimo->data_prevista_devolucao) &&
+        $emprestimo->data_prevista_devolucao < date('Y-m-d')
+    ) {
+        return 'Em atraso';
+    }
+
+    return $emprestimo->estado;
+}
+
+function classe_estado($estado)
 {
     if ($estado == 'Devolvido') {
-        return 'success';
+        return 'badge-devolvido';
     }
 
     if ($estado == 'Em atraso') {
-        return 'danger';
+        return 'badge-atraso';
     }
 
-    if ($estado == 'Ativo') {
-        return 'warning';
-    }
-
-    return 'secondary';
+    return 'badge-ativo';
 }
 
-/*
-    Gera os links de ordenação das colunas.
-*/
-function link_ordenacao_emprestimos($campo, $ordenar, $direcao)
+function link_ordenacao($campo, $ordenar, $direcao)
 {
     $nova_direcao = 'asc';
 
@@ -104,14 +102,10 @@ function link_ordenacao_emprestimos($campo, $ordenar, $direcao)
         $nova_direcao = 'desc';
     }
 
-    return '?ordenar=' . $campo .
-        '&direcao=' . $nova_direcao;
+    return '?ordenar=' . $campo . '&direcao=' . $nova_direcao;
 }
 
-/*
-    Mostra o ícone de ordenação correto.
-*/
-function icone_ordenacao_emprestimos($campo, $ordenar, $direcao)
+function icone_ordenacao($campo, $ordenar, $direcao)
 {
     if ($ordenar != $campo) {
         return '<i class="fa-solid fa-sort ms-1"></i>';
@@ -124,11 +118,25 @@ function icone_ordenacao_emprestimos($campo, $ordenar, $direcao)
     return '<i class="fa-solid fa-sort-down ms-1"></i>';
 }
 
-/*
-    Paginação: mostra 5 registos por página.
-*/
-$total_registos = count($resultados);
-$total_paginas = ceil($total_registos / $registos_por_pagina);
+$total = count($resultados);
+$ativos = 0;
+$devolvidos = 0;
+$atraso = 0;
+
+foreach ($resultados as $item) {
+
+    $estado = estado_visual($item);
+
+    if ($estado == 'Ativo') {
+        $ativos++;
+    } elseif ($estado == 'Devolvido') {
+        $devolvidos++;
+    } elseif ($estado == 'Em atraso') {
+        $atraso++;
+    }
+}
+
+$total_paginas = ceil($total / $registos_por_pagina);
 $offset = ($pagina - 1) * $registos_por_pagina;
 $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
 
@@ -138,43 +146,208 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
 <?php include '../../includes/nav.php'; ?>
 
 <style>
+    .emprestimos-page {
+        background: #f5f7fa;
+        min-height: 100vh;
+        padding: 24px;
+    }
+
+    .page-title {
+        color: #1E3A5F;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    .btn-novo-custom {
+        background: #2F5D8A;
+        border: 1px solid #2F5D8A;
+        color: #ffffff;
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 8px 16px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-novo-custom:hover {
+        background: #1E3A5F;
+        color: #ffffff;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-left: 5px solid #2F5D8A;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+        height: 100%;
+    }
+
+    .summary-title {
+        color: #64748b;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .summary-value {
+        color: #0f172a;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .content-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+        border: 1px solid #e5e7eb;
+    }
+
+    .custom-table {
+        font-size: 0.88rem;
+    }
+
+    .custom-table thead th {
+        background: #2F5D8A;
+        color: #ffffff;
+        border-color: #2F5D8A;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .custom-table thead th a {
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .custom-table tbody td {
+        vertical-align: middle;
+        border-color: #eef2f7;
+    }
+
+    .estado-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-ativo {
+        background: #fff6dd;
+        color: #c79200;
+    }
+
+    .badge-devolvido {
+        background: #e8f5ee;
+        color: #198754;
+    }
+
+    .badge-atraso {
+        background: #fdeaea;
+        color: #dc3545;
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        min-width: 105px;
+    }
+
+    .action-devolver {
+        background: #edf4ff;
+        color: #2F5D8A;
+        border-color: #d6e7ff;
+    }
+
+    .action-devolver:hover {
+        background: #dcecff;
+        color: #1E3A5F;
+    }
+
+    .action-disabled {
+        background: #f1f5f9;
+        color: #94a3b8;
+        border-color: #e2e8f0;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
     .pagination-wrapper {
         display: flex;
         justify-content: center;
         margin-top: 22px;
-        margin-bottom: 14px;
     }
 
     .pagination .page-link {
-        color: #0d6efd;
+        color: #2F5D8A;
         border-radius: 8px;
         margin: 0 2px;
+        font-weight: 600;
     }
 
     .pagination .page-item.active .page-link {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        color: #fff;
+        background-color: #2F5D8A;
+        border-color: #2F5D8A;
+        color: #ffffff;
     }
 
     .btn-voltar-wrapper {
         display: flex;
         justify-content: center;
-        margin-top: 8px;
+        margin-top: 16px;
     }
 
     .btn-voltar-custom {
-        background: #6c757d;
-        color: #fff;
+        background: #eef2f7;
+        border: 1px solid #dbe3ec;
+        color: #475569;
         border-radius: 8px;
-        padding: 9px 22px;
+        font-weight: 600;
+        padding: 8px 18px;
         text-decoration: none;
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
     }
 
     .btn-voltar-custom:hover {
-        background: #5c636a;
-        color: #fff;
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .mensagem-erro {
+        background: #fdeaea;
+        color: #bb2d3b;
+        border: 1px solid #f8d3d3;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 16px;
+    }
+
+    .mensagem-info {
+        background: #edf4ff;
+        color: #2F5D8A;
+        border: 1px solid #d6e7ff;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 16px;
     }
 </style>
 
@@ -183,152 +356,222 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
 
         <?php include '../../includes/sidebar.php'; ?>
 
-        <main class="col-md-9 col-lg-10 p-4">
+        <main class="col-md-9 col-lg-10 emprestimos-page">
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0">
-                    <i class="fa-solid fa-handshake me-2"></i>
-                    Empréstimos entre Serviços
-                </h2>
+            <div class="d-flex justify-content-between align-items-start mb-4">
+
+                <div>
+                    <h2 class="page-title mb-1">
+                        <i class="fa-solid fa-handshake me-2"></i>
+                        Empréstimos entre Serviços
+                    </h2>
+
+                    <p class="page-subtitle mb-0">
+                        Controlo de equipamentos emprestados entre serviços hospitalares.
+                    </p>
+                </div>
+
+                <a href="novo-emprestimo.php" class="btn-novo-custom">
+                    <i class="fa-solid fa-plus me-1"></i>
+                    Novo Empréstimo
+                </a>
+
             </div>
 
-            <p class="text-muted">
-                Controlo de equipamentos emprestados entre serviços hospitalares.
-            </p>
+             <!-- CARTÕES DO TOPO -->
+            <div class="row g-3 mb-4">
+
+                <!-- TOTAL -->
+                <div class="col-md-3">
+                    <div class="summary-card">
+                        <div class="summary-title">Total</div>
+                        <div class="summary-value"><?= $total ?></div>
+                    </div>
+                </div>
+
+                 <!-- ATIVOS -->
+                <div class="col-md-3">
+                    <div class="summary-card">
+                        <div class="summary-title">Ativos</div>
+                        <div class="summary-value"><?= $ativos ?></div>
+                    </div>
+                </div>
+
+                 <!-- DEVOLVIDOS -->
+                <div class="col-md-3">
+                    <div class="summary-card">
+                        <div class="summary-title">Devolvidos</div>
+                        <div class="summary-value"><?= $devolvidos ?></div>
+                    </div>
+                </div>
+
+                 <!-- EM ATRASO -->
+                <div class="col-md-3">
+                    <div class="summary-card">
+                        <div class="summary-title">Em atraso</div>
+                        <div class="summary-value"><?= $atraso ?></div>
+                    </div>
+                </div>
+
+            </div>
 
             <?php if (!empty($erro)) : ?>
 
-                <div class="alert alert-danger">
+                <div class="mensagem-erro">
                     <?= htmlspecialchars($erro) ?>
                 </div>
 
-            <?php elseif ($total_registos == 0) : ?>
+            <?php elseif (count($resultados) == 0) : ?>
 
-                <div class="alert alert-info">
-                    Não existem empréstimos para apresentar.
+                <div class="mensagem-info">
+                    Não existem empréstimos registados.
                 </div>
 
             <?php else : ?>
 
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle">
+                <div class="content-card">
 
-                        <thead class="table-dark">
-                            <tr>
-                                <th>
-                                    <a href="<?= link_ordenacao_emprestimos('codigo', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Código <?= icone_ordenacao_emprestimos('codigo', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
+                    <div class="table-responsive">
 
-                                <th>
-                                    <a href="<?= link_ordenacao_emprestimos('equipamento', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Equipamento <?= icone_ordenacao_emprestimos('equipamento', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
+                        <table class="table table-hover align-middle mb-0 custom-table">
 
-                                <th>
-                                    <a href="<?= link_ordenacao_emprestimos('origem', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Origem <?= icone_ordenacao_emprestimos('origem', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
-
-                                <th>
-                                    <a href="<?= link_ordenacao_emprestimos('destino', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Destino <?= icone_ordenacao_emprestimos('destino', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
-
-                                <th>
-                                    <a href="<?= link_ordenacao_emprestimos('data', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Empréstimo <?= icone_ordenacao_emprestimos('data', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
-
-                                <th>
-                                    <a href="<?= link_ordenacao_emprestimos('prevista', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Prev. Devolução <?= icone_ordenacao_emprestimos('prevista', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
-
-                                <th>
-                                    <a href="<?= link_ordenacao_emprestimos('devolucao', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Devolução <?= icone_ordenacao_emprestimos('devolucao', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
-
-                                <th>
-                                    <a href="<?= link_ordenacao_emprestimos('responsavel', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Responsável <?= icone_ordenacao_emprestimos('responsavel', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
-
-                                <th>
-                                    <a href="<?= link_ordenacao_emprestimos('estado', $ordenar, $direcao) ?>"
-                                       class="text-white text-decoration-none">
-                                        Estado <?= icone_ordenacao_emprestimos('estado', $ordenar, $direcao) ?>
-                                    </a>
-                                </th>
-
-                                <th>Observações</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            <?php foreach ($resultados_pagina as $emprestimo) : ?>
-
+                            <thead>
                                 <tr>
-                                    <td><?= htmlspecialchars($emprestimo->codigo_inventario) ?></td>
+                                    <th>
+                                         <!-- ORDENAÇÃO -->
+                                        <a href="<?= link_ordenacao('codigo', $ordenar, $direcao) ?>">
+                                            Código <?= icone_ordenacao('codigo', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td><?= htmlspecialchars($emprestimo->designacao) ?></td>
+                                    <th>
+                                        <a href="<?= link_ordenacao('equipamento', $ordenar, $direcao) ?>">
+                                            Equipamento <?= icone_ordenacao('equipamento', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td><?= htmlspecialchars($emprestimo->servico_origem) ?></td>
+                                    <th>
+                                        <a href="<?= link_ordenacao('origem', $ordenar, $direcao) ?>">
+                                            Origem <?= icone_ordenacao('origem', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td><?= htmlspecialchars($emprestimo->servico_destino) ?></td>
+                                    <th>
+                                        <a href="<?= link_ordenacao('destino', $ordenar, $direcao) ?>">
+                                            Destino <?= icone_ordenacao('destino', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td>
-                                        <?= !empty($emprestimo->data_emprestimo)
-                                            ? date('d/m/Y', strtotime($emprestimo->data_emprestimo))
-                                            : '-' ?>
-                                    </td>
+                                    <th>
+                                        <a href="<?= link_ordenacao('data', $ordenar, $direcao) ?>">
+                                            Empréstimo <?= icone_ordenacao('data', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td>
-                                        <?= !empty($emprestimo->data_prevista_devolucao)
-                                            ? date('d/m/Y', strtotime($emprestimo->data_prevista_devolucao))
-                                            : '-' ?>
-                                    </td>
+                                    <th>
+                                        <a href="<?= link_ordenacao('prevista', $ordenar, $direcao) ?>">
+                                            Prev. Devolução <?= icone_ordenacao('prevista', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td>
-                                        <?= !empty($emprestimo->data_devolucao)
-                                            ? date('d/m/Y', strtotime($emprestimo->data_devolucao))
-                                            : '-' ?>
-                                    </td>
+                                    <th>
+                                        <a href="<?= link_ordenacao('devolucao', $ordenar, $direcao) ?>">
+                                            Devolução <?= icone_ordenacao('devolucao', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td><?= htmlspecialchars($emprestimo->responsavel ?? '-') ?></td>
+                                    <th>
+                                        <a href="<?= link_ordenacao('responsavel', $ordenar, $direcao) ?>">
+                                            Responsável <?= icone_ordenacao('responsavel', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td>
-                                        <span class="badge bg-<?= classe_estado_emprestimo($emprestimo->estado) ?>">
-                                            <?= htmlspecialchars($emprestimo->estado) ?>
-                                        </span>
-                                    </td>
+                                    <th>
+                                        <a href="<?= link_ordenacao('estado', $ordenar, $direcao) ?>">
+                                            Estado <?= icone_ordenacao('estado', $ordenar, $direcao) ?>
+                                        </a>
+                                    </th>
 
-                                    <td><?= htmlspecialchars($emprestimo->observacoes ?? '-') ?></td>
+                                    <th>Observações</th>
+
+                                    <th class="text-center">Ações</th>
                                 </tr>
+                            </thead>
 
-                            <?php endforeach; ?>
+                            <tbody>
 
-                        </tbody>
+                                <?php foreach ($resultados_pagina as $emprestimo) : ?>
 
-                    </table>
+                                    <?php
+                                        $estado = estado_visual($emprestimo);
+                                        $classe = classe_estado($estado);
+                                    ?>
+
+                                    <tr>
+                                        <td><?= htmlspecialchars($emprestimo->codigo_inventario) ?></td>
+
+                                        <td><?= htmlspecialchars($emprestimo->designacao) ?></td>
+
+                                        <td><?= htmlspecialchars($emprestimo->servico_origem) ?></td>
+
+                                        <td><?= htmlspecialchars($emprestimo->servico_destino) ?></td>
+
+                                        <td>
+                                            <?= !empty($emprestimo->data_emprestimo)
+                                                ? date('d/m/Y', strtotime($emprestimo->data_emprestimo))
+                                                : '-' ?>
+                                        </td>
+
+                                        <td>
+                                            <?= !empty($emprestimo->data_prevista_devolucao)
+                                                ? date('d/m/Y', strtotime($emprestimo->data_prevista_devolucao))
+                                                : '-' ?>
+                                        </td>
+
+                                        <td>
+                                            <?= !empty($emprestimo->data_devolucao)
+                                                ? date('d/m/Y', strtotime($emprestimo->data_devolucao))
+                                                : '-' ?>
+                                        </td>
+
+                                        <td><?= htmlspecialchars($emprestimo->responsavel ?? '-') ?></td>
+
+                                        <td>
+                                            <span class="estado-badge <?= $classe ?>">
+                                                <?= htmlspecialchars($estado) ?>
+                                            </span>
+                                        </td>
+
+                                        <td><?= htmlspecialchars($emprestimo->observacoes ?? '-') ?></td>
+
+                                        <td class="text-center">
+                                            <?php if ($emprestimo->estado != 'Devolvido') : ?>
+
+                                                <a href="devolver.php?id=<?= $emprestimo->id ?>"
+                                                   class="action-btn action-devolver">
+                                                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                                                    Devolver
+                                                </a>
+
+                                            <?php else : ?>
+
+                                                <span class="action-btn action-disabled">
+                                                    <i class="fa-solid fa-circle-check"></i>
+                                                    Devolvido
+                                                </span>
+
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+
+                                <?php endforeach; ?>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
                 </div>
 
                 <?php if ($total_paginas > 1) : ?>
@@ -354,14 +597,14 @@ $resultados_pagina = array_slice($resultados, $offset, $registos_por_pagina);
 
                 <?php endif; ?>
 
-                <div class="btn-voltar-wrapper">
-                    <a href="ferramentas.php" class="btn-voltar-custom">
-                        <i class="fa-solid fa-arrow-left me-1"></i>
-                        Voltar
-                    </a>
-                </div>
-
             <?php endif; ?>
+
+            <div class="btn-voltar-wrapper">
+                <a href="ferramentas.php" class="btn-voltar-custom">
+                    <i class="fa-solid fa-arrow-left me-1"></i>
+                    Voltar
+                </a>
+            </div>
 
         </main>
 
