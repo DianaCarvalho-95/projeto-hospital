@@ -1,4 +1,8 @@
-/* Base */
+
+/* =====================================================
+   BASE
+===================================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -11,21 +15,26 @@ html {
 }
 
 body {
-    background-color: #f4f6f9;
-    color: #222222;
-    padding-bottom: 140px;
+    background: #f5f7fa;
+    color: #0f172a;
 }
 
-/* Navbar */
+
+
+/* =====================================================
+   NAVBAR
+===================================================== */
+
 .bng-navbar {
-    background-color: #343a40;
+    background: #1E3A5F;
+    padding: 15px 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px;
     position: sticky;
     top: 0;
     z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .bng-navbar div {
@@ -34,25 +43,25 @@ body {
 }
 
 .bng-navbar img {
-    height: 50px;
-    margin-right: 10px;
+    height: 42px;
+    margin-right: 12px;
 }
 
 .bng-navbar h3 {
-    font-size: 1.5em;
-    color: #dddddd;
+    color: #ffffff;
+    font-size: 1.35rem;
+    font-weight: 700;
 }
 
 .container-navegacao {
-    text-align: center;
-    padding: 20px;
+    gap: 22px;
 }
 
 .container-navegacao a {
-    font-size: 1.1em;
-    margin: 0 15px;
+    color: #dbeafe;
     text-decoration: none;
-    color: #dddddd;
+    font-weight: 600;
+    font-size: 1rem;
 }
 
 .container-navegacao a:hover {
@@ -60,252 +69,373 @@ body {
 }
 
 .nav-cliente a {
-    color: #dddddd;
+    background: #ffffff;
+    color: #1E3A5F;
+    padding: 10px 18px;
+    border-radius: 10px;
     text-decoration: none;
-    font-size: 1.1em;
-    padding: 10px;
-    border-radius: 5px;
-    transition: background 0.3s;
-}
+    font-weight: 700;
 
-.nav-cliente a:hover {
-    background-color: #0056b3;
-}
-
-/* Rodapé */
-.footer-container {
     display: flex;
-    background-color: #343a40;
-    color: white;
-    padding: 40px 20px;
-    flex-wrap: wrap;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-}
-
-.footer-section {
-    flex: 1;
-    min-width: 250px;
-    padding: 10px;
-    text-align: center;
-}
-
-.footer-section strong {
-    font-size: 1.2rem;
-    display: block;
-    margin-bottom: 10px;
-    color: #f8f9fa;
-}
-
-.footer-section p {
-    font-size: 1rem;
-    color: #d6d6d6;
-}
-
-/* Secções gerais */
-.container-texto-generico {
-    display: flex;
+    align-items: center;
     justify-content: center;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding: 100px 40px;
+
+    gap: 8px;
+
+    min-width: 160px;
     text-align: center;
-    min-height: 100vh;
 }
+
+.nav-cliente a i {
+    margin: 0;
+}
+
+.nav-cliente a:hover,
+.botao-area-restrita:hover {
+    background: #f8fafc;
+    color: #1E3A5F !important;
+    text-decoration: none;
+}
+
+.nav-cliente i {
+    margin: 0;
+}
+
+/* =====================================================
+   SECÇÕES GERAIS
+===================================================== */
 
 section {
-    padding: 100px 40px;
+    padding: 55px 8%;
     text-align: center;
-    min-height: 100vh;
 }
 
 section h2 {
-    font-size: 2.3em;
-    margin-bottom: 20px;
+    color: #1E3A5F;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 35px;
 }
 
-/* Hero / Quem Somos */
-#quem-somos {
-    text-align: center;
-    padding: 100px 0;
-    min-height: 100vh;
+/* =====================================================
+   HERO / QUEM SOMOS
+===================================================== */
+
+.container-texto-generico {
+    padding: 45px 8% 55px 8%;
 }
 
 .quem-somos-content {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 0 20px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e5e7eb;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+    text-align: left;
 }
 
 .quem-somos-content h1 {
-    font-size: 2.4em;
-    line-height: 1.2;
-    margin-bottom: 20px;
+    color: #1E3A5F;
+    font-size: 2.7rem;
+    line-height: 1.15;
+    font-weight: 700;
+    margin-bottom: 18px;
 }
 
 .quem-somos-content p {
-    font-size: 1.2em;
-    line-height: 1.6;
-    margin-bottom: 30px;
+    color: #64748b;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 24px;
 }
 
 .quem-somos-content img {
-    width: 700px;
-    height: 165px;
-    display: block;
-    margin: 20px auto;
+    width: 100%;
+    height: 260px;
     object-fit: cover;
-    max-width: 100%;
-    border-radius: 6px;
+    border-radius: 16px;
 }
 
-.button {
-    display: inline-block;
-    background-color: #aaaaaa;
-    color: #fff;
-    padding: 10px 20px;
+/* =====================================================
+   BOTÕES
+===================================================== */
+
+.button,
+#contacto button {
+    background: #2F5D8A;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 22px;
+    font-weight: 600;
     text-decoration: none;
-    border-radius: 5px;
+    display: inline-block;
+    cursor: pointer;
 }
 
-.button:hover {
-    background-color: #8f8f8f;
+.button:hover,
+#contacto button:hover {
+    background: #1E3A5F;
+    color: #ffffff;
 }
 
-/* Equipa */
+.button i,
+#contacto button i {
+    margin-right: 6px;
+}
+
+/* =====================================================
+   EQUIPA
+===================================================== */
+
 .equipa-container {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
 }
 
 .pessoa {
-    width: 300px;
-    margin: 20px;
-    padding: 20px;
-    background-color: #eee;
-    border-radius: 5px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 25px;
+    width: 280px;
     text-align: center;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    border: 1px solid #e5e7eb;
 }
 
 .pessoa img {
-    width: 100px;
-    height: 100px;
+    width: 140px;
+    height: 140px;
     border-radius: 50%;
-    margin-bottom: 10px;
     object-fit: cover;
+    margin-bottom: 15px;
 }
 
 .pessoa h3 {
-    margin-bottom: 8px;
+    color: #1E3A5F;
+    margin-bottom: 6px;
 }
 
-/* Serviços e Áreas */
+.pessoa p {
+    color: #64748b;
+}
+
+/* =====================================================
+   SERVIÇOS E ÁREAS
+===================================================== */
+
 #servicos,
 #aula-grupo {
-    max-width: 1200px;
-    margin: 50px auto;
-    padding: 50px;
-    scroll-margin-top: 100px;
+    max-width: 1280px;
+    margin: 0 auto;
 }
 
 .servicos-container {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(6, 140px);
+    gap: 20px;
     justify-content: center;
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.servico:nth-child(4) {
+    grid-column: 2 / span 2;
+}
+
+.servico:nth-child(5) {
+    grid-column: 4 / span 2;
 }
 
 .servico {
-    width: 300px;
-    margin: 20px;
-    padding: 20px;
-    background-color: #eee;
-    border-radius: 5px;
-    text-align: center;
+    grid-column: span 2;
+
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 22px;
+
+    min-height: 125px;
+
+    border-left: 5px solid #2F5D8A;
+    text-align: left;
+
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+
+    border-top: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .servico i {
+    color: #2F5D8A;
     margin-bottom: 15px;
-    color: #343a40;
 }
 
 .servico h3 {
+    color: #1E3A5F;
     margin-bottom: 10px;
 }
 
-/* Planos */
+.servico p {
+    color: #64748b;
+    line-height: 1.5;
+}
+
+/* =====================================================
+   PLANOS
+===================================================== */
+
 .pacotes-container {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
 }
 
 .pacote {
-    width: 300px;
-    margin: 20px;
-    padding: 20px;
-    background-color: #eee;
-    border-radius: 5px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 25px;
+    width: 320px;
     text-align: center;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    border: 1px solid #e5e7eb;
 }
 
 .pacote h3 {
+    color: #1E3A5F;
     margin-bottom: 10px;
 }
 
 .pacote .preco {
-    font-size: 1.5em;
-    font-weight: bold;
-    margin-bottom: 10px;
+    color: #2F5D8A;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 14px;
 }
 
 .pacote ul {
     list-style: none;
-    padding: 0;
-    margin-bottom: 20px;
+    text-align: left;
+    color: #64748b;
+    line-height: 1.7;
+    margin-bottom: 22px;
 }
 
-.pacote ul li {
-    margin-bottom: 8px;
+.pacote ul li::before {
+    content: "✓";
+    color: #2F5D8A;
+    font-weight: 700;
+    margin-right: 8px;
 }
 
-/* Contacto */
+/* =====================================================
+   CONTACTO
+===================================================== */
+
 #contacto p {
-    margin-bottom: 20px;
+    color: #64748b;
+    margin-bottom: 25px;
 }
 
 #contacto form {
-    display: flex;
-    flex-direction: column;
-    max-width: 500px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 700px;
     margin: 0 auto;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    border: 1px solid #e5e7eb;
+    text-align: left;
 }
 
 #contacto label {
-    margin-top: 10px;
-    margin-bottom: 5px;
-    text-align: left;
+    display: block;
+    color: #334155;
+    font-weight: 600;
+    margin-bottom: 6px;
 }
 
 #contacto input,
 #contacto textarea {
+    width: 100%;
+    border: 1px solid #dbe3ec;
+    border-radius: 10px;
     padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
 }
 
-#contacto button {
-    background-color: #aaaaaa;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+#contacto input:focus,
+#contacto textarea:focus {
+    outline: none;
+    border-color: #2F5D8A;
+    box-shadow: 0 0 0 0.15rem rgba(47, 93, 138, 0.18);
 }
 
-#contacto button:hover {
-    background-color: #8f8f8f;
+/* =====================================================
+   RODAPÉ
+===================================================== */
+
+.footer-container {
+    background: #1E3A5F;
+    color: #ffffff;
+    padding: 35px 8%;
+    margin-top: 50px;
+
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+}
+
+.footer-section {
+    text-align: center;
+}
+
+.footer-section strong {
+    font-size: 1.05rem;
+    display: block;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+
+.footer-section p {
+    color: #dbeafe;
+    margin: 6px 0;
+}
+
+/* =====================================================
+   RESPONSIVIDADE
+===================================================== */
+
+@media (max-width: 900px) {
+    .bng-navbar {
+        padding: 15px 20px;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .container-navegacao {
+        display: none !important;
+    }
+
+    .quem-somos-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .quem-somos-content h1 {
+        font-size: 2.1rem;
+    }
+
+    .quem-somos-content img {
+        height: 220px;
+    }
 }
