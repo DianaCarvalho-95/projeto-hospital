@@ -341,10 +341,10 @@ if ($id <= 0) {
 
                     <form action="editar.php?id=<?= $equipamento->id ?>" method="post">
 
-                        <div class="row">
+                        <div class="row g-3">
 
                             <!-- Código Interno de Inventário -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Código Interno de Inventário</label>
                                 <input type="text"
                                     name="codigo"
@@ -353,7 +353,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Designação do Equipamento -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Designação do Equipamento</label>
                                 <input type="text"
                                     name="designacao"
@@ -362,7 +362,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Categoria -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Categoria</label>
                                 <select name="categoria" class="form-control">
                                     <option value="">Escolha uma opção</option>
@@ -377,7 +377,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Marca -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Marca</label>
                                 <input type="text"
                                     name="marca"
@@ -386,7 +386,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Modelo -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Modelo</label>
                                 <input type="text"
                                     name="modelo"
@@ -395,7 +395,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Número de Série -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Número de Série</label>
                                 <input type="text"
                                     name="numero_serie"
@@ -404,7 +404,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Fabricante -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Fabricante</label>
                                 <input type="text"
                                     name="fabricante"
@@ -413,7 +413,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Data de Aquisição -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Data de Aquisição</label>
                                 <input type="date"
                                     name="data_aquisicao"
@@ -422,7 +422,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Ano de Fabrico -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Ano de Fabrico</label>
                                 <input type="number"
                                     name="ano_fabrico"
@@ -431,7 +431,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Custo de Aquisição -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Custo de Aquisição</label>
                                 <input type="text"
                                     name="custo_aquisicao"
@@ -440,7 +440,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Tipo de Entrada -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Tipo de Entrada</label>
                                 <select name="tipo_entrada" class="form-control">
                                     <option value="">Escolha uma opção</option>
@@ -452,7 +452,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Estado Atual -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Estado Atual</label>
                                 <select name="estado" class="form-control">
                                     <option value="">Escolha uma opção</option>
@@ -465,7 +465,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Criticidade -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Criticidade</label>
                                 <select name="criticidade" class="form-control">
                                     <option value="">Escolha uma opção</option>
@@ -477,7 +477,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Localização -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
                                 <label class="form-label">Localização</label>
                                 <select name="localizacao_id" class="form-control">
                                     <option value="">Escolha uma localização</option>
@@ -500,7 +500,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Fornecedor -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
 
                                 <label class="form-label">Fornecedor</label>
 
@@ -524,7 +524,7 @@ if ($id <= 0) {
                             </div>
 
                             <!-- Observações -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-lg-4 col-md-6">
 
                                 <label class="form-label">Observações</label>
 
@@ -538,9 +538,9 @@ if ($id <= 0) {
                         </div>
 
                         <!-- Botões do formulário -->
-                        <div class="d-flex gap-2 mt-2">
+                        <div class="d-flex gap-2 mt-3">
 
-                            <a href="lista.php" class="btn btn-cancelar-custom">
+                            <a href="detalhes.php?id=<?= $equipamento->id ?>" class="btn btn-cancelar-custom">
                                 <i class="fa-solid fa-xmark me-1"></i>
                                 Cancelar
                             </a>

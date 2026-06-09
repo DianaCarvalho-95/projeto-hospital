@@ -583,54 +583,65 @@ $imagem = !empty($equipamento->imagem)
     }
 
     .notes-box {
-        background: #fff4cf;
-        border: 1px solid #f7d774;
-        border-radius: 10px;
-        padding: 16px;
-        color: #374151;
-        line-height: 1.7;
-        font-size: 0.9rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 11px 12px;
+        color: #334155;
+        line-height: 1.55;
+        font-size: 0.88rem;
+    }
+
+    .notes-empty {
+        color: #64748b;
+        font-style: italic;
     }
 
     .quick-actions {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
     }
 
     .quick-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 42px;
         border-radius: 8px;
-        padding: 10px 12px;
+        padding: 9px 10px;
         font-weight: 700;
         text-align: center;
         text-decoration: none;
-        font-size: 0.88rem;
-    }
-
-    .quick-blue {
-        background: #0d6efd;
-        color: #fff;
-    }
-
-    .quick-green {
-        background: #198754;
-        color: #fff;
-    }
-
-    .quick-purple {
-        background: #6f42c1;
-        color: #fff;
-    }
-
-    .quick-outline {
+        font-size: 0.86rem;
+        border: 1px solid #dbe4ef;
         background: #fff;
-        color: #0d6efd;
-        border: 1px solid #0d6efd;
+        color: #1e3a5f;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .quick-primary {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+    }
+
+    .quick-secondary {
+        background: #f8fafc;
+        color: #1e3a5f;
     }
 
     .quick-btn:hover {
-        opacity: 0.9;
-        color: inherit;
+        background: #eef6ff;
+        border-color: #b8d7ff;
+        color: #0b5ed7;
+    }
+
+    .quick-primary:hover {
+        background: #0b5ed7;
+        border-color: #0b5ed7;
+        color: #fff;
     }
 
     .footer-update {
@@ -917,40 +928,40 @@ $imagem = !empty($equipamento->imagem)
                                 <div class="d-flex flex-column gap-3 h-100">
 
                                     <div class="inner-card">
-                                        <h5 class="inner-title">Notas / Observações</h5>
-
-                                        <div class="notes-box">
-                                            <?= !empty($equipamento->observacoes)
-                                                ? nl2br(h($equipamento->observacoes))
-                                                : 'Sem observações registadas.' ?>
-                                        </div>
-                                    </div>
-
-                                    <div class="inner-card">
                                         <h5 class="inner-title">Ações Rápidas</h5>
 
                                         <div class="quick-actions">
 
-                                            <a href="editar.php?id=<?= $equipamento->id ?>" class="quick-btn quick-blue">
-                                                <i class="fa-regular fa-pen-to-square me-1"></i>
-                                                Editar Equipamento
+                                            <a href="editar.php?id=<?= $equipamento->id ?>" class="quick-btn quick-primary">
+                                                <i class="fa-regular fa-pen-to-square"></i>
+                                                Editar
                                             </a>
 
-                                            <a href="../ferramentas/proximas-manutencoes.php?equipamento_id=<?= $equipamento->id ?>" class="quick-btn quick-green">
-                                                <i class="fa-solid fa-wrench me-1"></i>
-                                                Registar Manutenção
+                                            <a href="../ferramentas/nova-manutencao.php?equipamento_id=<?= $equipamento->id ?>" class="quick-btn quick-primary">
+                                                <i class="fa-solid fa-wrench"></i>
+                                                Manutenção
                                             </a>
 
-                                            <a href="../ferramentas/historico.php?equipamento_id=<?= $equipamento->id ?>" class="quick-btn quick-purple">
-                                                <i class="fa-solid fa-right-left me-1"></i>
-                                                Registar Movimentação
+                                            <a href="../ferramentas/nova-movimentacao.php?equipamento_id=<?= $equipamento->id ?>" class="quick-btn quick-secondary">
+                                                <i class="fa-solid fa-right-left"></i>
+                                                Movimentação
                                             </a>
 
-                                            <a href="#" onclick="window.print(); return false;" class="quick-btn quick-outline">
-                                                <i class="fa-solid fa-print me-1"></i>
-                                                Imprimir Ficha
+                                            <a href="#" onclick="window.print(); return false;" class="quick-btn quick-secondary">
+                                                <i class="fa-solid fa-print"></i>
+                                                Imprimir
                                             </a>
 
+                                        </div>
+                                    </div>
+
+                                    <div class="inner-card">
+                                        <h5 class="inner-title">Notas / Observações</h5>
+
+                                        <div class="notes-box<?= empty($equipamento->observacoes) ? ' notes-empty' : '' ?>">
+                                            <?= !empty($equipamento->observacoes)
+                                                ? nl2br(h($equipamento->observacoes))
+                                                : 'Sem observações registadas.' ?>
                                         </div>
                                     </div>
 
@@ -1284,7 +1295,7 @@ $imagem = !empty($equipamento->imagem)
                                     <?php foreach ($avaliacao_itens as $item) : ?>
                                         <tr>
                                             <td><?= h($item['critério']) ?></td>
-                                            <td><?= h($item['pontos']) ?> / <?= h($item['m?ximo']) ?></td>
+                                            <td><?= h($item['pontos']) ?> / <?= h($item['máximo'] ?? '-') ?></td>
                                             <td>
                                                 <span class="badge bg-<?= h($item['classe']) ?>">
                                                     <?= h($item['estado']) ?>
@@ -1384,5 +1395,28 @@ $imagem = !empty($equipamento->imagem)
     <?php endif; ?>
 
 </main>
+
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (!window.location.hash) {
+        return;
+    }
+
+    var tabButton = document.querySelector('.nav-link[data-bs-target="' + window.location.hash + '"]');
+
+    if (!tabButton) {
+        return;
+    }
+
+    if (window.bootstrap && bootstrap.Tab) {
+        bootstrap.Tab.getOrCreateInstance(tabButton).show();
+    } else {
+        tabButton.click();
+    }
+});
+</script>
 
 <?php include '../../includes/footer.php'; ?>
