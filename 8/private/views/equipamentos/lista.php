@@ -30,7 +30,7 @@ if ($pagina < 1) {
     $pagina = 1;
 }
 
-$registos_por_pagina = 14;
+$registos_por_pagina = 7;
 $offset = ($pagina - 1) * $registos_por_pagina;
 
 $colunas_permitidas = [
