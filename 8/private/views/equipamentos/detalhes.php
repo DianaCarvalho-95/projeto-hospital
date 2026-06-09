@@ -6,376 +6,1383 @@ require_once __DIR__ . '/../../includes/funcoes.php';
 redirect_if_not_logged();
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-$equipamento = null;
 $erro = '';
 
+$equipamento = null;
+$documentos = [];
+$manuais = [];
+$garantias = [];
+$manutencoes = [];
+$movimentacoes = [];
+$emprestimos = [];
+$historico = [];
+$ultima_manutencao = null;
+$proxima_manutencao = null;
+$total_custos_manutencao = 0;
+$estado_manutencao = 'Sem plano';
+$classe_estado_manutencao = 'secondary';
+$avaliacao_itens = [];
+$pontuacao_avaliacao = 0;
+$estado_avaliacao = 'Sem avaliação';
+$classe_avaliacao = 'secondary';
+$recomendacao_avaliacao = 'Sem dados suficientes para recomendação.';
+$percentagem_custos_manutencao = null;
+$custo_total_estimado = 0;
+$estado_custos = 'Sem análise';
+$classe_estado_custos = 'secondary';
+$recomendacao_custos = 'Sem dados suficientes para análise financeira.';
+
+function h($valor)
+{
+    return htmlspecialchars($valor ?? '', ENT_QUOTES, 'UTF-8');
+}
+
+function data_pt($data)
+{
+    return !empty($data) ? date('d/m/Y', strtotime($data)) : '-';
+}
+
+function moeda_pt($valor)
+{
+    return $valor !== null && $valor !== ''
+        ? number_format($valor, 2, ',', '.') . ' €'
+        : '-';
+}
+
 if ($id <= 0) {
-
     $erro = 'Equipamento inválido.';
-
 } else {
-
     try {
-
-        /*Ligação à base de dados.*/
         $ligacao = new PDO(
-            "mysql:host=" . MYSQL_HOST .
-            ";dbname=" . MYSQL_DATABASE .
-            ";charset=utf8",
+            "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
             MYSQL_USERNAME,
             MYSQL_PASSWORD
         );
 
         $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        /*Consulta do equipamento selecionado*/
-        $stmt = $ligacao->prepare(
-            "SELECT
+        $stmt = $ligacao->prepare("
+            SELECT 
                 e.*,
                 l.edificio,
                 l.piso,
                 l.servico,
                 l.sala,
-                f.nome_empresa
+                f.nome_empresa,
+                f.tipo_fornecedor,
+                f.email AS email_fornecedor,
+                f.telefone AS telefone_fornecedor,
+                ie.imagem
             FROM equipamentos e
-            LEFT JOIN localizacoes l
-                ON e.localizacao_id = l.id
-            LEFT JOIN fornecedores f
-                ON e.fornecedor_id = f.id
-            WHERE e.id = :id"
-        );
+            LEFT JOIN localizacoes l ON e.localizacao_id = l.id
+            LEFT JOIN fornecedores f ON e.fornecedor_id = f.id
+            LEFT JOIN imagens_equipamentos ie ON e.categoria = ie.categoria
+            WHERE e.id = :id
+        ");
 
-        $stmt->execute([
-            ':id' => $id
-        ]);
-
+        $stmt->execute([':id' => $id]);
         $equipamento = $stmt->fetch(PDO::FETCH_OBJ);
 
         if (!$equipamento) {
             $erro = 'Equipamento não encontrado.';
+        } else {
+            $stmt = $ligacao->prepare("
+                SELECT *
+                FROM documentacao
+                WHERE equipamento_id = :id
+                  AND LOWER(tipo_documento) NOT LIKE '%manual%'
+                  AND LOWER(nome_documento) NOT LIKE '%manual%'
+                ORDER BY data_documento DESC
+            ");
+            $stmt->execute([':id' => $id]);
+            $documentos = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+            $stmt = $ligacao->prepare("SELECT * FROM manuais_equipamentos WHERE id_equipamento = :id ORDER BY data_upload DESC");
+            $stmt->execute([':id' => $id]);
+            $manuais = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+            $stmt = $ligacao->prepare("SELECT * FROM garantias_contratos WHERE equipamento_id = :id ORDER BY data_fim DESC");
+            $stmt->execute([':id' => $id]);
+            $garantias = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+            $stmt = $ligacao->prepare("SELECT * FROM manutencoes WHERE equipamento_id = :id ORDER BY data_manutencao DESC");
+            $stmt->execute([':id' => $id]);
+            $manutencoes = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+            foreach ($manutencoes as $m) {
+                if ($ultima_manutencao === null || strtotime($m->data_manutencao) > strtotime($ultima_manutencao->data_manutencao)) {
+                    $ultima_manutencao = $m;
+                }
+
+                if (!empty($m->proxima_manutencao)) {
+                    if ($proxima_manutencao === null || strtotime($m->proxima_manutencao) < strtotime($proxima_manutencao->proxima_manutencao)) {
+                        $proxima_manutencao = $m;
+                    }
+                }
+
+                $total_custos_manutencao += (float) ($m->custo ?? 0);
+            }
+
+            if ($proxima_manutencao !== null) {
+                $hoje = strtotime(date('Y-m-d'));
+                $proxima_data = strtotime($proxima_manutencao->proxima_manutencao);
+                $dias_para_proxima = (int) floor(($proxima_data - $hoje) / 86400);
+
+                if ($dias_para_proxima < 0) {
+                    $estado_manutencao = 'Atrasada';
+                    $classe_estado_manutencao = 'danger';
+                } elseif ($dias_para_proxima <= 30) {
+                    $estado_manutencao = 'A vencer';
+                    $classe_estado_manutencao = 'warning text-dark';
+                } else {
+                    $estado_manutencao = 'Em dia';
+                    $classe_estado_manutencao = 'success';
+                }
+            }
+
+            if (!empty($equipamento->estado)) {
+                $estado_equipamento = mb_strtolower($equipamento->estado, 'UTF-8');
+
+                if (strpos($estado_equipamento, 'manutenção') !== false || strpos($estado_equipamento, 'manutencao') !== false) {
+                    $estado_manutencao = 'Em manutenção';
+                    $classe_estado_manutencao = 'warning text-dark';
+                } elseif (strpos($estado_equipamento, 'calibração') !== false || strpos($estado_equipamento, 'calibracao') !== false) {
+                    $estado_manutencao = 'Em calibração';
+                    $classe_estado_manutencao = 'info text-dark';
+                } elseif (strpos($estado_equipamento, 'inativo') !== false) {
+                    $estado_manutencao = 'Inativo';
+                    $classe_estado_manutencao = 'secondary';
+                }
+            }
+
+            $stmt = $ligacao->prepare("SELECT * FROM movimentacoes WHERE equipamento_id = :id ORDER BY data_movimentacao DESC");
+            $stmt->execute([':id' => $id]);
+            $movimentacoes = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+            $stmt = $ligacao->prepare("SELECT * FROM emprestimos WHERE equipamento_id = :id ORDER BY data_emprestimo DESC");
+            $stmt->execute([':id' => $id]);
+            $emprestimos = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+            foreach ($movimentacoes as $mov) {
+                $historico[] = [
+                    'tipo' => 'Movimentação',
+                    'origem' => $mov->local_origem,
+                    'destino' => $mov->local_destino,
+                    'data' => $mov->data_movimentacao,
+                    'devolucao' => '-',
+                    'responsavel' => $mov->responsavel,
+                    'estado' => $mov->motivo,
+                ];
+            }
+
+            foreach ($emprestimos as $emp) {
+                $historico[] = [
+                    'tipo' => 'Empréstimo',
+                    'origem' => $emp->servico_origem,
+                    'destino' => $emp->servico_destino,
+                    'data' => $emp->data_emprestimo,
+                    'devolucao' => !empty($emp->data_devolucao)
+                        ? data_pt($emp->data_devolucao)
+                        : (!empty($emp->data_prevista_devolucao) ? 'Prevista: ' . data_pt($emp->data_prevista_devolucao) : '-'),
+                    'responsavel' => $emp->responsavel,
+                    'estado' => $emp->estado,
+                ];
+            }
+
+            usort($historico, function ($a, $b) {
+                return strtotime($b['data']) <=> strtotime($a['data']);
+            });
+
+            $estado_equipamento = mb_strtolower($equipamento->estado ?? '', 'UTF-8');
+            $criticidade = mb_strtolower($equipamento->criticidade ?? '', 'UTF-8');
+
+            if (strpos($estado_equipamento, 'ativo') !== false) {
+                $avaliacao_itens[] = ['critério' => 'Condição operacional', 'pontos' => 20, 'máximo' => 20, 'estado' => 'Bom', 'classe' => 'success', 'observação' => 'Equipamento disponível para utilização.'];
+            } elseif (strpos($estado_equipamento, 'manuten') !== false) {
+                $avaliacao_itens[] = ['critério' => 'Condição operacional', 'pontos' => 10, 'máximo' => 20, 'estado' => 'Atenção', 'classe' => 'warning text-dark', 'observação' => 'Equipamento encontra-se em manutenção.'];
+            } elseif (strpos($estado_equipamento, 'calibra') !== false) {
+                $avaliacao_itens[] = ['critério' => 'Condição operacional', 'pontos' => 12, 'máximo' => 20, 'estado' => 'Atenção', 'classe' => 'warning text-dark', 'observação' => 'Equipamento encontra-se em calibração.'];
+            } elseif (strpos($estado_equipamento, 'inativo') !== false) {
+                $avaliacao_itens[] = ['critério' => 'Condição operacional', 'pontos' => 2, 'máximo' => 20, 'estado' => 'Crítico', 'classe' => 'danger', 'observação' => 'Equipamento inativo.'];
+            } else {
+                $avaliacao_itens[] = ['critério' => 'Condição operacional', 'pontos' => 8, 'máximo' => 20, 'estado' => 'Atenção', 'classe' => 'warning text-dark', 'observação' => 'Estado operacional pouco claro.'];
+            }
+
+            if (strpos($criticidade, 'alta') !== false) {
+                $avaliacao_itens[] = ['critério' => 'Criticidade', 'pontos' => 10, 'máximo' => 15, 'estado' => 'Atenção', 'classe' => 'warning text-dark', 'observação' => 'Equipamento crítico; requer acompanhamento regular.'];
+            } elseif (strpos($criticidade, 'média') !== false || strpos($criticidade, 'media') !== false) {
+                $avaliacao_itens[] = ['critério' => 'Criticidade', 'pontos' => 13, 'máximo' => 15, 'estado' => 'Bom', 'classe' => 'success', 'observação' => 'Criticidade moderada.'];
+            } else {
+                $avaliacao_itens[] = ['critério' => 'Criticidade', 'pontos' => 15, 'máximo' => 15, 'estado' => 'Bom', 'classe' => 'success', 'observação' => 'Criticidade baixa.'];
+            }
+
+            if (count($manutencoes) == 0) {
+                $avaliacao_itens[] = ['critério' => 'Manutenção', 'pontos' => 4, 'máximo' => 20, 'estado' => 'Crítico', 'classe' => 'danger', 'observação' => 'Sem histórico de manutenção registado.'];
+            } elseif ($proxima_manutencao === null) {
+                $avaliacao_itens[] = ['critério' => 'Manutenção', 'pontos' => 8, 'máximo' => 20, 'estado' => 'Atenção', 'classe' => 'warning text-dark', 'observação' => 'Sem próxima manutenção definida.'];
+            } elseif ($estado_manutencao === 'Atrasada') {
+                $avaliacao_itens[] = ['critério' => 'Manutenção', 'pontos' => 5, 'máximo' => 20, 'estado' => 'Crítico', 'classe' => 'danger', 'observação' => 'Próxima manutenção encontra-se atrasada.'];
+            } elseif ($estado_manutencao === 'A vencer') {
+                $avaliacao_itens[] = ['critério' => 'Manutenção', 'pontos' => 14, 'máximo' => 20, 'estado' => 'Atenção', 'classe' => 'warning text-dark', 'observação' => 'Manutenção aproxima-se do prazo.'];
+            } else {
+                $avaliacao_itens[] = ['critério' => 'Manutenção', 'pontos' => 20, 'máximo' => 20, 'estado' => 'Bom', 'classe' => 'success', 'observação' => 'Plano de manutenção dentro do prazo.'];
+            }
+
+            if (count($documentos) > 0 && count($manuais) > 0) {
+                $avaliacao_itens[] = ['critério' => 'Documentação', 'pontos' => 15, 'máximo' => 15, 'estado' => 'Bom', 'classe' => 'success', 'observação' => 'Ficha técnica e manual associados.'];
+            } elseif (count($documentos) > 0 || count($manuais) > 0) {
+                $avaliacao_itens[] = ['critério' => 'Documentação', 'pontos' => 9, 'máximo' => 15, 'estado' => 'Atenção', 'classe' => 'warning text-dark', 'observação' => 'Documentação parcialmente associada.'];
+            } else {
+                $avaliacao_itens[] = ['critério' => 'Documentação', 'pontos' => 2, 'máximo' => 15, 'estado' => 'Crítico', 'classe' => 'danger', 'observação' => 'Sem documentação técnica associada.'];
+            }
+
+            $garantia_ativa = false;
+            foreach ($garantias as $g) {
+                if (!empty($g->data_fim) && strtotime($g->data_fim) >= strtotime(date('Y-m-d'))) {
+                    $garantia_ativa = true;
+                    break;
+                }
+            }
+
+            if ($garantia_ativa) {
+                $avaliacao_itens[] = ['critério' => 'Garantia / Contrato', 'pontos' => 15, 'máximo' => 15, 'estado' => 'Bom', 'classe' => 'success', 'observação' => 'Garantia ou contrato ativo.'];
+            } elseif (count($garantias) > 0) {
+                $avaliacao_itens[] = ['critério' => 'Garantia / Contrato', 'pontos' => 7, 'máximo' => 15, 'estado' => 'Atenção', 'classe' => 'warning text-dark', 'observação' => 'Garantia/contrato registado, mas sem validade ativa.'];
+            } else {
+                $avaliacao_itens[] = ['critério' => 'Garantia / Contrato', 'pontos' => 3, 'máximo' => 15, 'estado' => 'Crítico', 'classe' => 'danger', 'observação' => 'Sem garantia ou contrato associado.'];
+            }
+
+            $custo_aquisicao = (float) ($equipamento->custo_aquisicao ?? 0);
+            if ($custo_aquisicao > 0) {
+                $percentagem_custos = ($total_custos_manutencao / $custo_aquisicao) * 100;
+
+                if ($percentagem_custos <= 10) {
+                    $avaliacao_itens[] = ['critério' => 'Custos', 'pontos' => 15, 'máximo' => 15, 'estado' => 'Bom', 'classe' => 'success', 'observação' => 'Custos de manutenção controlados.'];
+                } elseif ($percentagem_custos <= 25) {
+                    $avaliacao_itens[] = ['critério' => 'Custos', 'pontos' => 10, 'máximo' => 15, 'estado' => 'Atenção', 'classe' => 'warning text-dark', 'observação' => 'Custos de manutenção relevantes face ao valor de aquisição.'];
+                } else {
+                    $avaliacao_itens[] = ['critério' => 'Custos', 'pontos' => 5, 'máximo' => 15, 'estado' => 'Crítico', 'classe' => 'danger', 'observação' => 'Custos elevados; avaliar substituição ou contrato.'];
+                }
+            } else {
+                $avaliacao_itens[] = ['critério' => 'Custos', 'pontos' => 10, 'máximo' => 15, 'estado' => 'Atenção', 'classe' => 'warning text-dark', 'observação' => 'Sem valor de aquisição para comparação.'];
+            }
+
+            foreach ($avaliacao_itens as $item) {
+                $pontuacao_avaliacao += $item['pontos'];
+            }
+
+            if ($pontuacao_avaliacao >= 85) {
+                $estado_avaliacao = 'Bom';
+                $classe_avaliacao = 'success';
+                $recomendacao_avaliacao = 'Manter em utilização e seguir o plano normal de manutenção.';
+            } elseif ($pontuacao_avaliacao >= 70) {
+                $estado_avaliacao = 'Requer acompanhamento';
+                $classe_avaliacao = 'warning text-dark';
+                $recomendacao_avaliacao = 'Manter em utilização com acompanhamento técnico próximo.';
+            } elseif ($pontuacao_avaliacao >= 50) {
+                $estado_avaliacao = 'Atenção';
+                $classe_avaliacao = 'warning text-dark';
+                $recomendacao_avaliacao = 'Agendar revisão técnica e validar documentação, contrato e manutenção.';
+            } else {
+                $estado_avaliacao = 'Crítico';
+                $classe_avaliacao = 'danger';
+                $recomendacao_avaliacao = 'Avaliar retirada temporária de utilização ou substituição.';
+            }
+
+            $custo_aquisicao = (float) ($equipamento->custo_aquisicao ?? 0);
+            $custo_total_estimado = $custo_aquisicao + $total_custos_manutencao;
+
+            if ($custo_aquisicao > 0) {
+                $percentagem_custos_manutencao = ($total_custos_manutencao / $custo_aquisicao) * 100;
+
+                if ($percentagem_custos_manutencao <= 10) {
+                    $estado_custos = 'Custos controlados';
+                    $classe_estado_custos = 'success';
+                    $recomendacao_custos = 'Manter o plano atual de manutenção e continuar a acompanhar custos futuros.';
+                } elseif ($percentagem_custos_manutencao <= 25) {
+                    $estado_custos = 'Custos relevantes';
+                    $classe_estado_custos = 'warning text-dark';
+                    $recomendacao_custos = 'Acompanhar a evolução dos custos e avaliar renegociação de contrato ou manutenção preventiva.';
+                } else {
+                    $estado_custos = 'Avaliar substituição';
+                    $classe_estado_custos = 'danger';
+                    $recomendacao_custos = 'Custos de manutenção elevados face ao valor de aquisição; considerar substituição ou revisão contratual.';
+                }
+            } elseif ($total_custos_manutencao > 0) {
+                $estado_custos = 'Aquisição sem valor';
+                $classe_estado_custos = 'warning text-dark';
+                $recomendacao_custos = 'Existem custos de manutenção, mas o custo de aquisição não está definido para comparação.';
+            } else {
+                $estado_custos = 'Sem custos registados';
+                $classe_estado_custos = 'secondary';
+                $recomendacao_custos = 'Não existem custos suficientes para análise financeira.';
+            }
         }
 
+        $ligacao = null;
     } catch (PDOException $err) {
-
-        $erro = 'Aconteceu um erro ao consultar o equipamento.';
+        $erro = 'Aconteceu um erro ao carregar a ficha do equipamento.';
     }
-
-    $ligacao = null;
 }
+
+$imagem = !empty($equipamento->imagem)
+    ? BASE_URL . '/private/assets/img/equipamentos/' . $equipamento->imagem
+    : BASE_URL . '/private/assets/img/hospital125.png';
 
 ?>
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
+<?php include '../../includes/sidebar.php'; ?>
 
 <style>
-    /*Fundo da página.*/
-    .detalhes-page {
+    .equipamento-main {
+        margin-left: 16.666666%;
+        padding: 88px 24px 18px 24px;
         background: #f5f7fa;
-        min-height: 100vh;
-        padding: 24px;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
 
-    /*Título principal*/
     .page-title {
-        font-weight: 600;
-        color: #1E3A5F;
-        font-size: 1.8rem;
-        margin-bottom: 0;
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 1.45rem;
     }
 
-    /*Subtítulo*/
     .page-subtitle {
         color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 0;
+        font-size: 0.86rem;
     }
 
-    /*Cartão principal*/
-    .content-card {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
-        border: 1px solid #e5e7eb;
-    }
-
-    /*Títulos das secções internas*/
-    .section-title {
-        color: #1E3A5F;
+    .btn-voltar {
+        background: #0d6efd;
+        color: #fff;
+        border-radius: 8px;
+        padding: 7px 13px;
         font-weight: 600;
-        font-size: 1rem;
-        margin-bottom: 14px;
-        border-bottom: 1px solid #e5e7eb;
-        padding-bottom: 8px;
+        text-decoration: none;
+        display: inline-block;
     }
 
-    /*Cada campo de informação*/
-    .info-item {
+    .btn-voltar:hover {
+        background: #0b5ed7;
+        color: #fff;
+    }
+
+    .summary-card,
+    .tabs-card,
+    .inner-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+    }
+
+    .summary-card {
+        padding: 16px 18px;
+        overflow: hidden;
+        flex: 0 0 auto;
+    }
+
+    .equipment-hero {
+        display: grid;
+        grid-template-columns: minmax(280px, 1.2fr) minmax(420px, 1.8fr);
+        gap: 18px;
+        align-items: stretch;
+    }
+
+    .equipment-identity {
+        display: grid;
+        grid-template-columns: 108px 1fr;
+        gap: 16px;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .equipment-media {
+        width: 108px;
+        height: 96px;
+        border: 1px solid #dbe3ed;
+        border-radius: 12px;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .equipment-img {
+        width: 92px;
+        height: 78px;
+        object-fit: contain;
+    }
+
+    .equipment-title {
+        color: #0f172a;
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+        line-height: 1.25;
+    }
+
+    .equipment-subtitle {
+        color: #46627f;
+        font-size: 0.86rem;
         margin-bottom: 10px;
-        font-size: 0.92rem;
+    }
+
+    .equipment-meta-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .equipment-chip {
+        background: #edf4fb;
+        color: #24496d;
+        border: 1px solid #d8e7f5;
+        border-radius: 999px;
+        padding: 4px 9px;
+        font-size: 0.74rem;
+        font-weight: 700;
+    }
+
+    .equipment-facts {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(120px, 1fr));
+        gap: 10px;
+        align-content: center;
+    }
+
+    .equipment-fact {
+        min-height: 66px;
+        background: #f8fafc;
+        border: 1px solid #e3eaf2;
+        border-radius: 10px;
+        padding: 10px 12px;
+    }
+
+    .equipment-fact.wide {
+        grid-column: span 2;
     }
 
     .info-label {
-        display: block;
-        color: #64748b;
-        font-size: 0.78rem;
-        font-weight: 600;
-        margin-bottom: 2px;
+        font-weight: 700;
+        font-size: 0.7rem;
+        color: #52677d;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0;
     }
 
     .info-value {
         color: #0f172a;
-        font-weight: 500;
+        font-size: 0.84rem;
+        font-weight: 600;
+        line-height: 1.35;
     }
 
-    /*Botão Editar*/
-    .btn-editar-custom {
+    .badge-status {
+        background: #ffe8a3;
+        color: #8a5a00;
+        padding: 5px 10px;
+        border-radius: 7px;
+        font-weight: 700;
+        font-size: 0.72rem;
+        display: inline-block;
+    }
+
+    .badge-critical {
+        background: #ffd4d4;
+        color: #b42318;
+        padding: 5px 10px;
+        border-radius: 7px;
+        font-weight: 700;
+        font-size: 0.72rem;
+        display: inline-block;
+    }
+
+    .tabs-card {
+        overflow: visible;
+        margin-bottom: 0;
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tabs-header {
+        background: #fff;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0 16px;
+        flex: 0 0 auto;
+    }
+
+    .nav-tabs {
+        border-bottom: none;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        color: #334155;
+        font-weight: 600;
+        padding: 12px 13px;
+        white-space: nowrap;
+        font-size: 0.82rem;
+    }
+
+    .nav-tabs .nav-link i {
+        margin-right: 7px;
+        color: #64748b;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        background: transparent;
+        border-bottom: 3px solid #0d6efd;
+    }
+
+    .nav-tabs .nav-link.active i {
+        color: #0d6efd;
+    }
+
+    .tabs-body {
+        padding: 16px;
+        overflow: auto;
+        min-height: 0;
+        flex: 1 1 auto;
+    }
+
+    .inner-card {
+        padding: 14px;
+        height: 100%;
+    }
+
+    .inner-title {
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+    }
+
+    .details-row {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 12px;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+    }
+
+    .details-row strong {
+        color: #0f172a;
+    }
+
+    .notes-box {
+        background: #fff4cf;
+        border: 1px solid #f7d774;
+        border-radius: 10px;
+        padding: 16px;
+        color: #374151;
+        line-height: 1.7;
+        font-size: 0.9rem;
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .quick-btn {
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+        font-size: 0.88rem;
+    }
+
+    .quick-blue {
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    .quick-green {
+        background: #198754;
+        color: #fff;
+    }
+
+    .quick-purple {
+        background: #6f42c1;
+        color: #fff;
+    }
+
+    .quick-outline {
+        background: #fff;
+        color: #0d6efd;
+        border: 1px solid #0d6efd;
+    }
+
+    .quick-btn:hover {
+        opacity: 0.9;
+        color: inherit;
+    }
+
+    .footer-update {
+        border-top: 1px solid #e5e7eb;
+        background: #f8fafc;
+        padding: 9px 16px;
+        color: #64748b;
+        font-size: 0.78rem;
+        flex: 0 0 auto;
+    }
+
+    .evaluation-panel {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .evaluation-score-card {
+        background: #f8fafc;
+        border: 1px solid #e3eaf2;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .evaluation-score {
+        color: #0f172a;
+        font-size: 2.6rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 10px;
+    }
+
+    .evaluation-score span {
+        color: #64748b;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .evaluation-summary {
+        background: #fff;
+        border: 1px solid #e3eaf2;
+        border-radius: 12px;
+        padding: 18px;
+    }
+
+    .evaluation-summary p {
+        color: #475569;
+        margin-bottom: 0;
+        line-height: 1.6;
+    }
+
+    .table-custom th {
         background: #2F5D8A;
-        border-color: #2F5D8A;
-        color: #ffffff;
-        border-radius: 10px;
-        font-weight: 600;
-        padding: 8px 16px;
+        color: #fff;
+        font-size: 0.85rem;
     }
 
-    .btn-editar-custom:hover {
-        background: #1E3A5F;
-        border-color: #1E3A5F;
-        color: #ffffff;
+    .table-custom td {
+        font-size: 0.88rem;
+        vertical-align: middle;
     }
 
-    /*Botão Voltar*/
-    .btn-voltar-custom {
-        background: #e5e7eb;
-        border-color: #e5e7eb;
-        color: #1E3A5F;
-        border-radius: 10px;
-        font-weight: 600;
-        padding: 8px 16px;
+    @media (max-width: 991px) {
+        .equipamento-main {
+            margin-left: 25%;
+        }
+
+        .equipment-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .equipment-facts {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .evaluation-panel {
+            grid-template-columns: 1fr;
+        }
     }
 
-    .btn-voltar-custom:hover {
-        background: #d1d5db;
-        border-color: #d1d5db;
-        color: #1E3A5F;
+    @media (max-width: 640px) {
+        .equipment-identity {
+            grid-template-columns: 1fr;
+        }
+
+        .equipment-media {
+            width: 100%;
+        }
+
+        .equipment-facts {
+            grid-template-columns: 1fr;
+        }
+
+        .equipment-fact.wide {
+            grid-column: auto;
+        }
     }
 </style>
 
-<div class="container-fluid">
-    <div class="row">
+<main class="equipamento-main">
 
-        <?php include '../../includes/sidebar.php'; ?>
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h2 class="page-title mb-1">Equipamentos</h2>
+            <p class="page-subtitle mb-0">Consulta e gestão dos equipamentos médicos</p>
+        </div>
+    </div>
 
-        <main class="col-md-9 col-lg-10 detalhes-page">
+    <a href="lista.php" class="btn-voltar mb-4">
+        <i class="fas fa-arrow-left me-1"></i>
+        Voltar à lista
+    </a>
 
-            <div class="d-flex justify-content-between align-items-start mb-3">
+    <?php if (!empty($erro)) : ?>
 
-                <div>
+        <div class="alert alert-danger">
+            <?= h($erro) ?>
+        </div>
 
-                    <!-- Título principal da página -->
-                    <h2 class="page-title mb-1">
-                        <i class="fa-solid fa-eye me-2"></i>
-                        Detalhes do Equipamento
-                    </h2>
+    <?php else : ?>
 
-                    <!-- Texto explicativo semelhante ao da Dashboard -->
-                    <p class="page-subtitle">
-                        Consulta detalhada dos dados técnicos, administrativos e logísticos do equipamento.
-                    </p>
+        <section class="summary-card mb-4">
+            <div class="equipment-hero">
 
+                <div class="equipment-identity">
+                    <div class="equipment-media">
+                        <img src="<?= h($imagem) ?>" alt="Equipamento" class="equipment-img">
+                    </div>
+
+                    <div>
+                        <h3 class="equipment-title">
+                            <?= h($equipamento->codigo_inventario) ?> - <?= h($equipamento->designacao) ?>
+                        </h3>
+
+                        <div class="equipment-subtitle">
+                            <?= h($equipamento->marca) ?> | <?= h($equipamento->modelo) ?>
+                        </div>
+
+                        <div class="equipment-meta-line">
+                            <span class="equipment-chip"><?= h($equipamento->categoria) ?></span>
+                            <span class="equipment-chip"><?= h($equipamento->numero_serie) ?></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="equipment-facts">
+                    <div class="equipment-fact">
+                        <div class="info-label">Estado</div>
+                        <span class="badge-status"><?= h($equipamento->estado) ?></span>
+                    </div>
+
+                    <div class="equipment-fact">
+                        <div class="info-label">Criticidade</div>
+                        <span class="badge-critical"><?= h($equipamento->criticidade) ?></span>
+                    </div>
+
+                    <div class="equipment-fact">
+                        <div class="info-label">Aquisição</div>
+                        <div class="info-value"><?= data_pt($equipamento->data_aquisicao) ?></div>
+                    </div>
+
+                    <div class="equipment-fact">
+                        <div class="info-label">Ano de fabrico</div>
+                        <div class="info-value"><?= h($equipamento->ano_fabrico) ?></div>
+                    </div>
+
+                    <div class="equipment-fact wide">
+                        <div class="info-label">Localização atual</div>
+                        <div class="info-value"><?= h($equipamento->sala . ' - ' . $equipamento->servico) ?></div>
+                    </div>
+
+                    <div class="equipment-fact wide">
+                        <div class="info-label">Fornecedor principal</div>
+                        <div class="info-value"><?= !empty($equipamento->nome_empresa) ? h($equipamento->nome_empresa) : '-' ?></div>
+                    </div>
                 </div>
 
             </div>
+        </section>
 
-            <?php if (!empty($erro)) : ?>
+        <section class="tabs-card">
 
-                <div class="alert alert-danger">
-                    <?= htmlspecialchars($erro) ?>
-                </div>
+            <div class="tabs-header">
+                <ul class="nav nav-tabs" id="equipamentoTabs" role="tablist">
 
-                <a href="lista.php" class="btn btn-voltar-custom">
-                    <i class="fa-solid fa-arrow-left me-1"></i>
-                    Voltar
-                </a>
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#dados" type="button">
+                            <i class="fa-regular fa-clipboard"></i> Dados Gerais
+                        </button>
+                    </li>
 
-            <?php else : ?>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documentacao" type="button">
+                            <i class="fa-regular fa-file-lines"></i> Documentação / Manuais
+                        </button>
+                    </li>
 
-                <div class="content-card">
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#garantias" type="button">
+                            <i class="fa-solid fa-shield-halved"></i> Garantias / Contratos
+                        </button>
+                    </li>
 
-                    <div class="row">
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#manutencoes" type="button">
+                            <i class="fa-solid fa-wrench"></i> Manutenções
+                        </button>
+                    </li>
 
-                        <!-- Dados gerais do equipamento -->
-                        <div class="col-md-6">
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#movimentacoes" type="button">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Histórico
+                        </button>
+                    </li>
 
-                            <h5 class="section-title">
-                                <i class="fa-solid fa-circle-info me-2"></i>
-                                Dados Gerais
-                            </h5>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#avaliacao" type="button">
+                            <i class="fa-solid fa-list-check"></i> Avaliação
+                        </button>
+                    </li>
 
-                            <div class="info-item">
-                                <span class="info-label">Código interno</span>
-                                <span class="info-value"><?= htmlspecialchars($equipamento->codigo_inventario) ?></span>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#custos" type="button">
+                            <i class="fa-solid fa-chart-line"></i> Custos
+                        </button>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="tabs-body">
+                <div class="tab-content">
+
+                    <div class="tab-pane fade show active" id="dados">
+
+                        <div class="row g-3 align-items-stretch">
+
+                            <div class="col-lg-4">
+                                <div class="inner-card h-100">
+                                    <h5 class="inner-title">Informação Geral</h5>
+
+                                    <div class="details-row"><strong>Código Interno:</strong><span><?= h($equipamento->codigo_inventario) ?></span></div>
+                                    <div class="details-row"><strong>Designação:</strong><span><?= h($equipamento->designacao) ?></span></div>
+                                    <div class="details-row"><strong>Categoria:</strong><span><?= h($equipamento->categoria) ?></span></div>
+                                    <div class="details-row"><strong>Marca:</strong><span><?= h($equipamento->marca) ?></span></div>
+                                    <div class="details-row"><strong>Modelo:</strong><span><?= h($equipamento->modelo) ?></span></div>
+                                    <div class="details-row"><strong>Número de Série:</strong><span><?= h($equipamento->numero_serie) ?></span></div>
+                                    <div class="details-row"><strong>Fabricante:</strong><span><?= h($equipamento->fabricante) ?></span></div>
+                                    <div class="details-row"><strong>Data de Aquisição:</strong><span><?= data_pt($equipamento->data_aquisicao) ?></span></div>
+                                    <div class="details-row"><strong>Ano de Fabrico:</strong><span><?= h($equipamento->ano_fabrico) ?></span></div>
+                                    <div class="details-row"><strong>Estado:</strong><span class="badge-status"><?= h($equipamento->estado) ?></span></div>
+                                    <div class="details-row"><strong>Criticidade:</strong><span class="badge-critical"><?= h($equipamento->criticidade) ?></span></div>
+                                    <div class="details-row"><strong>Custo de Aquisição:</strong><span><?= moeda_pt($equipamento->custo_aquisicao) ?></span></div>
+                                </div>
                             </div>
 
-                            <div class="info-item">
-                                <span class="info-label">Designação</span>
-                                <span class="info-value"><?= htmlspecialchars($equipamento->designacao) ?></span>
+                            <div class="col-lg-4">
+                                <div class="d-flex flex-column gap-3 h-100">
+
+                                    <div class="inner-card">
+                                        <h5 class="inner-title">Localização Atual</h5>
+
+                                        <div class="details-row"><strong>Edifício:</strong><span><?= h($equipamento->edificio) ?></span></div>
+                                        <div class="details-row"><strong>Piso:</strong><span><?= h($equipamento->piso) ?></span></div>
+                                        <div class="details-row"><strong>Serviço:</strong><span><?= h($equipamento->servico) ?></span></div>
+                                        <div class="details-row"><strong>Sala:</strong><span><?= h($equipamento->sala) ?></span></div>
+                                    </div>
+
+                                    <div class="inner-card">
+                                        <h5 class="inner-title">Fornecedor Principal</h5>
+
+                                        <div class="details-row"><strong>Nome:</strong><span><?= h($equipamento->nome_empresa) ?></span></div>
+                                        <div class="details-row"><strong>Tipo:</strong><span><?= h($equipamento->tipo_fornecedor) ?></span></div>
+                                        <div class="details-row"><strong>Email:</strong><span><?= h($equipamento->email_fornecedor) ?></span></div>
+                                        <div class="details-row"><strong>Telefone:</strong><span><?= h($equipamento->telefone_fornecedor) ?></span></div>
+                                    </div>
+
+                                </div>
                             </div>
 
-                            <div class="info-item">
-                                <span class="info-label">Categoria</span>
-                                <span class="info-value"><?= htmlspecialchars($equipamento->categoria) ?></span>
-                            </div>
+                            <div class="col-lg-4">
+                                <div class="d-flex flex-column gap-3 h-100">
 
-                            <div class="info-item">
-                                <span class="info-label">Marca</span>
-                                <span class="info-value"><?= htmlspecialchars($equipamento->marca) ?></span>
-                            </div>
+                                    <div class="inner-card">
+                                        <h5 class="inner-title">Notas / Observações</h5>
 
-                            <div class="info-item">
-                                <span class="info-label">Modelo</span>
-                                <span class="info-value"><?= htmlspecialchars($equipamento->modelo) ?></span>
-                            </div>
+                                        <div class="notes-box">
+                                            <?= !empty($equipamento->observacoes)
+                                                ? nl2br(h($equipamento->observacoes))
+                                                : 'Sem observações registadas.' ?>
+                                        </div>
+                                    </div>
 
-                            <div class="info-item">
-                                <span class="info-label">Número de série</span>
-                                <span class="info-value"><?= htmlspecialchars($equipamento->numero_serie) ?></span>
-                            </div>
+                                    <div class="inner-card">
+                                        <h5 class="inner-title">Ações Rápidas</h5>
 
-                            <div class="info-item">
-                                <span class="info-label">Fabricante</span>
-                                <span class="info-value"><?= htmlspecialchars($equipamento->fabricante) ?></span>
+                                        <div class="quick-actions">
+
+                                            <a href="editar.php?id=<?= $equipamento->id ?>" class="quick-btn quick-blue">
+                                                <i class="fa-regular fa-pen-to-square me-1"></i>
+                                                Editar Equipamento
+                                            </a>
+
+                                            <a href="../ferramentas/proximas-manutencoes.php?equipamento_id=<?= $equipamento->id ?>" class="quick-btn quick-green">
+                                                <i class="fa-solid fa-wrench me-1"></i>
+                                                Registar Manutenção
+                                            </a>
+
+                                            <a href="../ferramentas/historico.php?equipamento_id=<?= $equipamento->id ?>" class="quick-btn quick-purple">
+                                                <i class="fa-solid fa-right-left me-1"></i>
+                                                Registar Movimentação
+                                            </a>
+
+                                            <a href="#" onclick="window.print(); return false;" class="quick-btn quick-outline">
+                                                <i class="fa-solid fa-print me-1"></i>
+                                                Imprimir Ficha
+                                            </a>
+
+                                        </div>
+                                    </div>
+
+                                </div>
                             </div>
 
                         </div>
 
-                        <!-- Estado, localização e dados administrativos -->
-                        <div class="col-md-6">
+                    </div>
 
-                            <h5 class="section-title">
-                                <i class="fa-solid fa-location-dot me-2"></i>
-                                Estado e Localização
-                            </h5>
+                    <div class="tab-pane fade" id="documentacao">
 
-                            <div class="info-item">
-                                <span class="info-label">Estado</span>
-                                <span class="info-value"><?= htmlspecialchars($equipamento->estado) ?></span>
+                        <?php if (count($documentos) == 0 && count($manuais) == 0) : ?>
+
+                            <div class="alert alert-info mb-0">
+                                Não existem documentos ou manuais associados a este equipamento.
                             </div>
 
-                            <div class="info-item">
-                                <span class="info-label">Criticidade</span>
-                                <span class="info-value"><?= htmlspecialchars($equipamento->criticidade) ?></span>
+                        <?php else : ?>
+
+                            <?php if (count($documentos) > 0) : ?>
+
+                                <h6 class="mb-3 mt-2">
+                                    <i class="fa-regular fa-file-lines me-2"></i>
+                                    Documentação Técnica
+                                </h6>
+
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-bordered table-hover table-custom align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Tipo</th>
+                                                <th>Nome</th>
+                                                <th>Data</th>
+                                                <th>Validade</th>
+                                                <th>Ficheiro</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <?php foreach ($documentos as $doc) : ?>
+                                                <tr>
+                                                    <td><?= h($doc->tipo_documento) ?></td>
+                                                    <td><?= h($doc->nome_documento) ?></td>
+                                                    <td><?= data_pt($doc->data_documento) ?></td>
+                                                    <td><?= data_pt($doc->data_validade) ?></td>
+                                                    <td>
+                                                        <?php if (!empty($doc->caminho_ficheiro)) : ?>
+                                                            <a href="abrir-pdf.php?ficheiro=<?= urlencode($doc->caminho_ficheiro) ?>"
+                                                               target="_blank"
+                                                               class="btn btn-sm btn-outline-primary">
+                                                                <i class="fa-solid fa-file-arrow-down me-1"></i>
+                                                                Abrir
+                                                            </a>
+                                                        <?php else : ?>
+                                                            -
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            <?php endif; ?>
+
+                            <?php if (count($manuais) > 0) : ?>
+
+                                <h6 class="mb-3 mt-2">
+                                    <i class="fa-solid fa-book-open me-2"></i>
+                                    Manuais do Equipamento
+                                </h6>
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-custom align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Título</th>
+                                                <th>Tipo</th>
+                                                <th>Idioma</th>
+                                                <th>Data Upload</th>
+                                                <th>Observações</th>
+                                                <th>Ficheiro</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <?php foreach ($manuais as $manual) : ?>
+                                                <tr>
+                                                    <td><?= h($manual->titulo) ?></td>
+                                                    <td><?= h($manual->tipo_manual) ?></td>
+                                                    <td><?= h($manual->idioma) ?></td>
+                                                    <td><?= data_pt($manual->data_upload) ?></td>
+                                                    <td><?= !empty($manual->observacoes) ? h($manual->observacoes) : '-' ?></td>
+                                                    <td>
+                                                        <?php if (!empty($manual->ficheiro)) : ?>
+                                                            <a href="abrir-pdf.php?ficheiro=<?= urlencode($manual->ficheiro) ?>"
+                                                               target="_blank"
+                                                               class="btn btn-sm btn-outline-primary">
+                                                                <i class="fa-solid fa-book-open me-1"></i>
+                                                                Abrir
+                                                            </a>
+                                                        <?php else : ?>
+                                                            -
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            <?php endif; ?>
+
+                        <?php endif; ?>
+
+                    </div>
+
+                    <div class="tab-pane fade" id="garantias">
+                        <h5 class="inner-title">Garantias / Contratos</h5>
+
+                        <?php if (count($garantias) == 0) : ?>
+                            <p class="text-muted">Não existem garantias ou contratos associados.</p>
+                        <?php else : ?>
+                            <table class="table table-bordered table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Entidade</th>
+                                        <th>Início</th>
+                                        <th>Fim</th>
+                                        <th>Periodicidade</th>
+                                        <th>Ficheiro</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($garantias as $g) : ?>
+                                        <tr>
+                                            <td><?= h($g->tipo_contrato) ?></td>
+                                            <td><?= h($g->entidade_responsavel) ?></td>
+                                            <td><?= data_pt($g->data_inicio) ?></td>
+                                            <td><?= data_pt($g->data_fim) ?></td>
+                                            <td><?= h($g->periodicidade) ?></td>
+                                            <td>
+                                                <?php if (!empty($g->caminho_ficheiro)) : ?>
+                                                    <a href="abrir-pdf.php?ficheiro=<?= urlencode($g->caminho_ficheiro) ?>"
+                                                       target="_blank"
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="fa-solid fa-file-contract me-1"></i>
+                                                        Abrir
+                                                    </a>
+                                                <?php else : ?>
+                                                    -
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="tab-pane fade" id="manutencoes">
+                        <h5 class="inner-title">Manutenções</h5>
+
+                        <?php if (count($manutencoes) == 0) : ?>
+                            <p class="text-muted">Não existem manutenções associadas.</p>
+                        <?php else : ?>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3">
+                                    <div class="inner-card h-100">
+                                        <div class="info-label">Estado</div>
+                                        <span class="badge bg-<?= h($classe_estado_manutencao) ?>">
+                                            <?= h($estado_manutencao) ?>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="inner-card h-100">
+                                        <div class="info-label">Última manutenção</div>
+                                        <div class="info-value">
+                                            <?= $ultima_manutencao ? data_pt($ultima_manutencao->data_manutencao) : '-' ?>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="inner-card h-100">
+                                        <div class="info-label">Próxima manutenção</div>
+                                        <div class="info-value">
+                                            <?= $proxima_manutencao ? data_pt($proxima_manutencao->proxima_manutencao) : '-' ?>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="inner-card h-100">
+                                        <div class="info-label">Custo acumulado</div>
+                                        <div class="info-value">
+                                            <?= moeda_pt($total_custos_manutencao) ?>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="info-item">
-                                <span class="info-label">Localização</span>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-custom align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Tipo</th>
+                                            <th>Data da intervenção</th>
+                                            <th>Próxima</th>
+                                            <th>Estado</th>
+                                            <th>Responsável</th>
+                                            <th>Custo</th>
+                                            <th>Descrição</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($manutencoes as $m) : ?>
+                                            <?php
+                                            $estado_linha = '-';
+                                            $classe_linha = 'secondary';
 
-                                <span class="info-value">
-                                    <?php if (!empty($equipamento->edificio)) : ?>
+                                            if (!empty($m->proxima_manutencao)) {
+                                                $dias_linha = (int) floor((strtotime($m->proxima_manutencao) - strtotime(date('Y-m-d'))) / 86400);
 
-                                        <?= htmlspecialchars(
-                                            $equipamento->edificio .
-                                            ' - ' .
-                                            $equipamento->piso .
-                                            ' - ' .
-                                            $equipamento->servico .
-                                            ' - ' .
-                                            $equipamento->sala
-                                        ) ?>
+                                                if ($dias_linha < 0) {
+                                                    $estado_linha = 'Atrasada';
+                                                    $classe_linha = 'danger';
+                                                } elseif ($dias_linha <= 30) {
+                                                    $estado_linha = 'A vencer';
+                                                    $classe_linha = 'warning text-dark';
+                                                } else {
+                                                    $estado_linha = 'Em dia';
+                                                    $classe_linha = 'success';
+                                                }
+                                            }
+                                            ?>
+                                            <tr>
+                                                <td><?= h($m->tipo_manutencao) ?></td>
+                                                <td><?= data_pt($m->data_manutencao) ?></td>
+                                                <td><?= data_pt($m->proxima_manutencao) ?></td>
+                                                <td>
+                                                    <span class="badge bg-<?= h($classe_linha) ?>">
+                                                        <?= h($estado_linha) ?>
+                                                    </span>
+                                                </td>
+                                                <td><?= h($m->responsavel) ?></td>
+                                                <td><?= moeda_pt($m->custo) ?></td>
+                                                <td><?= !empty($m->descricao) ? h($m->descricao) : '-' ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php endif; ?>
+                    </div>
 
-                                    <?php else : ?>
+                    <div class="tab-pane fade" id="movimentacoes">
+                        <h5 class="inner-title">Histórico de Movimentações e Empréstimos</h5>
 
-                                        Sem localização associada
+                        <?php if (count($historico) == 0) : ?>
+                            <p class="text-muted">Não existem movimentações ou empréstimos associados.</p>
+                        <?php else : ?>
+                            <table class="table table-bordered table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Origem</th>
+                                        <th>Destino</th>
+                                        <th>Data</th>
+                                        <th>Devolução</th>
+                                        <th>Responsável</th>
+                                        <th>Estado / Motivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($historico as $item) : ?>
+                                        <tr>
+                                            <td><?= h($item['tipo']) ?></td>
+                                            <td><?= h($item['origem']) ?></td>
+                                            <td><?= h($item['destino']) ?></td>
+                                            <td><?= data_pt($item['data']) ?></td>
+                                            <td><?= h($item['devolucao']) ?></td>
+                                            <td><?= h($item['responsavel']) ?></td>
+                                            <td><?= h($item['estado']) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php endif; ?>
+                    </div>
 
-                                    <?php endif; ?>
+                    <div class="tab-pane fade" id="avaliacao">
+                        <h5 class="inner-title">Avaliação Técnica</h5>
+
+                        <div class="evaluation-panel">
+                            <div class="evaluation-score-card">
+                                <div class="info-label">Pontuação geral</div>
+                                <div class="evaluation-score">
+                                    <?= h($pontuacao_avaliacao) ?><span>/100</span>
+                                </div>
+                                <span class="badge bg-<?= h($classe_avaliacao) ?>">
+                                    <?= h($estado_avaliacao) ?>
                                 </span>
                             </div>
 
-                            <div class="info-item">
-                                <span class="info-label">Fornecedor</span>
-
-                                <span class="info-value">
-                                    <?php if (!empty($equipamento->nome_empresa)) : ?>
-
-                                        <?= htmlspecialchars($equipamento->nome_empresa) ?>
-
-                                    <?php else : ?>
-
-                                        Sem fornecedor associado
-
-                                    <?php endif; ?>
-                                </span>
+                            <div class="evaluation-summary">
+                                <div class="info-label">Recomendação</div>
+                                <h6 class="mb-2"><?= h($recomendacao_avaliacao) ?></h6>
+                                <p>
+                                    Esta avaliação é calculada automaticamente com base no estado operacional,
+                                    criticidade, manutenção, documentação, garantia/contrato e custos registados.
+                                </p>
                             </div>
-
-                            <div class="info-item">
-                                <span class="info-label">Data de aquisição</span>
-                                <span class="info-value">
-                                    <?= !empty($equipamento->data_aquisicao)
-                                        ? date('d/m/Y', strtotime($equipamento->data_aquisicao))
-                                        : '-' ?>
-                                </span>
-                            </div>
-
-                            <div class="info-item">
-                                <span class="info-label">Ano de fabrico</span>
-                                <span class="info-value"><?= htmlspecialchars($equipamento->ano_fabrico) ?></span>
-                            </div>
-
-                            <div class="info-item">
-                                <span class="info-label">Custo de aquisição</span>
-                                <span class="info-value">
-                                    <?= htmlspecialchars($equipamento->custo_aquisicao) ?> €
-                                </span>
-                            </div>
-
-                            <div class="info-item">
-                                <span class="info-label">Tipo de entrada</span>
-                                <span class="info-value"><?= htmlspecialchars($equipamento->tipo_entrada) ?></span>
-                            </div>
-
                         </div>
 
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-custom align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Critério</th>
+                                        <th>Pontuação</th>
+                                        <th>Estado</th>
+                                        <th>Observação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($avaliacao_itens as $item) : ?>
+                                        <tr>
+                                            <td><?= h($item['critério']) ?></td>
+                                            <td><?= h($item['pontos']) ?> / <?= h($item['m?ximo']) ?></td>
+                                            <td>
+                                                <span class="badge bg-<?= h($item['classe']) ?>">
+                                                    <?= h($item['estado']) ?>
+                                                </span>
+                                            </td>
+                                            <td><?= h($item['observação']) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
-                    <!-- Observações -->
-                    <div class="mt-3">
+                    <div class="tab-pane fade" id="custos">
+                        <h5 class="inner-title">Custos</h5>
 
-                        <h5 class="section-title">
-                            <i class="fa-solid fa-note-sticky me-2"></i>
-                            Observações
-                        </h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <div class="inner-card h-100">
+                                    <div class="info-label">Aquisição</div>
+                                    <div class="info-value"><?= moeda_pt($equipamento->custo_aquisicao) ?></div>
+                                </div>
+                            </div>
 
-                        <p class="mb-0">
-                            <?= !empty($equipamento->observacoes)
-                                ? htmlspecialchars($equipamento->observacoes)
-                                : 'Sem observações registadas.' ?>
-                        </p>
+                            <div class="col-md-3">
+                                <div class="inner-card h-100">
+                                    <div class="info-label">Manutenção</div>
+                                    <div class="info-value"><?= moeda_pt($total_custos_manutencao) ?></div>
+                                </div>
+                            </div>
 
-                    </div>
+                            <div class="col-md-3">
+                                <div class="inner-card h-100">
+                                    <div class="info-label">Peso da manutenção</div>
+                                    <div class="info-value">
+                                        <?= $percentagem_custos_manutencao !== null ? number_format($percentagem_custos_manutencao, 1, ',', '.') . ' %' : '-' ?>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <!-- Botões de ação -->
-                    <div class="mt-4 d-flex gap-2">
+                            <div class="col-md-3">
+                                <div class="inner-card h-100">
+                                    <div class="info-label">Custo estimado</div>
+                                    <div class="info-value"><?= moeda_pt($custo_total_estimado) ?></div>
+                                </div>
+                            </div>
+                        </div>
 
-                        <a href="lista.php" class="btn btn-voltar-custom">
-                            <i class="fa-solid fa-arrow-left me-1"></i>
-                            Voltar
-                        </a>
+                        <div class="evaluation-summary mb-4">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="info-label mb-0">Interpretação</div>
+                                <span class="badge bg-<?= h($classe_estado_custos) ?>">
+                                    <?= h($estado_custos) ?>
+                                </span>
+                            </div>
+                            <p><?= h($recomendacao_custos) ?></p>
+                        </div>
 
-                        <a href="editar.php?id=<?= $equipamento->id ?>" class="btn btn-editar-custom">
-                            <i class="fa-regular fa-pen-to-square me-1"></i>
-                            Editar
-                        </a>
-
+                        <?php if (count($manutencoes) == 0) : ?>
+                            <p class="text-muted">Não existem custos de manutenção associados.</p>
+                        <?php else : ?>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-custom align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Tipo</th>
+                                            <th>Responsável</th>
+                                            <th>Descrição</th>
+                                            <th>Custo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($manutencoes as $m) : ?>
+                                            <tr>
+                                                <td><?= h($m->tipo_manutencao) ?></td>
+                                                <td><?= h($m->responsavel) ?></td>
+                                                <td><?= !empty($m->descricao) ? h($m->descricao) : '-' ?></td>
+                                                <td><?= moeda_pt($m->custo) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                 </div>
+            </div>
 
-            <?php endif; ?>
+            <div class="footer-update">
+                <i class="fa-regular fa-clock me-2"></i>
+                Ficha do equipamento atualizada automaticamente a partir da base de dados.
+            </div>
 
-        </main>
+        </section>
 
-    </div>
-</div>
+    <?php endif; ?>
+
+</main>
 
 <?php include '../../includes/footer.php'; ?>
