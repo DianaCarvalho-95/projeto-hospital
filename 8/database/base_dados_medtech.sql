@@ -51,6 +51,23 @@ CREATE TABLE equipamentos (
         ON UPDATE CASCADE
 );
 
+CREATE TABLE notas_equipamentos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    equipamento_id INT NOT NULL,
+    data_nota DATE NOT NULL,
+    tipo_nota VARCHAR(50) NOT NULL,
+    titulo VARCHAR(120) NOT NULL,
+    descricao TEXT NOT NULL,
+    responsavel VARCHAR(100) DEFAULT 'Sistema',
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_notas_equipamento (equipamento_id, data_nota),
+
+    FOREIGN KEY (equipamento_id)
+        REFERENCES equipamentos(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
 CREATE TABLE equipamentos_fornecedores (
     id INT AUTO_INCREMENT PRIMARY KEY,
     equipamento_id INT NOT NULL,
@@ -105,4 +122,5 @@ CREATE TABLE garantias_contratos (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
 

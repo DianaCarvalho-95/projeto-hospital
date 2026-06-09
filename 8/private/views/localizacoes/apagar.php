@@ -8,6 +8,7 @@ redirect_if_not_logged();
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 $localizacao = null;
+$total_equipamentos = 0;
 $erro = '';
 
 if ($id <= 0) {
@@ -29,20 +30,27 @@ if ($id <= 0) {
 
         $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        /*Se o utilizador confirmar a eliminação, o registo é removido da base de dados*/
+        $stmt_total = $ligacao->prepare(
+            "SELECT COUNT(*)
+             FROM equipamentos
+             WHERE localizacao_id = :id"
+        );
+        $stmt_total->execute([':id' => $id]);
+        $total_equipamentos = (int) $stmt_total->fetchColumn();
+
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if ($total_equipamentos > 0) {
+                $erro = 'Esta localização não pode ser eliminada porque tem equipamentos associados.';
+            } else {
+                $stmt = $ligacao->prepare(
+                    "DELETE FROM localizacoes
+                     WHERE id = :id"
+                );
+                $stmt->execute([':id' => $id]);
 
-            $stmt = $ligacao->prepare(
-                "DELETE FROM localizacoes
-                 WHERE id = :id"
-            );
-
-            $stmt->execute([
-                ':id' => $id
-            ]);
-
-            header('Location: lista.php');
-            exit;
+                header('Location: lista.php');
+                exit;
+            }
         }
 
         /*Carrega a localização a eliminar*/
@@ -212,9 +220,11 @@ if ($id <= 0) {
 
                         <i class="fa-solid fa-triangle-exclamation me-2"></i>
 
-                        Tem a certeza que pretende eliminar esta localização?
-
-                        Esta ação é permanente e não poderá ser revertida.
+                        <?php if ($total_equipamentos > 0) : ?>
+                            Esta localização tem <?= $total_equipamentos ?> equipamento(s) associado(s) e não pode ser eliminada.
+                        <?php else : ?>
+                            Tem a certeza que pretende eliminar esta localização? Esta ação é permanente e não poderá ser revertida.
+                        <?php endif; ?>
 
                     </div>
 

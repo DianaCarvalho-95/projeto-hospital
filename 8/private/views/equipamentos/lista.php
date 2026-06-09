@@ -30,7 +30,7 @@ if ($pagina < 1) {
     $pagina = 1;
 }
 
-$registos_por_pagina = 7;
+$registos_por_pagina = 6;
 $offset = ($pagina - 1) * $registos_por_pagina;
 
 $colunas_permitidas = [
@@ -398,23 +398,27 @@ function classe_estado_equipamento($estado)
     }
 
     .estado-ativo {
-        background: #dcfce7;
-        color: #166534;
+        background: #e7f5ee;
+        border: 1px solid #bfe5cf;
+        color: #17623a;
     }
 
     .estado-manutencao {
-        background: #fef3c7;
-        color: #92400e;
+        background: #fff4dc;
+        border: 1px solid #f3d28b;
+        color: #7a4b00;
     }
 
     .estado-calibracao {
-        background: #dbeafe;
-        color: #1d4ed8;
+        background: #e8f1fb;
+        border: 1px solid #bdd5f0;
+        color: #24527a;
     }
 
     .estado-inativo {
-        background: #fee2e2;
-        color: #991b1b;
+        background: #f3f4f6;
+        border: 1px solid #d7dce3;
+        color: #6b2730;
     }
 
     .estado-neutro {
@@ -443,18 +447,9 @@ function classe_estado_equipamento($estado)
     }
 
     .action-consultar {
-        background: #e8f5ee;
-        color: #198754;
-    }
-
-    .action-editar {
-        background: #fff6dd;
-        color: #b77900;
-    }
-
-    .action-desativar {
-        background: #fdeaea;
-        color: #dc3545;
+        background: #edf4ff;
+        border: 1px solid #cfe0f5;
+        color: #1E3A5F;
     }
 
     .action-btn:hover {
@@ -670,16 +665,6 @@ function classe_estado_equipamento($estado)
                                                     <a href="detalhes.php?id=<?= $equipamento->id ?>" class="action-btn action-consultar" title="Consultar ficha">
                                                         <i class="fa-solid fa-eye"></i>
                                                         Consultar
-                                                    </a>
-
-                                                    <a href="editar.php?id=<?= $equipamento->id ?>" class="action-btn action-editar" title="Editar equipamento">
-                                                        <i class="fa-regular fa-pen-to-square"></i>
-                                                        Editar
-                                                    </a>
-
-                                                    <a href="apagar.php?id=<?= $equipamento->id ?>" class="action-btn action-desativar" title="Desativar equipamento">
-                                                        <i class="fa-solid fa-trash-can"></i>
-                                                        Desativar
                                                     </a>
                                                 </div>
                                             </td>

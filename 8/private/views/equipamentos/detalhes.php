@@ -358,18 +358,24 @@ $imagem = !empty($equipamento->imagem)
     }
 
     .btn-voltar {
-        background: #0d6efd;
-        color: #fff;
+        background: #fff;
+        color: #1E3A5F;
+        border: 1px solid #dbe4ef;
         border-radius: 8px;
-        padding: 7px 13px;
-        font-weight: 600;
+        padding: 7px 12px;
+        font-weight: 700;
+        font-size: 0.86rem;
         text-decoration: none;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
     }
 
     .btn-voltar:hover {
-        background: #0b5ed7;
-        color: #fff;
+        background: #f6faff;
+        border-color: #bdd5f0;
+        color: #1E3A5F;
     }
 
     .summary-card,
@@ -382,29 +388,37 @@ $imagem = !empty($equipamento->imagem)
     }
 
     .summary-card {
-        padding: 16px 18px;
+        padding: 12px 14px;
         overflow: hidden;
         flex: 0 0 auto;
     }
 
     .equipment-hero {
         display: grid;
-        grid-template-columns: minmax(280px, 1.2fr) minmax(420px, 1.8fr);
-        gap: 18px;
-        align-items: stretch;
+        grid-template-columns: minmax(280px, 0.8fr) minmax(620px, 1.2fr);
+        gap: 16px;
+        align-items: center;
     }
 
-    .equipment-identity {
+    .equipment-left {
         display: grid;
-        grid-template-columns: 108px 1fr;
-        gap: 16px;
+        grid-template-columns: 92px 1fr;
+        gap: 14px;
         align-items: center;
         min-width: 0;
     }
 
+    .equipment-identity {
+        min-width: 0;
+    }
+
+    .summary-actions {
+        margin-top: 0;
+    }
+
     .equipment-media {
-        width: 108px;
-        height: 96px;
+        width: 92px;
+        height: 78px;
         border: 1px solid #dbe3ed;
         border-radius: 12px;
         background: #f8fafc;
@@ -414,23 +428,23 @@ $imagem = !empty($equipamento->imagem)
     }
 
     .equipment-img {
-        width: 92px;
-        height: 78px;
+        width: 78px;
+        height: 62px;
         object-fit: contain;
     }
 
     .equipment-title {
         color: #0f172a;
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 700;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         line-height: 1.25;
     }
 
     .equipment-subtitle {
         color: #46627f;
-        font-size: 0.86rem;
-        margin-bottom: 10px;
+        font-size: 0.82rem;
+        margin-bottom: 7px;
     }
 
     .equipment-meta-line {
@@ -444,28 +458,9 @@ $imagem = !empty($equipamento->imagem)
         color: #24496d;
         border: 1px solid #d8e7f5;
         border-radius: 999px;
-        padding: 4px 9px;
-        font-size: 0.74rem;
+        padding: 3px 8px;
+        font-size: 0.7rem;
         font-weight: 700;
-    }
-
-    .equipment-facts {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(120px, 1fr));
-        gap: 10px;
-        align-content: center;
-    }
-
-    .equipment-fact {
-        min-height: 66px;
-        background: #f8fafc;
-        border: 1px solid #e3eaf2;
-        border-radius: 10px;
-        padding: 10px 12px;
-    }
-
-    .equipment-fact.wide {
-        grid-column: span 2;
     }
 
     .info-label {
@@ -559,23 +554,37 @@ $imagem = !empty($equipamento->imagem)
     }
 
     .inner-card {
-        padding: 14px;
+        padding: 12px 14px;
         height: 100%;
     }
 
     .inner-title {
-        font-weight: 700;
-        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 800;
+        color: #1E3A5F;
         margin-bottom: 12px;
+        padding-bottom: 9px;
+        border-bottom: 1px solid #e8eef5;
         font-size: 0.95rem;
+    }
+
+    .inner-title::before {
+        content: "";
+        width: 4px;
+        height: 18px;
+        border-radius: 999px;
+        background: #2F5D8A;
+        flex: 0 0 auto;
     }
 
     .details-row {
         display: grid;
-        grid-template-columns: 160px 1fr;
-        gap: 12px;
-        margin-bottom: 10px;
-        font-size: 0.9rem;
+        grid-template-columns: 118px 1fr;
+        gap: 9px;
+        margin-bottom: 7px;
+        font-size: 0.84rem;
     }
 
     .details-row strong {
@@ -597,51 +606,182 @@ $imagem = !empty($equipamento->imagem)
         font-style: italic;
     }
 
-    .quick-actions {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
+    .notes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
     }
 
-    .quick-btn {
+    .note-item {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+        padding: 10px 11px;
+    }
+
+    .note-item-general {
+        background: #fffdf5;
+        border-color: #f4d58d;
+    }
+
+    .note-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .note-title {
+        color: #0f172a;
+        font-weight: 800;
+        font-size: 0.84rem;
+    }
+
+    .note-date {
+        color: #64748b;
+        font-size: 0.72rem;
+        white-space: nowrap;
+    }
+
+    .note-text {
+        color: #334155;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        margin-bottom: 6px;
+    }
+
+    .note-footer {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        color: #64748b;
+        font-size: 0.72rem;
+    }
+
+    .note-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: #e8f1fb;
+        color: #1E3A5F;
+        font-weight: 700;
+    }
+
+    .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .quick-actions-compact {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .summary-actions .quick-action-copy small {
+        display: none;
+    }
+
+    .summary-actions .quick-action-item {
+        min-height: 40px;
+        padding: 7px 8px;
+    }
+
+    .quick-action-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 44px;
+        padding: 8px 10px;
+        border: 1px solid #dbe4ef;
+        border-radius: 8px;
+        background: #fff;
+        color: #1E3A5F;
+        text-decoration: none;
+        transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .quick-action-item:hover {
+        background: #f6faff;
+        border-color: #bdd5f0;
+        color: #1E3A5F;
+        transform: translateY(-1px);
+    }
+
+    .quick-action-icon {
+        width: 32px;
+        height: 32px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        min-height: 42px;
-        border-radius: 8px;
-        padding: 9px 10px;
-        font-weight: 700;
-        text-align: center;
-        text-decoration: none;
+        border-radius: 7px;
+        background: #edf4ff;
+        color: #2F5D8A;
+        flex: 0 0 auto;
+        font-size: 0.9rem;
+    }
+
+    .quick-action-copy {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+    }
+
+    .quick-action-copy strong {
         font-size: 0.86rem;
-        border: 1px solid #dbe4ef;
-        background: #fff;
-        color: #1e3a5f;
-        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+        font-weight: 800;
     }
 
-    .quick-primary {
-        background: #0d6efd;
-        border-color: #0d6efd;
-        color: #fff;
+    .quick-action-copy small {
+        margin-top: 2px;
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 500;
     }
 
-    .quick-secondary {
-        background: #f8fafc;
-        color: #1e3a5f;
+    .quick-action-main {
+        background: #f8fbff;
+        border-color: #cfe0f5;
     }
 
-    .quick-btn:hover {
-        background: #eef6ff;
-        border-color: #b8d7ff;
-        color: #0b5ed7;
+    .quick-action-danger-zone {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 8px;
+        margin-top: 2px;
     }
 
-    .quick-primary:hover {
-        background: #0b5ed7;
-        border-color: #0b5ed7;
-        color: #fff;
+    .quick-actions-compact .quick-action-danger-zone {
+        border-top: 0;
+        padding-top: 0;
+        margin-top: 0;
+    }
+
+    .quick-action-danger {
+        background: #fffafa;
+        border-color: #f3c7cd;
+        color: #9f1239;
+    }
+
+    .quick-action-danger .quick-action-icon {
+        background: #fff1f2;
+        color: #be123c;
+    }
+
+    .quick-action-danger:hover {
+        background: #fff1f2;
+        border-color: #f3a8b4;
+        color: #9f1239;
+    }
+
+    .compact-status-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
     }
 
     .footer-update {
@@ -715,10 +855,6 @@ $imagem = !empty($equipamento->imagem)
             grid-template-columns: 1fr;
         }
 
-        .equipment-facts {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
         .evaluation-panel {
             grid-template-columns: 1fr;
         }
@@ -733,13 +869,6 @@ $imagem = !empty($equipamento->imagem)
             width: 100%;
         }
 
-        .equipment-facts {
-            grid-template-columns: 1fr;
-        }
-
-        .equipment-fact.wide {
-            grid-column: auto;
-        }
     }
 </style>
 
@@ -765,15 +894,15 @@ $imagem = !empty($equipamento->imagem)
 
     <?php else : ?>
 
-        <section class="summary-card mb-4">
+        <section class="summary-card mb-3">
             <div class="equipment-hero">
 
-                <div class="equipment-identity">
+                <div class="equipment-left">
                     <div class="equipment-media">
                         <img src="<?= h($imagem) ?>" alt="Equipamento" class="equipment-img">
                     </div>
 
-                    <div>
+                    <div class="equipment-identity">
                         <h3 class="equipment-title">
                             <?= h($equipamento->codigo_inventario) ?> - <?= h($equipamento->designacao) ?>
                         </h3>
@@ -789,35 +918,34 @@ $imagem = !empty($equipamento->imagem)
                     </div>
                 </div>
 
-                <div class="equipment-facts">
-                    <div class="equipment-fact">
-                        <div class="info-label">Estado</div>
-                        <span class="badge-status"><?= h($equipamento->estado) ?></span>
-                    </div>
+                <div class="summary-actions">
+                    <div class="quick-actions-compact">
+                        <a href="editar.php?id=<?= $equipamento->id ?>" class="quick-action-item quick-action-main">
+                            <span class="quick-action-icon"><i class="fa-regular fa-pen-to-square"></i></span>
+                            <span class="quick-action-copy"><strong>Editar equipamento</strong><small>Dados gerais</small></span>
+                        </a>
 
-                    <div class="equipment-fact">
-                        <div class="info-label">Criticidade</div>
-                        <span class="badge-critical"><?= h($equipamento->criticidade) ?></span>
-                    </div>
+                        <a href="../ferramentas/nova-manutencao.php?equipamento_id=<?= $equipamento->id ?>" class="quick-action-item">
+                            <span class="quick-action-icon"><i class="fa-solid fa-wrench"></i></span>
+                            <span class="quick-action-copy"><strong>Registar manutenção</strong><small>Nova intervenção</small></span>
+                        </a>
 
-                    <div class="equipment-fact">
-                        <div class="info-label">Aquisição</div>
-                        <div class="info-value"><?= data_pt($equipamento->data_aquisicao) ?></div>
-                    </div>
+                        <a href="../ferramentas/nova-movimentacao.php?equipamento_id=<?= $equipamento->id ?>" class="quick-action-item">
+                            <span class="quick-action-icon"><i class="fa-solid fa-right-left"></i></span>
+                            <span class="quick-action-copy"><strong>Registar movimentação</strong><small>Nova localização</small></span>
+                        </a>
 
-                    <div class="equipment-fact">
-                        <div class="info-label">Ano de fabrico</div>
-                        <div class="info-value"><?= h($equipamento->ano_fabrico) ?></div>
-                    </div>
+                        <a href="#" onclick="window.print(); return false;" class="quick-action-item">
+                            <span class="quick-action-icon"><i class="fa-solid fa-print"></i></span>
+                            <span class="quick-action-copy"><strong>Imprimir</strong><small>Ficha atual</small></span>
+                        </a>
 
-                    <div class="equipment-fact wide">
-                        <div class="info-label">Localização atual</div>
-                        <div class="info-value"><?= h($equipamento->sala . ' - ' . $equipamento->servico) ?></div>
-                    </div>
-
-                    <div class="equipment-fact wide">
-                        <div class="info-label">Fornecedor principal</div>
-                        <div class="info-value"><?= !empty($equipamento->nome_empresa) ? h($equipamento->nome_empresa) : '-' ?></div>
+                        <div class="quick-action-danger-zone">
+                            <a href="apagar.php?id=<?= $equipamento->id ?>" class="quick-action-item quick-action-danger">
+                                <span class="quick-action-icon"><i class="fa-solid fa-trash-can"></i></span>
+                                <span class="quick-action-copy"><strong>Desativar equipamento</strong><small>Retirar de uso</small></span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -879,92 +1007,54 @@ $imagem = !empty($equipamento->imagem)
 
                     <div class="tab-pane fade show active" id="dados">
 
-                        <div class="row g-3 align-items-stretch">
+                        <div class="row g-2 align-items-stretch">
 
-                            <div class="col-lg-4">
+                            <div class="col-xl-3 col-lg-6">
                                 <div class="inner-card h-100">
-                                    <h5 class="inner-title">Informação Geral</h5>
+                                    <h5 class="inner-title">Estado e Classificação</h5>
 
-                                    <div class="details-row"><strong>Código Interno:</strong><span><?= h($equipamento->codigo_inventario) ?></span></div>
-                                    <div class="details-row"><strong>Designação:</strong><span><?= h($equipamento->designacao) ?></span></div>
+                                    <div class="compact-status-row">
+                                        <span class="badge-status"><?= h($equipamento->estado) ?></span>
+                                        <span class="badge-critical"><?= h($equipamento->criticidade) ?></span>
+                                    </div>
+                                    <div class="details-row"><strong>Código:</strong><span><?= h($equipamento->codigo_inventario) ?></span></div>
                                     <div class="details-row"><strong>Categoria:</strong><span><?= h($equipamento->categoria) ?></span></div>
+                                    <div class="details-row"><strong>Entrada:</strong><span><?= h($equipamento->tipo_entrada) ?></span></div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-lg-6">
+                                <div class="inner-card h-100">
+                                    <h5 class="inner-title">Identificação Técnica</h5>
+
+                                    <div class="details-row"><strong>Designação:</strong><span><?= h($equipamento->designacao) ?></span></div>
                                     <div class="details-row"><strong>Marca:</strong><span><?= h($equipamento->marca) ?></span></div>
                                     <div class="details-row"><strong>Modelo:</strong><span><?= h($equipamento->modelo) ?></span></div>
-                                    <div class="details-row"><strong>Número de Série:</strong><span><?= h($equipamento->numero_serie) ?></span></div>
+                                    <div class="details-row"><strong>Série:</strong><span><?= h($equipamento->numero_serie) ?></span></div>
                                     <div class="details-row"><strong>Fabricante:</strong><span><?= h($equipamento->fabricante) ?></span></div>
-                                    <div class="details-row"><strong>Data de Aquisição:</strong><span><?= data_pt($equipamento->data_aquisicao) ?></span></div>
-                                    <div class="details-row"><strong>Ano de Fabrico:</strong><span><?= h($equipamento->ano_fabrico) ?></span></div>
-                                    <div class="details-row"><strong>Estado:</strong><span class="badge-status"><?= h($equipamento->estado) ?></span></div>
-                                    <div class="details-row"><strong>Criticidade:</strong><span class="badge-critical"><?= h($equipamento->criticidade) ?></span></div>
-                                    <div class="details-row"><strong>Custo de Aquisição:</strong><span><?= moeda_pt($equipamento->custo_aquisicao) ?></span></div>
                                 </div>
                             </div>
 
-                            <div class="col-lg-4">
-                                <div class="d-flex flex-column gap-3 h-100">
+                            <div class="col-xl-3 col-lg-6">
+                                <div class="inner-card h-100">
+                                    <h5 class="inner-title">Aquisição e Localização</h5>
 
-                                    <div class="inner-card">
-                                        <h5 class="inner-title">Localização Atual</h5>
-
-                                        <div class="details-row"><strong>Edifício:</strong><span><?= h($equipamento->edificio) ?></span></div>
-                                        <div class="details-row"><strong>Piso:</strong><span><?= h($equipamento->piso) ?></span></div>
-                                        <div class="details-row"><strong>Serviço:</strong><span><?= h($equipamento->servico) ?></span></div>
-                                        <div class="details-row"><strong>Sala:</strong><span><?= h($equipamento->sala) ?></span></div>
-                                    </div>
-
-                                    <div class="inner-card">
-                                        <h5 class="inner-title">Fornecedor Principal</h5>
-
-                                        <div class="details-row"><strong>Nome:</strong><span><?= h($equipamento->nome_empresa) ?></span></div>
-                                        <div class="details-row"><strong>Tipo:</strong><span><?= h($equipamento->tipo_fornecedor) ?></span></div>
-                                        <div class="details-row"><strong>Email:</strong><span><?= h($equipamento->email_fornecedor) ?></span></div>
-                                        <div class="details-row"><strong>Telefone:</strong><span><?= h($equipamento->telefone_fornecedor) ?></span></div>
-                                    </div>
-
+                                    <div class="details-row"><strong>Aquisição:</strong><span><?= data_pt($equipamento->data_aquisicao) ?></span></div>
+                                    <div class="details-row"><strong>Ano:</strong><span><?= h($equipamento->ano_fabrico) ?></span></div>
+                                    <div class="details-row"><strong>Custo:</strong><span><?= moeda_pt($equipamento->custo_aquisicao) ?></span></div>
+                                    <div class="details-row"><strong>Serviço:</strong><span><?= h($equipamento->servico) ?></span></div>
+                                    <div class="details-row"><strong>Sala:</strong><span><?= h($equipamento->sala) ?></span></div>
                                 </div>
                             </div>
 
-                            <div class="col-lg-4">
-                                <div class="d-flex flex-column gap-3 h-100">
+                            <div class="col-xl-3 col-lg-6">
+                                <div class="inner-card h-100">
+                                    <h5 class="inner-title">Fornecedor e Contactos</h5>
 
-                                    <div class="inner-card">
-                                        <h5 class="inner-title">Ações Rápidas</h5>
-
-                                        <div class="quick-actions">
-
-                                            <a href="editar.php?id=<?= $equipamento->id ?>" class="quick-btn quick-primary">
-                                                <i class="fa-regular fa-pen-to-square"></i>
-                                                Editar
-                                            </a>
-
-                                            <a href="../ferramentas/nova-manutencao.php?equipamento_id=<?= $equipamento->id ?>" class="quick-btn quick-primary">
-                                                <i class="fa-solid fa-wrench"></i>
-                                                Manutenção
-                                            </a>
-
-                                            <a href="../ferramentas/nova-movimentacao.php?equipamento_id=<?= $equipamento->id ?>" class="quick-btn quick-secondary">
-                                                <i class="fa-solid fa-right-left"></i>
-                                                Movimentação
-                                            </a>
-
-                                            <a href="#" onclick="window.print(); return false;" class="quick-btn quick-secondary">
-                                                <i class="fa-solid fa-print"></i>
-                                                Imprimir
-                                            </a>
-
-                                        </div>
-                                    </div>
-
-                                    <div class="inner-card">
-                                        <h5 class="inner-title">Notas / Observações</h5>
-
-                                        <div class="notes-box<?= empty($equipamento->observacoes) ? ' notes-empty' : '' ?>">
-                                            <?= !empty($equipamento->observacoes)
-                                                ? nl2br(h($equipamento->observacoes))
-                                                : 'Sem observações registadas.' ?>
-                                        </div>
-                                    </div>
-
+                                    <div class="details-row"><strong>Fornecedor:</strong><span><?= h($equipamento->nome_empresa) ?></span></div>
+                                    <div class="details-row"><strong>Tipo:</strong><span><?= h($equipamento->tipo_fornecedor) ?></span></div>
+                                    <div class="details-row"><strong>Email:</strong><span><?= h($equipamento->email_fornecedor) ?></span></div>
+                                    <div class="details-row"><strong>Telefone:</strong><span><?= h($equipamento->telefone_fornecedor) ?></span></div>
                                 </div>
                             </div>
 

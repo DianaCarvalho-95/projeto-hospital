@@ -418,9 +418,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 <form action="novo.php" method="post" novalidate>
 
-                    <div class="row">
+                    <div class="row g-3">
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Código Interno de Inventário</label>
                             <input type="text"
                                    name="codigo"
@@ -428,7 +428,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    value="<?= htmlspecialchars($codigo) ?>">
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Designação do Equipamento</label>
                             <input type="text"
                                    name="designacao"
@@ -436,7 +436,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    value="<?= htmlspecialchars($designacao) ?>">
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Categoria</label>
                             <select name="categoria" class="form-control">
                                 <option value="">Escolha uma opção</option>
@@ -450,7 +450,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Marca</label>
                             <input type="text"
                                    name="marca"
@@ -458,7 +458,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    value="<?= htmlspecialchars($marca) ?>">
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Modelo</label>
                             <input type="text"
                                    name="modelo"
@@ -466,7 +466,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    value="<?= htmlspecialchars($modelo) ?>">
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Número de Série</label>
                             <input type="text"
                                    name="numero_serie"
@@ -474,7 +474,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    value="<?= htmlspecialchars($numero_serie) ?>">
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Fabricante</label>
                             <input type="text"
                                    name="fabricante"
@@ -482,7 +482,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    value="<?= htmlspecialchars($fabricante) ?>">
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Data de Aquisição</label>
                             <input type="date"
                                    name="data_aquisicao"
@@ -490,7 +490,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    value="<?= htmlspecialchars($data_aquisicao) ?>">
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Ano de Fabrico</label>
                             <input type="number"
                                    name="ano_fabrico"
@@ -498,7 +498,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    value="<?= htmlspecialchars($ano_fabrico) ?>">
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Custo de Aquisição</label>
                             <input type="text"
                                    name="custo_aquisicao"
@@ -506,7 +506,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    value="<?= htmlspecialchars($custo_aquisicao) ?>">
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Tipo de Entrada</label>
                             <select name="tipo_entrada" class="form-control">
                                 <option value="">Escolha uma opção</option>
@@ -517,7 +517,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Estado Atual</label>
                             <select name="estado" class="form-control">
                                 <option value="">Escolha uma opção</option>
@@ -529,7 +529,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Criticidade</label>
                             <select name="criticidade" class="form-control">
                                 <option value="">Escolha uma opção</option>
@@ -540,7 +540,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Localização</label>
 
                             <select name="localizacao_id" class="form-control">
@@ -563,7 +563,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Fornecedor</label>
 
                             <select name="fornecedor_id" class="form-control">
@@ -578,7 +578,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Observações</label>
                             <textarea name="observacoes"
                                       rows="1"
@@ -588,7 +588,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
 
                     <!-- Botões do formulário -->
-                    <div class="d-flex gap-2 mt-2">
+                    <div class="d-flex gap-2 mt-3">
 
                         <a href="lista.php" class="btn btn-cancelar-custom">
                             <i class="fa-solid fa-xmark me-1"></i>

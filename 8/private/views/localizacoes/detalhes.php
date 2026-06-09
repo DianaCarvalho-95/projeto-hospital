@@ -6,52 +6,134 @@ require_once __DIR__ . '/../../includes/funcoes.php';
 redirect_if_not_logged();
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
 $localizacao = null;
+$equipamentos = [];
+$total_equipamentos = 0;
+$resumo_estados = [
+    'ativos' => 0,
+    'manutencao' => 0,
+    'calibracao' => 0,
+    'inativos' => 0
+];
+$pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
+$registos_por_pagina = 6;
+$total_paginas = 1;
 $erro = '';
 
+if ($pagina < 1) {
+    $pagina = 1;
+}
+
 if ($id <= 0) {
-
     $erro = 'Localização inválida.';
-
 } else {
-
     try {
-
-        /*Ligação à base de dados*/
         $ligacao = new PDO(
-            "mysql:host=" . MYSQL_HOST .
-            ";dbname=" . MYSQL_DATABASE .
-            ";charset=utf8",
+            "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
             MYSQL_USERNAME,
             MYSQL_PASSWORD
         );
 
         $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        /*Carrega a localização selecionada.*/
         $stmt = $ligacao->prepare(
             "SELECT *
              FROM localizacoes
              WHERE id = :id"
         );
-
-        $stmt->execute([
-            ':id' => $id
-        ]);
-
+        $stmt->execute([':id' => $id]);
         $localizacao = $stmt->fetch(PDO::FETCH_OBJ);
 
         if (!$localizacao) {
             $erro = 'Localização não encontrada.';
+        } else {
+            $stmt_total = $ligacao->prepare(
+                "SELECT COUNT(*)
+                 FROM equipamentos
+                 WHERE localizacao_id = :id"
+            );
+            $stmt_total->execute([':id' => $id]);
+            $total_equipamentos = (int) $stmt_total->fetchColumn();
+
+            $stmt_estados = $ligacao->prepare(
+                "SELECT
+                    SUM(CASE WHEN estado = 'Ativo' THEN 1 ELSE 0 END) AS ativos,
+                    SUM(CASE WHEN estado LIKE '%manutenção%' OR estado LIKE '%manutencao%' THEN 1 ELSE 0 END) AS manutencao,
+                    SUM(CASE WHEN estado LIKE '%calibração%' OR estado LIKE '%calibracao%' THEN 1 ELSE 0 END) AS calibracao,
+                    SUM(CASE WHEN estado = 'Inativo' THEN 1 ELSE 0 END) AS inativos
+                 FROM equipamentos
+                 WHERE localizacao_id = :id"
+            );
+            $stmt_estados->execute([':id' => $id]);
+            $estados_db = $stmt_estados->fetch(PDO::FETCH_ASSOC);
+            if ($estados_db) {
+                $resumo_estados = [
+                    'ativos' => (int) $estados_db['ativos'],
+                    'manutencao' => (int) $estados_db['manutencao'],
+                    'calibracao' => (int) $estados_db['calibracao'],
+                    'inativos' => (int) $estados_db['inativos']
+                ];
+            }
+
+            $total_paginas = max(1, (int) ceil($total_equipamentos / $registos_por_pagina));
+
+            if ($pagina > $total_paginas) {
+                $pagina = $total_paginas;
+            }
+
+            $offset = ($pagina - 1) * $registos_por_pagina;
+
+            $stmt = $ligacao->prepare(
+                "SELECT id, codigo_inventario, designacao, categoria, marca, modelo, estado, criticidade
+                 FROM equipamentos
+                 WHERE localizacao_id = :id
+                 ORDER BY codigo_inventario
+                 LIMIT :limite OFFSET :offset"
+            );
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmt->bindValue(':limite', $registos_por_pagina, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $equipamentos = $stmt->fetchAll(PDO::FETCH_OBJ);
         }
-
     } catch (PDOException $err) {
-
         $erro = 'Aconteceu um erro ao consultar a localização.';
     }
 
     $ligacao = null;
+}
+
+function h($valor)
+{
+    return htmlspecialchars($valor ?? '', ENT_QUOTES, 'UTF-8');
+}
+
+function link_paginacao_localizacao($pagina)
+{
+    return 'detalhes.php?id=' . intval($_GET['id'] ?? 0) . '&pagina=' . intval($pagina);
+}
+
+function classe_estado_localizacao($estado)
+{
+    $estado_normalizado = mb_strtolower($estado ?? '', 'UTF-8');
+
+    if (strpos($estado_normalizado, 'ativo') !== false && strpos($estado_normalizado, 'inativo') === false) {
+        return 'estado-ativo';
+    }
+
+    if (strpos($estado_normalizado, 'manuten') !== false) {
+        return 'estado-manutencao';
+    }
+
+    if (strpos($estado_normalizado, 'calibra') !== false) {
+        return 'estado-calibracao';
+    }
+
+    if (strpos($estado_normalizado, 'inativo') !== false) {
+        return 'estado-inativo';
+    }
+
+    return 'estado-neutro';
 }
 
 ?>
@@ -60,101 +142,56 @@ if ($id <= 0) {
 <?php include '../../includes/nav.php'; ?>
 
 <style>
-
-    /*Fundo da página*/
     .detalhes-page {
-
         background: #f5f7fa;
-
         min-height: 100vh;
-
         padding: 24px;
     }
 
-    /*Título principal.*/
     .page-title {
-
-        font-weight: 600;
-
+        font-weight: 700;
         color: #1E3A5F;
-
         font-size: 1.8rem;
-
         margin-bottom: 0;
     }
 
-    /*Subtítulo*/
     .page-subtitle {
-
         color: #64748b;
-
         font-size: 0.95rem;
+        margin-bottom: 0;
     }
 
-    /*Cartão principal*/
-    .content-card {
-
-        background: white;
-
-        border-radius: 16px;
-
-        padding: 20px;
-
-        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
-
-        border: 1px solid #e5e7eb;
+    .btn-voltar-custom,
+    .btn-editar-custom,
+    .btn-eliminar-custom,
+    .btn-eliminar-disabled {
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.86rem;
+        padding: 7px 12px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
     }
 
-    /*Títulos das secções*/
-    .section-title {
-
+    .btn-voltar-custom {
+        background: #fff;
+        border: 1px solid #dbe4ef;
         color: #1E3A5F;
-
-        font-weight: 600;
-
-        font-size: 1rem;
-
-        margin-bottom: 14px;
-
-        border-bottom: 1px solid #e5e7eb;
-
-        padding-bottom: 8px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
     }
 
-    /*Informação apresentada*/
-    .info-item {
-
-        margin-bottom: 12px;
+    .btn-voltar-custom:hover {
+        background: #f6faff;
+        border-color: #bdd5f0;
+        color: #1E3A5F;
     }
 
-    .info-label {
-
-        display: block;
-
-        color: #64748b;
-
-        font-size: 0.78rem;
-
-        font-weight: 600;
-
-        margin-bottom: 2px;
-    }
-
-    .info-value {
-
-        color: #0f172a;
-
-        font-weight: 500;
-    }
-
-    /*Botão Editar*/
     .btn-editar-custom {
         background: #2F5D8A;
-        border-color: #2F5D8A;
+        border: 1px solid #2F5D8A;
         color: #ffffff;
-        border-radius: 10px;
-        font-weight: 600;
-        padding: 8px 16px;
     }
 
     .btn-editar-custom:hover {
@@ -163,21 +200,245 @@ if ($id <= 0) {
         color: #ffffff;
     }
 
-    /*Botão Voltar*/
-    .btn-voltar-custom {
-        background: #e5e7eb;
-        border-color: #e5e7eb;
-        color: #1E3A5F;
+    .btn-eliminar-custom {
+        background: #fff5f5;
+        border: 1px solid #f3c7cd;
+        color: #9f1239;
+    }
+
+    .btn-eliminar-custom:hover {
+        background: #ffe4e6;
+        color: #9f1239;
+    }
+
+    .btn-eliminar-disabled {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        cursor: not-allowed;
+    }
+
+    .summary-card,
+    .content-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
+    }
+
+    .summary-card {
+        padding: 14px 16px;
+        margin-bottom: 14px;
+    }
+
+    .location-summary {
+        display: grid;
+        grid-template-columns: 1.2fr repeat(4, minmax(110px, 0.65fr));
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .summary-main,
+    .summary-item,
+    .state-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
         border-radius: 10px;
-        font-weight: 600;
-        padding: 8px 16px;
+        padding: 10px 12px;
     }
 
-    .btn-editar-custom:hover {
-        background: #fff0c2;
-        color: #a97700;
+    .summary-title {
+        color: #0f172a;
+        font-size: 1rem;
+        font-weight: 800;
+        margin-bottom: 4px;
     }
 
+    .summary-subtitle {
+        color: #52677d;
+        font-size: 0.82rem;
+    }
+
+    .info-label {
+        color: #52677d;
+        font-size: 0.7rem;
+        font-weight: 800;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+
+    .info-value {
+        color: #0f172a;
+        font-size: 0.88rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+
+    .state-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .state-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 9px 11px;
+    }
+
+    .state-card .info-value {
+        font-size: 1rem;
+        font-weight: 900;
+    }
+
+    .content-card {
+        padding: 16px;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #1E3A5F;
+        font-weight: 800;
+        font-size: 0.98rem;
+        margin-bottom: 12px;
+        padding-bottom: 9px;
+        border-bottom: 1px solid #e8eef5;
+    }
+
+    .section-title::before {
+        content: "";
+        width: 4px;
+        height: 18px;
+        border-radius: 999px;
+        background: #2F5D8A;
+    }
+
+    .table {
+        border-color: #d9e2ec;
+    }
+
+    .table-primary-custom th {
+        background: #2F5D8A !important;
+        color: #ffffff !important;
+        border-color: #2F5D8A !important;
+        font-weight: 700;
+        font-size: 0.84rem;
+        white-space: nowrap;
+    }
+
+    .table td {
+        color: #0f172a;
+        font-size: 0.86rem;
+        vertical-align: middle;
+    }
+
+    .equipment-main {
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .equipment-sub {
+        color: #64748b;
+        font-size: 0.76rem;
+        margin-top: 2px;
+    }
+
+    .estado-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 0.74rem;
+        white-space: nowrap;
+    }
+
+    .estado-ativo {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .estado-manutencao {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .estado-calibracao {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .estado-inativo {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .estado-neutro {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 9px;
+        border-radius: 7px;
+        background: #eaf5ef;
+        color: #087443;
+        font-size: 0.76rem;
+        font-weight: 800;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .action-btn:hover {
+        background: #d9eee3;
+        color: #075f38;
+    }
+
+    .pagination-wrap {
+        display: flex;
+        justify-content: center;
+        margin-top: 14px;
+    }
+
+    .pagination .page-link {
+        color: #1E3A5F;
+        border-color: #d8e1ec;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: #2F5D8A;
+        border-color: #2F5D8A;
+        color: #fff;
+    }
+
+    @media (max-width: 991px) {
+        .location-summary,
+        .state-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .summary-main {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .location-summary,
+        .state-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 <div class="container-fluid">
@@ -187,157 +448,163 @@ if ($id <= 0) {
 
         <main class="col-md-9 col-lg-10 detalhes-page">
 
-            <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-start mb-3 gap-3">
+                <div>
+                    <h2 class="page-title mb-1">
+                        <i class="fa-solid fa-location-dot me-2"></i>
+                        Detalhes da Localização
+                    </h2>
+                    <p class="page-subtitle">Consulta da localização e dos equipamentos associados.</p>
+                </div>
 
-                <h2 class="page-title mb-1">
+                <div class="d-flex gap-2">
+                    <a href="lista.php" class="btn-voltar-custom">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Voltar à lista
+                    </a>
 
-                    <i class="fa-solid fa-eye me-2"></i>
-                    Detalhes da Localização
+                    <?php if (empty($erro)) : ?>
+                        <a href="editar.php?id=<?= $localizacao->id ?>" class="btn-editar-custom">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                            Editar dados da localização
+                        </a>
 
-                </h2>
-
-                <p class="page-subtitle">
-
-                    Consulta detalhada dos dados da localização hospitalar.
-
-                </p>
-
+                        <?php if ($total_equipamentos == 0) : ?>
+                            <a href="apagar.php?id=<?= $localizacao->id ?>" class="btn-eliminar-custom">
+                                <i class="fa-solid fa-trash-can"></i>
+                                Eliminar localização
+                            </a>
+                        <?php else : ?>
+                            <span class="btn-eliminar-disabled" title="Não é possível eliminar uma localização com equipamentos associados.">
+                                <i class="fa-solid fa-lock"></i>
+                                Eliminar localização
+                            </span>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <?php if (!empty($erro)) : ?>
-
-                <div class="alert alert-danger">
-
-                    <?= htmlspecialchars($erro) ?>
-
-                </div>
-
-                <a href="lista.php" class="btn btn-voltar-custom">
-
-                    <i class="fa-solid fa-arrow-left me-1"></i>
-                    Voltar
-
-                </a>
-
+                <div class="alert alert-danger"><?= h($erro) ?></div>
             <?php else : ?>
-
-                <div class="content-card">
-
-                    <div class="row">
-
-                        <div class="col-md-6">
-
-                            <h5 class="section-title">
-
-                                <i class="fa-solid fa-location-dot me-2"></i>
-                                Dados da Localização
-
-                            </h5>
-
-                            <div class="info-item">
-
-                                <span class="info-label">
-                                    Edifício
-                                </span>
-
-                                <span class="info-value">
-                                    <?= htmlspecialchars($localizacao->edificio) ?>
-                                </span>
-
-                            </div>
-
-                            <div class="info-item">
-
-                                <span class="info-label">
-                                    Piso
-                                </span>
-
-                                <span class="info-value">
-                                    <?= htmlspecialchars($localizacao->piso) ?>
-                                </span>
-
-                            </div>
-
+                <section class="summary-card">
+                    <div class="location-summary">
+                        <div class="summary-main">
+                            <div class="summary-title"><?= h($localizacao->servico) ?></div>
+                            <div class="summary-subtitle"><?= h($localizacao->edificio . ' - ' . $localizacao->piso . ' - ' . $localizacao->sala) ?></div>
                         </div>
 
-                        <div class="col-md-6">
-
-                            <h5 class="section-title">
-
-                                <i class="fa-solid fa-building me-2"></i>
-                                Serviço
-
-                            </h5>
-
-                            <div class="info-item">
-
-                                <span class="info-label">
-                                    Serviço / Departamento
-                                </span>
-
-                                <span class="info-value">
-                                    <?= htmlspecialchars($localizacao->servico) ?>
-                                </span>
-
-                            </div>
-
-                            <div class="info-item">
-
-                                <span class="info-label">
-                                    Sala
-                                </span>
-
-                                <span class="info-value">
-                                    <?= htmlspecialchars($localizacao->sala) ?>
-                                </span>
-
-                            </div>
-
+                        <div class="summary-item">
+                            <div class="info-label">Edifício</div>
+                            <div class="info-value"><?= h($localizacao->edificio) ?></div>
                         </div>
 
+                        <div class="summary-item">
+                            <div class="info-label">Piso</div>
+                            <div class="info-value"><?= h($localizacao->piso) ?></div>
+                        </div>
+
+                        <div class="summary-item">
+                            <div class="info-label">Sala</div>
+                            <div class="info-value"><?= h($localizacao->sala) ?></div>
+                        </div>
+
+                        <div class="summary-item">
+                            <div class="info-label">Equipamentos</div>
+                            <div class="info-value"><?= $total_equipamentos ?></div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="state-grid">
+                    <div class="state-card">
+                        <div>
+                            <div class="info-label">Ativos</div>
+                            <div class="info-value"><?= $resumo_estados['ativos'] ?></div>
+                        </div>
+                        <span class="estado-pill estado-ativo">OK</span>
                     </div>
 
-                    <div class="mt-3">
-
-                        <h5 class="section-title">
-
-                            <i class="fa-solid fa-note-sticky me-2"></i>
-                            Observações
-
-                        </h5>
-
-                        <p class="mb-0">
-
-                            <?= !empty($localizacao->observacoes)
-                                ? htmlspecialchars($localizacao->observacoes)
-                                : 'Sem observações registadas.' ?>
-
-                        </p>
-
+                    <div class="state-card">
+                        <div>
+                            <div class="info-label">Em manutenção</div>
+                            <div class="info-value"><?= $resumo_estados['manutencao'] ?></div>
+                        </div>
+                        <span class="estado-pill estado-manutencao">Atenção</span>
                     </div>
 
-                    <div class="mt-4 d-flex gap-2">
-
-                        <a href="lista.php"
-                           class="btn btn-voltar-custom">
-
-                            <i class="fa-solid fa-arrow-left me-1"></i>
-                            Voltar
-
-                        </a>
-
-                        <a href="editar.php?id=<?= $localizacao->id ?>"
-                           class="btn btn-editar-custom">
-
-                            <i class="fa-regular fa-pen-to-square me-1"></i>
-                            Editar
-
-                        </a>
-
+                    <div class="state-card">
+                        <div>
+                            <div class="info-label">Em calibração</div>
+                            <div class="info-value"><?= $resumo_estados['calibracao'] ?></div>
+                        </div>
+                        <span class="estado-pill estado-calibracao">Verificar</span>
                     </div>
 
+                    <div class="state-card">
+                        <div>
+                            <div class="info-label">Inativos</div>
+                            <div class="info-value"><?= $resumo_estados['inativos'] ?></div>
+                        </div>
+                        <span class="estado-pill estado-inativo">Parado</span>
+                    </div>
                 </div>
 
+                <section class="content-card">
+                    <h5 class="section-title">Equipamentos nesta localização</h5>
+
+                    <?php if ($total_equipamentos == 0) : ?>
+                        <div class="alert alert-info mb-0">Não existem equipamentos associados a esta localização.</div>
+                    <?php else : ?>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle mb-0">
+                                <thead class="table-primary-custom">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Equipamento</th>
+                                        <th>Categoria</th>
+                                        <th>Marca / Modelo</th>
+                                        <th>Criticidade</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($equipamentos as $equipamento) : ?>
+                                        <tr>
+                                            <td><?= h($equipamento->codigo_inventario) ?></td>
+                                            <td>
+                                                <div class="equipment-main"><?= h($equipamento->designacao) ?></div>
+                                                <div class="equipment-sub"><?= h($equipamento->marca . ' | ' . $equipamento->modelo) ?></div>
+                                            </td>
+                                            <td><?= h($equipamento->categoria) ?></td>
+                                            <td><?= h($equipamento->marca . ' / ' . $equipamento->modelo) ?></td>
+                                            <td><?= h($equipamento->criticidade) ?></td>
+                                            <td>
+                                                <span class="estado-pill <?= h(classe_estado_localizacao($equipamento->estado)) ?>">
+                                                    <?= h($equipamento->estado) ?>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <?php if ($total_paginas > 1) : ?>
+                            <nav class="pagination-wrap" aria-label="Paginação dos equipamentos da localização">
+                                <ul class="pagination pagination-sm mb-0">
+                                    <?php for ($i = 1; $i <= $total_paginas; $i++) : ?>
+                                        <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
+                                            <a class="page-link" href="<?= h(link_paginacao_localizacao($i)) ?>">
+                                                <?= $i ?>
+                                            </a>
+                                        </li>
+                                    <?php endfor; ?>
+                                </ul>
+                            </nav>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </section>
             <?php endif; ?>
 
         </main>
