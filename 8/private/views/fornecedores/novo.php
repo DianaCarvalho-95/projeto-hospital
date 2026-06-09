@@ -19,9 +19,9 @@ $telefone_contacto = '';
 $tipo_fornecedor = '';
 $observacoes = '';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+$tipos_fornecedor = ['Fabricante', 'Distribuidor', 'Assistência técnica', 'Distribuidor / Comercial', 'Consumíveis / Acessórios'];
 
-    /*Recolha dos dados enviados pelo formulário*/
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nome_empresa = isset($_POST['nome_empresa']) ? trim($_POST['nome_empresa']) : '';
     $nif = isset($_POST['nif']) ? trim($_POST['nif']) : '';
     $telefone = isset($_POST['telefone']) ? trim($_POST['telefone']) : '';
@@ -33,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $tipo_fornecedor = isset($_POST['tipo_fornecedor']) ? trim($_POST['tipo_fornecedor']) : '';
     $observacoes = isset($_POST['observacoes']) ? trim($_POST['observacoes']) : '';
 
-    /*Validações obrigatórias*/
     if (empty($nome_empresa)) {
         $erros[] = 'O nome da empresa é obrigatório.';
     }
@@ -59,25 +58,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if (empty($erros)) {
-
-        /*Normalização de alguns textos antes de guardar*/
-        $nome_empresa = ucwords(strtolower($nome_empresa));
-        $pessoa_contacto = ucwords(strtolower($pessoa_contacto));
-
         try {
-
-            /*Ligação à base de dados*/
             $ligacao = new PDO(
-                "mysql:host=" . MYSQL_HOST .
-                    ";dbname=" . MYSQL_DATABASE .
-                    ";charset=utf8",
+                "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
                 MYSQL_USERNAME,
                 MYSQL_PASSWORD
             );
-
             $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            /*Inserção do novo fornecedor*/
             $sql = "INSERT INTO fornecedores
                     (nome_empresa, nif, telefone, email, morada, website,
                      pessoa_contacto, telefone_contacto, tipo_fornecedor, observacoes)
@@ -86,7 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                      :pessoa_contacto, :telefone_contacto, :tipo_fornecedor, :observacoes)";
 
             $stmt = $ligacao->prepare($sql);
-
             $stmt->execute([
                 ':nome_empresa' => $nome_empresa,
                 ':nif' => $nif,
@@ -102,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $sucesso = 'Fornecedor inserido com sucesso.';
 
-            /*Limpa os campos depois da inserção*/
             $nome_empresa = '';
             $nif = '';
             $telefone = '';
@@ -113,14 +99,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $telefone_contacto = '';
             $tipo_fornecedor = '';
             $observacoes = '';
-
         } catch (PDOException $err) {
-
             $erros[] = 'Não foi possível inserir o fornecedor.';
         }
 
         $ligacao = null;
     }
+}
+
+function h($valor)
+{
+    return htmlspecialchars($valor ?? '', ENT_QUOTES, 'UTF-8');
+}
+
+function selecionado($valor_atual, $valor_opcao)
+{
+    return $valor_atual == $valor_opcao ? 'selected' : '';
 }
 
 ?>
@@ -129,272 +123,283 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <?php include '../../includes/nav.php'; ?>
 
 <style>
-    /*Fundo da página*/
     .novo-page {
         background: #f5f7fa;
         min-height: 100vh;
         padding: 24px;
     }
 
-    /*Título principal*/
     .page-title {
-        font-weight: 600;
+        font-weight: 700;
         color: #1E3A5F;
         font-size: 1.8rem;
         margin-bottom: 0;
     }
 
-    /*Subtítulo da página*/
     .page-subtitle {
         color: #64748b;
         font-size: 0.95rem;
         margin-bottom: 0;
     }
 
-    /*Cartão branco que contém o formulário*/
+    .supplier-strip,
     .content-card {
         background: #ffffff;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
         border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
     }
 
-    /*Labels dos campos*/
+    .supplier-strip {
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .supplier-name {
+        color: #0f172a;
+        font-size: 1rem;
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+
+    .supplier-path {
+        color: #52677d;
+        font-size: 0.84rem;
+    }
+
+    .supplier-badge {
+        background: #e8f1fb;
+        color: #1E3A5F;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 0.76rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .content-card {
+        padding: 16px;
+    }
+
+    .form-section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #1E3A5F;
+        font-weight: 800;
+        font-size: 0.98rem;
+        margin-bottom: 12px;
+        padding-bottom: 9px;
+        border-bottom: 1px solid #e8eef5;
+    }
+
+    .form-section-title::before {
+        content: "";
+        width: 4px;
+        height: 18px;
+        border-radius: 999px;
+        background: #2F5D8A;
+    }
+
+    .form-hint {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 9px;
+        color: #52677d;
+        font-size: 0.84rem;
+        padding: 9px 11px;
+        margin-bottom: 14px;
+    }
+
     .form-label {
-        font-weight: 600;
-        color: #334155;
+        font-weight: 800;
+        color: #172033;
+        font-size: 0.84rem;
+        margin-bottom: 5px;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 8px;
+        border: 1px solid #dbe3ec;
         font-size: 0.88rem;
     }
 
-    /*Campos do formulário*/
-    .form-control {
-        border-radius: 10px;
-        border: 1px solid #dbe3ec;
-        font-size: 0.9rem;
-    }
-
-    .form-control:focus {
+    .form-control:focus,
+    .form-select:focus {
         border-color: #2F5D8A;
         box-shadow: 0 0 0 0.15rem rgba(47, 93, 138, 0.18);
     }
 
-    /*Botão Cancelar*/
-    .btn-cancelar-custom {
-        background: #eef2f7;
-        border: 1px solid #dbe3ec;
-        color: #475569;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 8px 16px;
+    textarea.form-control {
+        resize: vertical;
+        min-height: 76px;
     }
 
-    .btn-cancelar-custom:hover {
-        background: #e2e8f0;
-        color: #334155;
-    }
-
-    /*Botão Guardar*/
+    .btn-cancelar-custom,
     .btn-guardar-custom {
-        background: #edf4ff;
-        border: 1px solid #d6e7ff;
-        color: #2F5D8A;
         border-radius: 8px;
-        font-weight: 600;
-        padding: 8px 16px;
+        font-weight: 700;
+        padding: 8px 14px;
     }
 
-    .btn-guardar-custom:hover {
-        background: #dcecff;
+    .btn-cancelar-custom {
+        background: #ffffff;
+        border: 1px solid #dbe3ec;
         color: #1E3A5F;
     }
 
-    /*Mensagem de erro*/
+    .btn-cancelar-custom:hover {
+        background: #f6faff;
+        color: #1E3A5F;
+    }
+
+    .btn-guardar-custom {
+        background: #2F5D8A;
+        border: 1px solid #2F5D8A;
+        color: #ffffff;
+    }
+
+    .btn-guardar-custom:hover {
+        background: #1E3A5F;
+        color: #ffffff;
+    }
+
+    .mensagem-erro,
+    .mensagem-sucesso {
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 14px;
+    }
+
     .mensagem-erro {
         background: #fdeaea;
         color: #bb2d3b;
         border: 1px solid #f8d3d3;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 16px;
     }
 
-    /*Mensagem de sucesso*/
     .mensagem-sucesso {
         background: #e8f5ee;
         color: #198754;
         border: 1px solid #cfead9;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 16px;
     }
 </style>
 
 <div class="container-fluid">
     <div class="row">
-
         <?php include '../../includes/sidebar.php'; ?>
 
         <main class="col-md-9 col-lg-10 novo-page">
-
             <div class="mb-3">
-
-                <!-- Título principal da página -->
                 <h2 class="page-title mb-1">
                     <i class="fa-solid fa-truck-medical me-2"></i>
-                    Novo Fornecedor
+                    Novo fornecedor
                 </h2>
-
-                <!-- Subtítulo explicativo -->
-                <p class="page-subtitle">
-                    Registo de fornecedores associados aos equipamentos e serviços hospitalares.
-                </p>
-
+                <p class="page-subtitle">Registo de fornecedores associados aos equipamentos e serviços hospitalares.</p>
             </div>
 
             <?php if (!empty($erros)) : ?>
-
                 <div class="mensagem-erro">
-                    <strong>Foram encontrados os seguintes erros:</strong>
-
-                    <ul class="mb-0 mt-2">
-                        <?php foreach ($erros as $erro) : ?>
-                            <li><?= htmlspecialchars($erro) ?></li>
-                        <?php endforeach; ?>
-                    </ul>
+                    <?php foreach ($erros as $erro) : ?>
+                        <div><?= h($erro) ?></div>
+                    <?php endforeach; ?>
                 </div>
-
             <?php endif; ?>
 
             <?php if (!empty($sucesso)) : ?>
-
-                <div class="mensagem-sucesso">
-                    <?= htmlspecialchars($sucesso) ?>
-                </div>
-
+                <div class="mensagem-sucesso"><?= h($sucesso) ?></div>
             <?php endif; ?>
 
+            <div class="supplier-strip">
+                <div>
+                    <div class="supplier-name">Dados do novo fornecedor</div>
+                    <div class="supplier-path">Preencha os campos principais para identificar e contactar a entidade.</div>
+                </div>
+                <span class="supplier-badge">Novo registo</span>
+            </div>
+
             <div class="content-card">
-
                 <form action="novo.php" method="post" novalidate>
+                    <div class="form-hint">Os campos obrigatórios ajudam a manter a listagem organizada e a garantir contacto rápido com o fornecedor.</div>
 
-                    <div class="row">
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Nome da Empresa</label>
-
-                            <input type="text"
-                                   name="nome_empresa"
-                                   class="form-control"
-                                   value="<?= htmlspecialchars($nome_empresa) ?>">
+                    <div class="row g-3">
+                        <div class="col-lg-8">
+                            <h5 class="form-section-title">Dados da empresa</h5>
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label class="form-label">Nome da empresa</label>
+                                    <input type="text" name="nome_empresa" class="form-control" value="<?= h($nome_empresa) ?>" placeholder="Indique o nome da empresa">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">NIF</label>
+                                    <input type="text" name="nif" class="form-control" value="<?= h($nif) ?>" placeholder="Indique o NIF">
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label">Morada</label>
+                                    <input type="text" name="morada" class="form-control" value="<?= h($morada) ?>" placeholder="Indique a morada">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Tipo de fornecedor</label>
+                                    <select name="tipo_fornecedor" class="form-select">
+                                        <option value="">Escolha o tipo</option>
+                                        <?php foreach ($tipos_fornecedor as $opcao) : ?>
+                                            <option value="<?= h($opcao) ?>" <?= selecionado($tipo_fornecedor, $opcao) ?>><?= h($opcao) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">NIF</label>
-
-                            <input type="text"
-                                   name="nif"
-                                   class="form-control"
-                                   value="<?= htmlspecialchars($nif) ?>">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Telefone</label>
-
-                            <input type="text"
-                                   name="telefone"
-                                   class="form-control"
-                                   value="<?= htmlspecialchars($telefone) ?>">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Email</label>
-
-                            <input type="email"
-                                   name="email"
-                                   class="form-control"
-                                   value="<?= htmlspecialchars($email) ?>">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Morada</label>
-
-                            <input type="text"
-                                   name="morada"
-                                   class="form-control"
-                                   value="<?= htmlspecialchars($morada) ?>">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Website</label>
-
-                            <input type="text"
-                                   name="website"
-                                   class="form-control"
-                                   value="<?= htmlspecialchars($website) ?>">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Pessoa de Contacto</label>
-
-                            <input type="text"
-                                   name="pessoa_contacto"
-                                   class="form-control"
-                                   value="<?= htmlspecialchars($pessoa_contacto) ?>">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Telefone da Pessoa de Contacto</label>
-
-                            <input type="text"
-                                   name="telefone_contacto"
-                                   class="form-control"
-                                   value="<?= htmlspecialchars($telefone_contacto) ?>">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Tipo de Fornecedor</label>
-
-                            <select name="tipo_fornecedor" class="form-control">
-                                <option value="">Escolha uma opção</option>
-                                <option value="Fabricante" <?= $tipo_fornecedor == 'Fabricante' ? 'selected' : '' ?>>Fabricante</option>
-                                <option value="Distribuidor / Comercial" <?= $tipo_fornecedor == 'Distribuidor / Comercial' ? 'selected' : '' ?>>Distribuidor / Comercial</option>
-                                <option value="Assistência Técnica" <?= $tipo_fornecedor == 'Assistência Técnica' ? 'selected' : '' ?>>Assistência Técnica</option>
-                                <option value="Consumíveis / Acessórios" <?= $tipo_fornecedor == 'Consumíveis / Acessórios' ? 'selected' : '' ?>>Consumíveis / Acessórios</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
+                        <div class="col-lg-4">
+                            <h5 class="form-section-title">Informação adicional</h5>
                             <label class="form-label">Observações</label>
-
-                            <textarea name="observacoes"
-                                      rows="1"
-                                      class="form-control"><?= htmlspecialchars($observacoes) ?></textarea>
+                            <textarea name="observacoes" rows="5" class="form-control" placeholder="Opcional"><?= h($observacoes) ?></textarea>
                         </div>
 
+                        <div class="col-12">
+                            <h5 class="form-section-title">Contactos</h5>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Telefone</label>
+                                    <input type="text" name="telefone" class="form-control" value="<?= h($telefone) ?>" placeholder="Indique o telefone">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" name="email" class="form-control" value="<?= h($email) ?>" placeholder="Indique o email">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Pessoa de contacto</label>
+                                    <input type="text" name="pessoa_contacto" class="form-control" value="<?= h($pessoa_contacto) ?>" placeholder="Indique o contacto">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Telefone do contacto</label>
+                                    <input type="text" name="telefone_contacto" class="form-control" value="<?= h($telefone_contacto) ?>" placeholder="Indique o telefone">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Website</label>
+                                    <input type="text" name="website" class="form-control" value="<?= h($website) ?>" placeholder="Indique o website">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Botões do formulário -->
-                    <div class="d-flex gap-2 mt-2">
-
+                    <div class="d-flex gap-2 mt-3">
                         <a href="lista.php" class="btn btn-cancelar-custom">
                             <i class="fa-solid fa-xmark me-1"></i>
                             Cancelar
                         </a>
-
                         <button type="submit" class="btn btn-guardar-custom">
                             <i class="fa-regular fa-floppy-disk me-1"></i>
-                            Guardar
+                            Guardar fornecedor
                         </button>
-
                     </div>
-
                 </form>
-
             </div>
-
         </main>
-
     </div>
 </div>
 

@@ -10,6 +10,7 @@ $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $erros = [];
 $sucesso = '';
 $fornecedor = null;
+$total_equipamentos = 0;
 
 if ($id <= 0) {
 
@@ -30,38 +31,37 @@ if ($id <= 0) {
 
         $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        /*Se o formulário for submetido, o fornecedor é eliminado*/
+        $stmt_total = $ligacao->prepare(
+            "SELECT COUNT(*)
+             FROM equipamentos
+             WHERE fornecedor_id = :id"
+        );
+        $stmt_total->execute([':id' => $id]);
+        $total_equipamentos = (int) $stmt_total->fetchColumn();
+
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-            $stmt = $ligacao->prepare(
-                "DELETE FROM fornecedores
-                 WHERE id = :id"
-            );
-
-            $stmt->execute([
-                ':id' => $id
-            ]);
-
-            $sucesso = 'Fornecedor eliminado com sucesso.';
-
-        } else {
-
-            /*Carrega os dados do fornecedor antes da confirmação*/
-            $stmt = $ligacao->prepare(
-                "SELECT *
-                 FROM fornecedores
-                 WHERE id = :id"
-            );
-
-            $stmt->execute([
-                ':id' => $id
-            ]);
-
-            $fornecedor = $stmt->fetch(PDO::FETCH_OBJ);
-
-            if (!$fornecedor) {
-                $erros[] = 'Fornecedor não encontrado.';
+            if ($total_equipamentos > 0) {
+                $erros[] = 'Este fornecedor não pode ser eliminado porque tem equipamentos associados.';
+            } else {
+                $stmt = $ligacao->prepare(
+                    "DELETE FROM fornecedores
+                     WHERE id = :id"
+                );
+                $stmt->execute([':id' => $id]);
+                $sucesso = 'Fornecedor eliminado com sucesso.';
             }
+        }
+
+        $stmt = $ligacao->prepare(
+            "SELECT *
+             FROM fornecedores
+             WHERE id = :id"
+        );
+        $stmt->execute([':id' => $id]);
+        $fornecedor = $stmt->fetch(PDO::FETCH_OBJ);
+
+        if (!$fornecedor && empty($sucesso)) {
+            $erros[] = 'Fornecedor não encontrado.';
         }
 
     } catch (PDOException $err) {
@@ -241,8 +241,11 @@ if ($id <= 0) {
 
                     <div class="warning-box">
                         <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                        Tem a certeza que pretende eliminar este fornecedor?
-                        Esta ação é permanente e não poderá ser revertida.
+                        <?php if ($total_equipamentos > 0) : ?>
+                            Este fornecedor tem <?= $total_equipamentos ?> equipamento(s) associado(s) e não pode ser eliminado.
+                        <?php else : ?>
+                            Tem a certeza que pretende eliminar este fornecedor? Esta ação é permanente e não poderá ser revertida.
+                        <?php endif; ?>
                     </div>
 
                     <div class="row">
