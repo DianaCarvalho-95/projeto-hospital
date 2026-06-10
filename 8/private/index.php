@@ -58,7 +58,7 @@ try {
     $ligacao = new PDO(
         "mysql:host=" . MYSQL_HOST .
             ";dbname=" . MYSQL_DATABASE .
-            ";charset=utf8",
+            ";charset=utf8mb4",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
     );
@@ -68,7 +68,8 @@ try {
     $stmt = $ligacao->prepare(
         "SELECT * FROM agents
          WHERE name = :username
-         AND passwrd = :password"
+         AND passwrd = :password
+         AND ativo = 1"
     );
 
     $stmt->execute([
