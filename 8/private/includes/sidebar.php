@@ -202,6 +202,14 @@ function menu_ativo($parte)
                 Utilizadores
             </a>
         <?php endif; ?>
+
+        <?php if (($_SESSION['profile'] ?? '') === 'admin') : ?>
+            <a href="<?php echo BASE_URL; ?>/private/views/conteudos-publicos/lista.php"
+               class="menu-link <?php echo menu_ativo('/conteudos-publicos/'); ?>">
+                <i class="fas fa-pen-to-square"></i>
+                Conteúdos Públicos
+            </a>
+        <?php endif; ?>
     </nav>
 
     <div class="sidebar-footer">

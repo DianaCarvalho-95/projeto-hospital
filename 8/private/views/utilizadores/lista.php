@@ -132,8 +132,8 @@ function foto_utilizador($ficheiro)
 
     .page-title {
         color: #1E3A5F;
-        font-size: 1.55rem;
-        font-weight: 800;
+        font-size: 1.8rem;
+        font-weight: 700;
         margin: 0;
     }
 
@@ -181,7 +181,7 @@ function foto_utilizador($ficheiro)
     .summary-label {
         color: #496583;
         font-size: 0.69rem;
-        font-weight: 900;
+        font-weight: 700;
         text-transform: uppercase;
     }
 
@@ -192,8 +192,8 @@ function foto_utilizador($ficheiro)
 
     .summary-value {
         color: #0f172a;
-        font-size: 1.45rem;
-        font-weight: 900;
+        font-size: 1.35rem;
+        font-weight: 800;
         line-height: 1.05;
     }
 
@@ -222,7 +222,7 @@ function foto_utilizador($ficheiro)
     .form-label {
         color: #31506f;
         font-size: 0.69rem;
-        font-weight: 900;
+        font-weight: 700;
         text-transform: uppercase;
     }
 
@@ -236,7 +236,7 @@ function foto_utilizador($ficheiro)
         background: #2F5D8A;
         border-color: #2F5D8A;
         color: #ffffff;
-        font-weight: 800;
+        font-weight: 700;
     }
 
     .btn-main:hover {
@@ -249,7 +249,7 @@ function foto_utilizador($ficheiro)
         border-color: #2F5D8A !important;
         color: #ffffff !important;
         font-size: 0.74rem;
-        font-weight: 850;
+        font-weight: 700;
         text-transform: uppercase;
     }
 
@@ -280,7 +280,7 @@ function foto_utilizador($ficheiro)
 
     .user-name {
         color: #0f172a;
-        font-weight: 850;
+        font-weight: 700;
         line-height: 1.15;
     }
 
@@ -296,7 +296,7 @@ function foto_utilizador($ficheiro)
         border-radius: 999px;
         display: inline-flex;
         font-size: 0.71rem;
-        font-weight: 850;
+        font-weight: 700;
         padding: 3px 8px;
         white-space: nowrap;
     }
@@ -330,7 +330,7 @@ function foto_utilizador($ficheiro)
     .action-btn {
         border-radius: 8px;
         font-size: 0.74rem;
-        font-weight: 850;
+        font-weight: 700;
         padding: 4px 9px;
         white-space: nowrap;
     }
@@ -399,7 +399,7 @@ function foto_utilizador($ficheiro)
     .confirm-title {
         color: #1E3A5F;
         font-size: 1.08rem;
-        font-weight: 900;
+        font-weight: 700;
         margin-bottom: 6px;
     }
 
@@ -421,7 +421,7 @@ function foto_utilizador($ficheiro)
     .btn-confirm-submit {
         border-radius: 9px;
         font-size: 0.84rem;
-        font-weight: 850;
+        font-weight: 700;
         min-width: 104px;
         padding: 8px 13px;
     }

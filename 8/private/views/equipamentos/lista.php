@@ -77,7 +77,7 @@ try {
     $ligacao = new PDO(
         "mysql:host=" . MYSQL_HOST .
             ";dbname=" . MYSQL_DATABASE .
-            ";charset=utf8",
+            ";charset=utf8mb4",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
     );
@@ -248,19 +248,19 @@ function classe_estado_equipamento($estado)
     .equipamentos-page {
         background: #f5f7fa;
         min-height: 100vh;
-        padding: 12px 18px;
+        padding: 24px;
     }
 
     .page-title {
         font-weight: 700;
         color: #1E3A5F;
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         margin-bottom: 0;
     }
 
     .page-subtitle {
         color: #64748b;
-        font-size: 0.84rem;
+        font-size: 0.95rem;
         margin-bottom: 0;
     }
 
@@ -295,8 +295,8 @@ function classe_estado_equipamento($estado)
     .summary-grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 9px;
-        margin-bottom: 8px;
+        gap: 12px;
+        margin-bottom: 14px;
     }
 
     .summary-card {
@@ -304,9 +304,9 @@ function classe_estado_equipamento($estado)
         border: 1px solid #e2e8f0;
         border-radius: 12px;
         box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
-        min-height: 64px;
+        min-height: 74px;
         overflow: hidden;
-        padding: 9px 12px;
+        padding: 12px 14px;
         position: relative;
     }
 
@@ -336,7 +336,7 @@ function classe_estado_equipamento($estado)
 
     .summary-label {
         color: #52677d;
-        font-size: 0.62rem;
+        font-size: 0.72rem;
         font-weight: 900;
         text-transform: uppercase;
     }
@@ -349,7 +349,7 @@ function classe_estado_equipamento($estado)
 
     .summary-value {
         color: #0f172a;
-        font-size: 1.28rem;
+        font-size: 1.42rem;
         font-weight: 900;
         line-height: 1;
         margin-top: 4px;
@@ -361,7 +361,7 @@ function classe_estado_equipamento($estado)
 
     .summary-help {
         color: #64748b;
-        font-size: 0.66rem;
+        font-size: 0.76rem;
         font-weight: 750;
         margin-top: 4px;
     }
@@ -378,18 +378,18 @@ function classe_estado_equipamento($estado)
     .filters-card,
     .content-card {
         background: #ffffff;
-        border-radius: 12px;
-        padding: 10px 12px;
+        border-radius: 14px;
+        padding: 12px;
         box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
         border: 1px solid #e5e7eb;
     }
 
     .filters-card {
-        margin-bottom: 8px;
+        margin-bottom: 14px;
     }
 
     .form-label {
-        font-size: 0.7rem;
+        font-size: 0.72rem;
         font-weight: 800;
         color: #31506f;
         text-transform: uppercase;
@@ -399,18 +399,18 @@ function classe_estado_equipamento($estado)
     .form-select {
         border-radius: 8px;
         border-color: #dbe3ec;
-        font-size: 0.82rem;
+        font-size: 0.86rem;
     }
 
 
     .form-control,
     .form-select,
     .btn-sm {
-        min-height: 32px;
+        min-height: 34px;
     }
 
     .table > :not(caption) > * > * {
-        padding: 0.42rem 0.55rem;
+        padding: 0.56rem 0.62rem;
     }
 
     .table-primary-custom th {
@@ -418,7 +418,7 @@ function classe_estado_equipamento($estado)
         color: #ffffff !important;
         border-color: #2F5D8A !important;
         font-weight: 700;
-        font-size: 0.78rem;
+        font-size: 0.84rem;
     }
 
     .table-primary-custom a {
@@ -427,7 +427,7 @@ function classe_estado_equipamento($estado)
     }
 
     .table td {
-        font-size: 0.82rem;
+        font-size: 0.86rem;
         vertical-align: middle;
     }
 
@@ -440,7 +440,7 @@ function classe_estado_equipamento($estado)
         color: #1E3A5F;
         padding: 3px 9px;
         font-weight: 800;
-        font-size: 0.7rem;
+        font-size: 0.78rem;
     }
 
     .equipment-name {
@@ -450,15 +450,15 @@ function classe_estado_equipamento($estado)
 
     .muted-line {
         color: #64748b;
-        font-size: 0.7rem;
+        font-size: 0.78rem;
     }
 
     .estado-badge {
         display: inline-flex;
         align-items: center;
         border-radius: 999px;
-        padding: 3px 8px;
-        font-size: 0.7rem;
+        padding: 4px 10px;
+        font-size: 0.72rem;
         font-weight: 800;
     }
 
@@ -502,9 +502,9 @@ function classe_estado_equipamento($estado)
         align-items: center;
         justify-content: center;
         gap: 5px;
-        padding: 3px 8px;
+        padding: 4px 10px;
         border-radius: 7px;
-        font-size: 0.64rem;
+        font-size: 0.76rem;
         font-weight: 800;
         text-decoration: none;
         transition: 0.15s;
