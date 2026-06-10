@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 require_once __DIR__ . '/../../../config/config.php';
 require_once __DIR__ . '/../../includes/funcoes.php';
@@ -925,12 +925,12 @@ $imagem = !empty($equipamento->imagem)
                             <span class="quick-action-copy"><strong>Editar equipamento</strong><small>Dados gerais</small></span>
                         </a>
 
-                        <a href="../ferramentas/nova-manutencao.php?equipamento_id=<?= $equipamento->id ?>" class="quick-action-item">
+                        <a href="nova-manutencao.php?equipamento_id=<?= $equipamento->id ?>" class="quick-action-item">
                             <span class="quick-action-icon"><i class="fa-solid fa-wrench"></i></span>
                             <span class="quick-action-copy"><strong>Registar manutenção</strong><small>Nova intervenção</small></span>
                         </a>
 
-                        <a href="../ferramentas/nova-movimentacao.php?equipamento_id=<?= $equipamento->id ?>" class="quick-action-item">
+                        <a href="nova-movimentacao.php?equipamento_id=<?= $equipamento->id ?>" class="quick-action-item">
                             <span class="quick-action-icon"><i class="fa-solid fa-right-left"></i></span>
                             <span class="quick-action-copy"><strong>Registar movimentação</strong><small>Nova localização</small></span>
                         </a>

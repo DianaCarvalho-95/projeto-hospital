@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 require_once __DIR__ . '/../../../config/config.php';
 require_once __DIR__ . '/../../includes/funcoes.php';
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 ':observacoes' => $observacoes
             ]);
 
-            header('Location: ../equipamentos/detalhes.php?id=' . $equipamento_id . '#movimentacoes');
+            header('Location: detalhes.php?id=' . $equipamento_id . '#movimentacoes');
             exit;
         } catch (PDOException $err) {
             $erros[] = 'Não foi possível registar a movimentação.';
@@ -119,8 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 $cancelar_url = !empty($equipamento_id)
-    ? '../equipamentos/detalhes.php?id=' . $equipamento_id . '#movimentacoes'
-    : 'historico.php';
+    ? 'detalhes.php?id=' . $equipamento_id . '#movimentacoes'
+    : 'lista.php';
 
 ?>
 

@@ -248,19 +248,19 @@ function classe_estado_equipamento($estado)
     .equipamentos-page {
         background: #f5f7fa;
         min-height: 100vh;
-        padding: 24px;
+        padding: 12px 18px;
     }
 
     .page-title {
         font-weight: 700;
         color: #1E3A5F;
-        font-size: 1.8rem;
+        font-size: 1.5rem;
         margin-bottom: 0;
     }
 
     .page-subtitle {
         color: #64748b;
-        font-size: 0.95rem;
+        font-size: 0.84rem;
         margin-bottom: 0;
     }
 
@@ -295,47 +295,101 @@ function classe_estado_equipamento($estado)
     .summary-grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-        margin-bottom: 14px;
+        gap: 9px;
+        margin-bottom: 8px;
     }
 
     .summary-card {
-        background: #fff;
+        background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 12px 14px;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+        border-radius: 12px;
+        box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
+        min-height: 64px;
+        overflow: hidden;
+        padding: 9px 12px;
+        position: relative;
     }
 
+    .summary-card::after {
+        content: "";
+        position: absolute;
+        inset: auto -24px -34px auto;
+        width: 72px;
+        height: 72px;
+        border-radius: 999px;
+        background: rgba(47, 93, 138, 0.08);
+    }
+
+    .summary-card.primary {
+        background: #1E3A5F;
+        border-color: #1E3A5F;
+        color: #ffffff;
+    }
+
+    .summary-card.primary::after {
+        background: rgba(255, 255, 255, 0.13);
+    }
+
+    .summary-card.success { border-top: 4px solid #22c55e; }
+    .summary-card.warning { border-top: 4px solid #f59e0b; }
+    .summary-card.danger { border-top: 4px solid #ef4444; }
+
     .summary-label {
-        color: #55708d;
-        font-size: 0.72rem;
-        font-weight: 800;
+        color: #52677d;
+        font-size: 0.62rem;
+        font-weight: 900;
         text-transform: uppercase;
+    }
+
+    .summary-card.primary .summary-label,
+    .summary-card.primary .summary-help,
+    .summary-card.primary .summary-icon {
+        color: rgba(255, 255, 255, 0.78);
     }
 
     .summary-value {
         color: #0f172a;
-        font-size: 1.25rem;
-        font-weight: 800;
-        line-height: 1.2;
+        font-size: 1.28rem;
+        font-weight: 900;
+        line-height: 1;
+        margin-top: 4px;
+    }
+
+    .summary-card.primary .summary-value {
+        color: #ffffff;
+    }
+
+    .summary-help {
+        color: #64748b;
+        font-size: 0.66rem;
+        font-weight: 750;
+        margin-top: 4px;
+    }
+
+    .summary-icon {
+        color: #2F5D8A;
+        font-size: 1rem;
+        position: absolute;
+        right: 12px;
+        top: 12px;
+        z-index: 1;
     }
 
     .filters-card,
     .content-card {
         background: #ffffff;
         border-radius: 12px;
-        padding: 16px;
+        padding: 10px 12px;
         box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
         border: 1px solid #e5e7eb;
     }
 
     .filters-card {
-        margin-bottom: 14px;
+        margin-bottom: 8px;
     }
 
     .form-label {
-        font-size: 0.78rem;
+        font-size: 0.7rem;
         font-weight: 800;
         color: #31506f;
         text-transform: uppercase;
@@ -345,7 +399,18 @@ function classe_estado_equipamento($estado)
     .form-select {
         border-radius: 8px;
         border-color: #dbe3ec;
-        font-size: 0.88rem;
+        font-size: 0.82rem;
+    }
+
+
+    .form-control,
+    .form-select,
+    .btn-sm {
+        min-height: 32px;
+    }
+
+    .table > :not(caption) > * > * {
+        padding: 0.42rem 0.55rem;
     }
 
     .table-primary-custom th {
@@ -353,7 +418,7 @@ function classe_estado_equipamento($estado)
         color: #ffffff !important;
         border-color: #2F5D8A !important;
         font-weight: 700;
-        font-size: 0.86rem;
+        font-size: 0.78rem;
     }
 
     .table-primary-custom a {
@@ -362,7 +427,7 @@ function classe_estado_equipamento($estado)
     }
 
     .table td {
-        font-size: 0.88rem;
+        font-size: 0.82rem;
         vertical-align: middle;
     }
 
@@ -375,7 +440,7 @@ function classe_estado_equipamento($estado)
         color: #1E3A5F;
         padding: 3px 9px;
         font-weight: 800;
-        font-size: 0.78rem;
+        font-size: 0.7rem;
     }
 
     .equipment-name {
@@ -385,15 +450,15 @@ function classe_estado_equipamento($estado)
 
     .muted-line {
         color: #64748b;
-        font-size: 0.78rem;
+        font-size: 0.7rem;
     }
 
     .estado-badge {
         display: inline-flex;
         align-items: center;
         border-radius: 999px;
-        padding: 4px 9px;
-        font-size: 0.76rem;
+        padding: 3px 8px;
+        font-size: 0.7rem;
         font-weight: 800;
     }
 
@@ -437,9 +502,9 @@ function classe_estado_equipamento($estado)
         align-items: center;
         justify-content: center;
         gap: 5px;
-        padding: 4px 8px;
+        padding: 3px 8px;
         border-radius: 7px;
-        font-size: 0.72rem;
+        font-size: 0.64rem;
         font-weight: 800;
         text-decoration: none;
         transition: 0.15s;
@@ -460,8 +525,8 @@ function classe_estado_equipamento($estado)
     .pagination-wrapper {
         display: flex;
         justify-content: center;
-        margin-top: 22px;
-        margin-bottom: 6px;
+        margin-top: 8px;
+        margin-bottom: 0;
     }
 
     .pagination .page-link {
@@ -496,9 +561,9 @@ function classe_estado_equipamento($estado)
 
         <main class="col-md-9 col-lg-10 equipamentos-page">
 
-            <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
                 <div>
-                    <h2 class="page-title mb-1">
+                    <h2 class="page-title mb-0">
                         <i class="fas fa-cogs me-2"></i>
                         Listagem de Equipamentos
                     </h2>
@@ -521,26 +586,34 @@ function classe_estado_equipamento($estado)
             </div>
 
             <div class="summary-grid">
-                <div class="summary-card">
-                    <div class="summary-label">Total</div>
+                <div class="summary-card primary">
+                    <i class="fas fa-desktop summary-icon"></i>
+                    <div class="summary-label">Equipamentos</div>
                     <div class="summary-value"><?= htmlspecialchars($resumo['total']) ?></div>
+                    <div class="summary-help">Total registado</div>
                 </div>
-                <div class="summary-card">
+                <div class="summary-card success">
+                    <i class="fas fa-circle-check summary-icon"></i>
                     <div class="summary-label">Ativos</div>
                     <div class="summary-value"><?= htmlspecialchars($resumo['ativos']) ?></div>
+                    <div class="summary-help">Em utilização</div>
                 </div>
-                <div class="summary-card">
-                    <div class="summary-label">Em manutenção</div>
+                <div class="summary-card warning">
+                    <i class="fas fa-screwdriver-wrench summary-icon"></i>
+                    <div class="summary-label">Manutenção</div>
                     <div class="summary-value"><?= htmlspecialchars($resumo['manutencao']) ?></div>
+                    <div class="summary-help">Acompanhamento técnico</div>
                 </div>
-                <div class="summary-card">
+                <div class="summary-card danger">
+                    <i class="fas fa-ban summary-icon"></i>
                     <div class="summary-label">Inativos</div>
                     <div class="summary-value"><?= htmlspecialchars($resumo['inativos']) ?></div>
+                    <div class="summary-help">Fora de utilização</div>
                 </div>
             </div>
 
             <div class="filters-card">
-                <form method="get" class="row g-3 align-items-end">
+                <form method="get" class="row g-2 align-items-end">
                     <div class="col-lg-3 col-md-6">
                         <label class="form-label">Pesquisar</label>
                         <input type="text" name="pesquisa" class="form-control" placeholder="Código, nome ou série" value="<?= htmlspecialchars($pesquisa) ?>">

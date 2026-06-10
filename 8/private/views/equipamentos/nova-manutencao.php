@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 require_once __DIR__ . '/../../../config/config.php';
 require_once __DIR__ . '/../../includes/funcoes.php';
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 ':observacoes' => $observacoes
             ]);
 
-            header('Location: ../equipamentos/detalhes.php?id=' . $equipamento_id . '#manutencoes');
+            header('Location: detalhes.php?id=' . $equipamento_id . '#manutencoes');
             exit;
         } catch (PDOException $err) {
             $erros[] = 'N?o foi poss?vel registar a manutenção.';
@@ -111,8 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 $cancelar_url = !empty($equipamento_id)
-    ? '../equipamentos/detalhes.php?id=' . $equipamento_id . '#manutencoes'
-    : 'proxima-manutencao.php';
+    ? 'detalhes.php?id=' . $equipamento_id . '#manutencoes'
+    : 'lista.php';
 
 ?>
 

@@ -51,7 +51,7 @@ if (!empty($validation_errors)) {
 }
 
 // --------------------------------------------------------------------
-// VERIFICAÇÃO REAL NA BASE DE DADOS
+// VERIFICACAO REAL NA BASE DE DADOS
 // --------------------------------------------------------------------
 try {
 
