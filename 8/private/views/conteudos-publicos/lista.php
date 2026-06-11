@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 require_once __DIR__ . '/../../../config/config.php';
 require_once __DIR__ . '/../../includes/funcoes.php';
@@ -130,14 +130,14 @@ function resumo_item($texto)
 <?php include '../../includes/nav.php'; ?>
 
 <style>
-    .conteudos-page { background:#f5f7fa; min-height:100vh; padding:24px; }
-    .page-title { color:#1E3A5F; font-size:1.8rem; font-weight:700; margin:0; }
+    .conteudos-page { background:#f5f7fa; min-height:100vh; padding:16px 20px; }
+    .page-title { color:#1E3A5F; font-size:1.6rem; font-weight:700; margin:0; }
     .page-subtitle { color:#64748b; font-size:.95rem; margin-bottom:0; }
     .tabs-card,.content-card { background:#fff; border:1px solid #dbe5ef; border-radius:14px; box-shadow:0 7px 18px rgba(15,23,42,.06); }
-    .tabs-card { margin-bottom:14px; padding:8px 12px 0; }
-    .content-card { padding:18px; }
+    .tabs-card { margin-bottom:10px; padding:6px 10px 0; }
+    .content-card { padding:12px 14px; }
     .content-tabs { border-bottom:1px solid #dbe5ef; display:flex; gap:4px; overflow-x:auto; }
-    .content-tabs .nav-link { align-items:center; border:0; border-bottom:3px solid transparent; border-radius:0; color:#1E3A5F; display:inline-flex; font-size:.88rem; font-weight:700; gap:7px; padding:10px 14px; white-space:nowrap; }
+    .content-tabs .nav-link { align-items:center; border:0; border-bottom:3px solid transparent; border-radius:0; color:#1E3A5F; display:inline-flex; font-size:.86rem; font-weight:700; gap:7px; padding:8px 13px; white-space:nowrap; }
     .content-tabs .nav-link.active { background:transparent; border-bottom-color:#0d6efd; color:#0d6efd; }
     .section-title { border-bottom:1px solid #e2e8f0; color:#1E3A5F; font-size:.98rem; font-weight:700; margin-bottom:12px; padding-bottom:8px; }
     .section-title::before { background:#2F5D8A; border-radius:999px; content:''; display:inline-block; height:18px; margin-right:8px; vertical-align:-3px; width:4px; }
@@ -146,12 +146,14 @@ function resumo_item($texto)
     textarea.form-control { min-height:68px; resize:vertical; }
     .btn-main { background:#2F5D8A; border-color:#2F5D8A; border-radius:9px; color:#fff; font-weight:700; min-height:38px; }
     .btn-main:hover { background:#1E3A5F; color:#fff; }
+    .btn-public-page { align-items:center; background:#2F5D8A; border:1px solid #2F5D8A; border-radius:8px; color:#fff; display:inline-flex; font-size:.86rem; font-weight:700; gap:7px; min-height:36px; padding:7px 13px; text-decoration:none; }
+    .btn-public-page:hover { background:#1E3A5F; border-color:#1E3A5F; color:#fff; text-decoration:none; }
     .item-grid { display:grid; gap:12px; grid-template-columns:repeat(3,minmax(0,1fr)); }
     .item-box { background:#f8fafc; border:1px solid #dbe5ef; border-radius:12px; padding:12px; }
     .item-head { align-items:center; display:flex; gap:10px; justify-content:space-between; margin-bottom:8px; }
     .item-title { color:#1E3A5F; font-weight:700; }
     .small-help { color:#64748b; font-size:.76rem; white-space:nowrap; }
-    .save-bar { border-top:1px solid #e2e8f0; display:flex; gap:8px; justify-content:flex-end; margin-top:14px; padding-top:12px; }
+    .save-bar { border-top:1px solid #e2e8f0; display:flex; gap:8px; justify-content:flex-end; margin-top:10px; padding-top:9px; }
     .compact-grid { display:grid; gap:12px; grid-template-columns:repeat(5,minmax(0,1fr)); }
     .compact-item { background:#f8fafc; border:1px solid #dbe5ef; border-radius:12px; min-height:142px; padding:12px; display:flex; flex-direction:column; }
     .compact-icon { align-items:center; background:#edf4ff; border-radius:10px; color:#2F5D8A; display:inline-flex; height:34px; justify-content:center; margin-bottom:8px; width:34px; }
@@ -168,23 +170,17 @@ function resumo_item($texto)
     .edit-modal-head { align-items:center; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; margin-bottom:14px; padding-bottom:10px; }
     .edit-modal-title { color:#1E3A5F; font-size:1.05rem; font-weight:700; }
     .modal-close { background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; color:#1E3A5F; font-weight:700; height:34px; width:34px; }
-    .general-grid { display:grid; gap:14px; grid-template-columns:1.3fr .9fr; }
-    .general-stack { display:grid; gap:12px; }
-    .general-panel { background:#f8fafc; border:1px solid #dbe5ef; border-radius:12px; padding:14px; }
-    .panel-title { align-items:center; color:#1E3A5F; display:flex; font-size:.95rem; font-weight:700; gap:8px; margin-bottom:10px; }
-    .panel-title i { align-items:center; background:#edf4ff; border-radius:9px; color:#2F5D8A; display:inline-flex; height:30px; justify-content:center; width:30px; }
-    .preview-card { background:#1E3A5F; border-radius:13px; color:#fff; overflow:hidden; }
-    .preview-hero { background:linear-gradient(135deg,#1E3A5F,#2F5D8A); padding:18px; }
-    .preview-label { color:rgba(255,255,255,.72); font-size:.68rem; font-weight:700; text-transform:uppercase; }
-    .preview-title { font-size:1rem; font-weight:700; line-height:1.2; margin:6px 0; }
-    .preview-text { color:rgba(255,255,255,.82); font-size:.8rem; line-height:1.4; margin:0; }
-    .preview-button { background:#fff; border-radius:999px; color:#1E3A5F; display:inline-flex; font-size:.75rem; font-weight:700; margin-top:12px; padding:6px 11px; }
-    .preview-footer { background:#fff; color:#1E3A5F; display:grid; gap:8px; padding:14px; }
-    .preview-row { border:1px solid #dbe5ef; border-radius:9px; padding:8px 10px; }
-    .preview-row strong { display:block; font-size:.68rem; text-transform:uppercase; }
-    .preview-row span { color:#526985; font-size:.78rem; }
+    .general-grid { display:block; }
+    .general-stack { display:grid; gap:9px; grid-template-columns:1fr; align-items:start; }
+    .general-panel { background:#f8fafc; border:1px solid #dbe5ef; border-radius:12px; padding:10px 12px; }
+    .panel-title { align-items:center; color:#1E3A5F; display:flex; font-size:.92rem; font-weight:700; gap:8px; margin-bottom:8px; }
+    .panel-title i { align-items:center; background:#edf4ff; border-radius:8px; color:#2F5D8A; display:inline-flex; height:26px; justify-content:center; width:26px; }
+    .general-panel .form-label { font-size:.78rem; margin-bottom:4px; }
+    .general-panel .form-control { font-size:.84rem; min-height:31px; padding:5px 9px; }
+    .general-panel textarea.form-control { min-height:52px; resize:vertical; }
+    .general-panel .row { --bs-gutter-x:.65rem; --bs-gutter-y:.45rem; }
     @media (max-width:1400px){ .compact-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
-    @media (max-width:1300px){ .general-grid{ grid-template-columns:1fr; } }
+
     @media (max-width:1300px){ .item-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (max-width:991px){ .edit-overlay{ left:25%; } }
 </style>
@@ -198,7 +194,7 @@ function resumo_item($texto)
                     <h2 class="page-title"><i class="fa-solid fa-pen-to-square me-2"></i>Conteúdos Públicos</h2>
                     <p class="page-subtitle">Gestão dos textos, equipa, serviços, áreas e planos apresentados na página pública.</p>
                 </div>
-                <a href="<?php echo BASE_URL; ?>/public/index.php" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Ver página pública</a>
+                <a href="<?php echo BASE_URL; ?>/public/index.php" target="_blank" class="btn-public-page"><i class="fa-solid fa-arrow-up-right-from-square"></i>Ver página pública</a>
             </div>
 
             <?php if ($erro !== '') : ?><div class="alert alert-danger py-2"><?= h($erro) ?></div><?php endif; ?>
@@ -252,21 +248,6 @@ function resumo_item($texto)
                                     <div class="col-md-6"><label class="form-label">Email</label><input type="text" name="footer_email" class="form-control" value="<?= h(valor_conteudo($conteudos, 'footer_email')) ?>"></div>
                                     <div class="col-md-6"><label class="form-label">Telefone</label><input type="text" name="footer_telefone" class="form-control" value="<?= h(valor_conteudo($conteudos, 'footer_telefone')) ?>"></div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="preview-card">
-                            <div class="preview-hero">
-                                <div class="preview-label">Pré-visualização</div>
-                                <div class="preview-title"><?= h(valor_conteudo($conteudos, 'hero_titulo')) ?></div>
-                                <p class="preview-text"><?= h(valor_conteudo($conteudos, 'hero_texto')) ?></p>
-                                <span class="preview-button"><?= h(valor_conteudo($conteudos, 'hero_botao')) ?></span>
-                            </div>
-                            <div class="preview-footer">
-                                <div class="preview-row"><strong>Contacto</strong><span><?= h(valor_conteudo($conteudos, 'contacto_intro')) ?></span></div>
-                                <div class="preview-row"><strong>Localização</strong><span><?= h(valor_conteudo($conteudos, 'footer_localizacao')) ?></span></div>
-                                <div class="preview-row"><strong>Horário</strong><span><?= h(valor_conteudo($conteudos, 'footer_horario')) ?></span></div>
-                                <div class="preview-row"><strong>Contactos</strong><span><?= h(valor_conteudo($conteudos, 'footer_email')) ?> · <?= h(valor_conteudo($conteudos, 'footer_telefone')) ?></span></div>
                             </div>
                         </div>
                     </div>
@@ -355,3 +336,8 @@ function resumo_item($texto)
 </script>
 
 <?php include '../../includes/footer.php'; ?>
+
+
+
+
+
