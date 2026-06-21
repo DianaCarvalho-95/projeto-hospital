@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/includes/funcoes.php';
 
 session_start();
 
@@ -57,7 +58,7 @@ try {
 
     $ligacao = new PDO(
         "mysql:host=" . MYSQL_HOST .
-            ";dbname=" . MYSQL_DATABASE .
+            ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE .
             ";charset=utf8mb4",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
@@ -68,18 +69,17 @@ try {
     $stmt = $ligacao->prepare(
         "SELECT * FROM agents
          WHERE name = :username
-         AND passwrd = :password
          AND ativo = 1"
     );
 
     $stmt->execute([
-        ':username' => $username,
-        ':password' => $password
+        ':username' => $username
     ]);
 
     $agente = $stmt->fetch(PDO::FETCH_OBJ);
 
-    if (!$agente) {
+    if (!$agente || !password_verify($password, $agente->passwrd)) {
+        registar_evento('Autenticação', 'Login falhado', 'Utilizador', null, 'Tentativa de login: ' . $username);
         $_SESSION['server_error'] = 'Login inválido.';
         header('Location: ' . BASE_URL . '/public/login.php');
         exit;
@@ -98,6 +98,8 @@ try {
     $_SESSION['utilizador'] = $agente->name;
     $_SESSION['profile'] = $agente->profile;
 
+    registar_evento('Autenticação', 'Login', 'Utilizador', (int) $agente->id, 'Login efetuado com sucesso.');
+
 } catch (PDOException $err) {
 
     $_SESSION['server_error'] = 'Erro ao ligar à base de dados.';
@@ -113,3 +115,4 @@ $ligacao = null;
 */
 header('Location: ' . BASE_URL . '/private/views/dashboard/dashboard.php');
 exit;
+

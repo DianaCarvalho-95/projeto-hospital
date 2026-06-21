@@ -25,6 +25,7 @@ $pesquisa = isset($_GET['pesquisa']) ? trim($_GET['pesquisa']) : '';
 $filtro_categoria = isset($_GET['categoria']) ? trim($_GET['categoria']) : '';
 $filtro_estado = isset($_GET['estado']) ? trim($_GET['estado']) : '';
 $filtro_localizacao = isset($_GET['localizacao']) ? trim($_GET['localizacao']) : '';
+$filtro_alerta = isset($_GET['alerta']) ? trim($_GET['alerta']) : '';
 
 if ($pagina < 1) {
     $pagina = 1;
@@ -48,8 +49,8 @@ $coluna_sql = isset($colunas_permitidas[$ordenar])
     ? $colunas_permitidas[$ordenar]
     : 'e.id';
 
-$where = [];
-$params = [];
+$where = ['e.estado <> :estado_excluido'];
+$params = [':estado_excluido' => 'Inativo'];
 
 if ($pesquisa !== '') {
     $where[] = '(e.codigo_inventario LIKE :pesquisa OR e.designacao LIKE :pesquisa OR e.numero_serie LIKE :pesquisa)';
@@ -76,7 +77,7 @@ $where_sql = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
 try {
     $ligacao = new PDO(
         "mysql:host=" . MYSQL_HOST .
-            ";dbname=" . MYSQL_DATABASE .
+            ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE .
             ";charset=utf8mb4",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
@@ -89,7 +90,7 @@ try {
     )->fetchAll(PDO::FETCH_COLUMN);
 
     $estados = $ligacao->query(
-        "SELECT DISTINCT estado FROM equipamentos WHERE estado IS NOT NULL AND estado <> '' ORDER BY estado"
+        "SELECT DISTINCT estado FROM equipamentos WHERE estado IS NOT NULL AND estado <> '' AND estado <> 'Inativo' ORDER BY estado"
     )->fetchAll(PDO::FETCH_COLUMN);
 
     $localizacoes = $ligacao->query(
@@ -100,9 +101,9 @@ try {
 
     $stmt_resumo = $ligacao->query(
         "SELECT
-            COUNT(*) AS total,
+            SUM(CASE WHEN estado <> 'Inativo' THEN 1 ELSE 0 END) AS total,
             SUM(CASE WHEN estado = 'Ativo' THEN 1 ELSE 0 END) AS ativos,
-            SUM(CASE WHEN estado LIKE '%manutenção%' OR estado LIKE '%manutencao%' THEN 1 ELSE 0 END) AS manutencao,
+            SUM(CASE WHEN estado LIKE '%manuten%' THEN 1 ELSE 0 END) AS manutencao,
             SUM(CASE WHEN estado = 'Inativo' THEN 1 ELSE 0 END) AS inativos
          FROM equipamentos"
     );
@@ -243,317 +244,6 @@ function classe_estado_equipamento($estado)
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
-
-<style>
-    .equipamentos-page {
-        background: #f5f7fa;
-        min-height: 100vh;
-        padding: 24px;
-    }
-
-    .page-title {
-        font-weight: 700;
-        color: #1E3A5F;
-        font-size: 1.8rem;
-        margin-bottom: 0;
-    }
-
-    .page-subtitle {
-        color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 0;
-    }
-
-    .novo-btn {
-        background: #2F5D8A;
-        border-color: #2F5D8A;
-        color: #fff;
-        border-radius: 8px;
-        font-weight: 700;
-    }
-
-    .novo-btn:hover {
-        background: #1E3A5F;
-        border-color: #1E3A5F;
-        color: #fff;
-    }
-
-    .exportar-btn {
-        background: #e8f5ee;
-        border-color: #cfead9;
-        color: #198754;
-        border-radius: 8px;
-        font-weight: 700;
-    }
-
-    .exportar-btn:hover {
-        background: #d9f0e3;
-        border-color: #badfc9;
-        color: #146c43;
-    }
-
-    .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-        margin-bottom: 14px;
-    }
-
-    .summary-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
-        min-height: 74px;
-        overflow: hidden;
-        padding: 12px 14px;
-        position: relative;
-    }
-
-    .summary-card::after {
-        content: "";
-        position: absolute;
-        inset: auto -24px -34px auto;
-        width: 72px;
-        height: 72px;
-        border-radius: 999px;
-        background: rgba(47, 93, 138, 0.08);
-    }
-
-    .summary-card.primary {
-        background: #1E3A5F;
-        border-color: #1E3A5F;
-        color: #ffffff;
-    }
-
-    .summary-card.primary::after {
-        background: rgba(255, 255, 255, 0.13);
-    }
-
-    .summary-card.success { border-top: 4px solid #22c55e; }
-    .summary-card.warning { border-top: 4px solid #f59e0b; }
-    .summary-card.danger { border-top: 4px solid #ef4444; }
-
-    .summary-label {
-        color: #52677d;
-        font-size: 0.72rem;
-        font-weight: 900;
-        text-transform: uppercase;
-    }
-
-    .summary-card.primary .summary-label,
-    .summary-card.primary .summary-help,
-    .summary-card.primary .summary-icon {
-        color: rgba(255, 255, 255, 0.78);
-    }
-
-    .summary-value {
-        color: #0f172a;
-        font-size: 1.42rem;
-        font-weight: 900;
-        line-height: 1;
-        margin-top: 4px;
-    }
-
-    .summary-card.primary .summary-value {
-        color: #ffffff;
-    }
-
-    .summary-help {
-        color: #64748b;
-        font-size: 0.76rem;
-        font-weight: 750;
-        margin-top: 4px;
-    }
-
-    .summary-icon {
-        color: #2F5D8A;
-        font-size: 1rem;
-        position: absolute;
-        right: 12px;
-        top: 12px;
-        z-index: 1;
-    }
-
-    .filters-card,
-    .content-card {
-        background: #ffffff;
-        border-radius: 14px;
-        padding: 12px;
-        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
-        border: 1px solid #e5e7eb;
-    }
-
-    .filters-card {
-        margin-bottom: 14px;
-    }
-
-    .form-label {
-        font-size: 0.72rem;
-        font-weight: 800;
-        color: #31506f;
-        text-transform: uppercase;
-    }
-
-    .form-control,
-    .form-select {
-        border-radius: 8px;
-        border-color: #dbe3ec;
-        font-size: 0.86rem;
-    }
-
-
-    .form-control,
-    .form-select,
-    .btn-sm {
-        min-height: 34px;
-    }
-
-    .table > :not(caption) > * > * {
-        padding: 0.56rem 0.62rem;
-    }
-
-    .table-primary-custom th {
-        background: #2F5D8A !important;
-        color: #ffffff !important;
-        border-color: #2F5D8A !important;
-        font-weight: 700;
-        font-size: 0.84rem;
-    }
-
-    .table-primary-custom a {
-        color: #ffffff;
-        text-decoration: none;
-    }
-
-    .table td {
-        font-size: 0.86rem;
-        vertical-align: middle;
-    }
-
-    .code-chip {
-        display: inline-flex;
-        align-items: center;
-        border-radius: 999px;
-        background: #edf4ff;
-        border: 1px solid #d6e7ff;
-        color: #1E3A5F;
-        padding: 3px 9px;
-        font-weight: 800;
-        font-size: 0.78rem;
-    }
-
-    .equipment-name {
-        font-weight: 700;
-        color: #0f172a;
-    }
-
-    .muted-line {
-        color: #64748b;
-        font-size: 0.78rem;
-    }
-
-    .estado-badge {
-        display: inline-flex;
-        align-items: center;
-        border-radius: 999px;
-        padding: 4px 10px;
-        font-size: 0.72rem;
-        font-weight: 800;
-    }
-
-    .estado-ativo {
-        background: #e7f5ee;
-        border: 1px solid #bfe5cf;
-        color: #17623a;
-    }
-
-    .estado-manutencao {
-        background: #fff4dc;
-        border: 1px solid #f3d28b;
-        color: #7a4b00;
-    }
-
-    .estado-calibracao {
-        background: #e8f1fb;
-        border: 1px solid #bdd5f0;
-        color: #24527a;
-    }
-
-    .estado-inativo {
-        background: #f3f4f6;
-        border: 1px solid #d7dce3;
-        color: #6b2730;
-    }
-
-    .estado-neutro {
-        background: #e2e8f0;
-        color: #334155;
-    }
-
-    .action-group {
-        display: inline-flex;
-        gap: 6px;
-        flex-wrap: nowrap;
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-        padding: 4px 10px;
-        border-radius: 7px;
-        font-size: 0.76rem;
-        font-weight: 800;
-        text-decoration: none;
-        transition: 0.15s;
-        white-space: nowrap;
-    }
-
-    .action-consultar {
-        background: #edf4ff;
-        border: 1px solid #cfe0f5;
-        color: #1E3A5F;
-    }
-
-    .action-btn:hover {
-        opacity: 0.85;
-        color: inherit;
-    }
-
-    .pagination-wrapper {
-        display: flex;
-        justify-content: center;
-        margin-top: 8px;
-        margin-bottom: 0;
-    }
-
-    .pagination .page-link {
-        color: #2F5D8A;
-        border-radius: 8px;
-        margin: 0 2px;
-    }
-
-    .pagination .page-item.active .page-link {
-        background-color: #2F5D8A;
-        border-color: #2F5D8A;
-        color: #fff;
-    }
-
-    @media (max-width: 992px) {
-        .summary-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-
-    @media (max-width: 576px) {
-        .summary-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-
 <div class="container-fluid">
     <div class="row">
 
@@ -573,10 +263,20 @@ function classe_estado_equipamento($estado)
                 </div>
 
                 <div class="d-flex gap-2">
-                    <a href="exportar-equipamentos.php" class="btn btn-sm exportar-btn">
-                        <i class="fa-solid fa-file-excel me-1"></i>
-                        Exportar Excel
-                    </a>
+                    <div class="export-actions">
+                        <a href="exportar-equipamentos.php?formato=excel" class="btn btn-sm exportar-btn">
+                            <i class="fa-solid fa-file-excel me-1"></i>
+                            Excel
+                        </a>
+                        <a href="exportar-equipamentos.php?formato=csv" class="btn btn-sm exportar-btn exportar-btn-secondary">
+                            <i class="fa-solid fa-file-csv me-1"></i>
+                            CSV
+                        </a>
+                        <a href="exportar-equipamentos.php?formato=imprimir" target="_blank" class="btn btn-sm exportar-btn exportar-btn-secondary">
+                            <i class="fa-solid fa-file-pdf me-1"></i>
+                            PDF
+                        </a>
+                    </div>
 
                     <a href="novo.php" class="btn btn-sm novo-btn">
                         <i class="fa-solid fa-plus me-1"></i>
@@ -588,28 +288,30 @@ function classe_estado_equipamento($estado)
             <div class="summary-grid">
                 <div class="summary-card primary">
                     <i class="fas fa-desktop summary-icon"></i>
-                    <div class="summary-label">Equipamentos</div>
+                    <div class="summary-label">Parque operacional</div>
                     <div class="summary-value"><?= htmlspecialchars($resumo['total']) ?></div>
-                    <div class="summary-help">Total registado</div>
+                    <div class="summary-help">Sem equipamentos arquivados</div>
                 </div>
                 <div class="summary-card success">
                     <i class="fas fa-circle-check summary-icon"></i>
                     <div class="summary-label">Ativos</div>
                     <div class="summary-value"><?= htmlspecialchars($resumo['ativos']) ?></div>
-                    <div class="summary-help">Em utilização</div>
+                    <div class="summary-help">Disponíveis para utilização</div>
                 </div>
                 <div class="summary-card warning">
                     <i class="fas fa-screwdriver-wrench summary-icon"></i>
-                    <div class="summary-label">Manutenção</div>
+                    <div class="summary-label">Em manutenção</div>
                     <div class="summary-value"><?= htmlspecialchars($resumo['manutencao']) ?></div>
-                    <div class="summary-help">Acompanhamento técnico</div>
+                    <div class="summary-help">Intervenções em curso</div>
                 </div>
-                <div class="summary-card danger">
-                    <i class="fas fa-ban summary-icon"></i>
-                    <div class="summary-label">Inativos</div>
-                    <div class="summary-value"><?= htmlspecialchars($resumo['inativos']) ?></div>
-                    <div class="summary-help">Fora de utilização</div>
-                </div>
+                <a href="../arquivo/lista.php" class="summary-card-link">
+                    <div class="summary-card archive">
+                        <i class="fas fa-box-archive summary-icon"></i>
+                        <div class="summary-label">Arquivo</div>
+                        <div class="summary-value"><?= htmlspecialchars($resumo['inativos']) ?></div>
+                        <div class="summary-help">Inativos fora da listagem</div>
+                    </div>
+                </a>
             </div>
 
             <div class="filters-card">
@@ -751,15 +453,43 @@ function classe_estado_equipamento($estado)
 
                 <?php if ($total_paginas > 1) : ?>
                     <div class="pagination-wrapper">
-                        <nav>
+                        <nav aria-label="Paginação dos equipamentos">
                             <ul class="pagination pagination-sm mb-0">
-                                <?php for ($i = 1; $i <= $total_paginas; $i++) : ?>
+                                <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
+                                    <a class="page-link pagination-arrow" href="<?= $pagina > 1 ? query_equipamentos(['pagina' => $pagina - 1]) : '#' ?>" aria-label="Página anterior">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </a>
+                                </li>
+
+                                <?php
+                                $paginas_visiveis = [1, $total_paginas];
+                                for ($i = max(2, $pagina - 2); $i <= min($total_paginas - 1, $pagina + 2); $i++) {
+                                    $paginas_visiveis[] = $i;
+                                }
+                                $paginas_visiveis = array_values(array_unique($paginas_visiveis));
+                                sort($paginas_visiveis);
+                                $pagina_anterior = 0;
+                                ?>
+
+                                <?php foreach ($paginas_visiveis as $i) : ?>
+                                    <?php if ($pagina_anterior && $i > $pagina_anterior + 1) : ?>
+                                        <li class="page-item disabled pagination-ellipsis" aria-hidden="true">
+                                            <span class="page-link">&hellip;</span>
+                                        </li>
+                                    <?php endif; ?>
                                     <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
-                                        <a class="page-link" href="<?= query_equipamentos(['pagina' => $i]) ?>">
+                                        <a class="page-link" href="<?= query_equipamentos(['pagina' => $i]) ?>" <?= $i == $pagina ? 'aria-current="page"' : '' ?>>
                                             <?= $i ?>
                                         </a>
                                     </li>
-                                <?php endfor; ?>
+                                    <?php $pagina_anterior = $i; ?>
+                                <?php endforeach; ?>
+
+                                <li class="page-item <?= $pagina >= $total_paginas ? 'disabled' : '' ?>">
+                                    <a class="page-link pagination-arrow" href="<?= $pagina < $total_paginas ? query_equipamentos(['pagina' => $pagina + 1]) : '#' ?>" aria-label="Página seguinte">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </a>
+                                </li>
                             </ul>
                         </nav>
                     </div>
@@ -771,3 +501,19 @@ function classe_estado_equipamento($estado)
 </div>
 
 <?php include '../../includes/footer.php'; ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

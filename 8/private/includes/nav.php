@@ -1,13 +1,100 @@
-<?php
+﻿<?php
 
 $nome_topbar = 'Utilizador';
 $perfil_topbar = 'Acesso privado';
 $foto_topbar = BASE_URL . '/private/assets/img/utilizadores/admin.png';
 
+$notificacoes_topbar = [];
+$data_notificacoes_topbar = date('d/m/Y');
+
+try {
+    $ligacao_notif = new PDO(
+        "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
+        MYSQL_USERNAME,
+        MYSQL_PASSWORD
+    );
+    $ligacao_notif->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $stmt_notif = $ligacao_notif->query(
+        "SELECT e.codigo_inventario, e.designacao, m.tipo_manutencao, m.responsavel
+         FROM manutencoes m
+         INNER JOIN equipamentos e ON e.id = m.equipamento_id
+         WHERE m.proxima_manutencao = CURDATE()
+         ORDER BY e.codigo_inventario
+         LIMIT 4"
+    );
+    foreach ($stmt_notif->fetchAll(PDO::FETCH_OBJ) as $linha) {
+        $notificacoes_topbar[] = [
+            'classe' => 'notif-maintenance',
+            'tipo' => 'Manutenção',
+            'titulo' => $linha->codigo_inventario . ' - ' . ($linha->tipo_manutencao ?: 'Intervenção'),
+            'descricao' => $linha->designacao . ($linha->responsavel ? ' - ' . $linha->responsavel : '')
+        ];
+    }
+
+    $stmt_notif = $ligacao_notif->query(
+        "SELECT e.codigo_inventario, mv.local_origem, mv.local_destino
+         FROM movimentacoes mv
+         INNER JOIN equipamentos e ON e.id = mv.equipamento_id
+         WHERE mv.data_movimentacao = CURDATE()
+         ORDER BY mv.id DESC
+         LIMIT 4"
+    );
+    foreach ($stmt_notif->fetchAll(PDO::FETCH_OBJ) as $linha) {
+        $notificacoes_topbar[] = [
+            'classe' => 'notif-move',
+            'tipo' => 'Movimentação',
+            'titulo' => $linha->codigo_inventario . ' - Transferência',
+            'descricao' => $linha->local_origem . ' - ' . $linha->local_destino
+        ];
+    }
+
+    $stmt_notif = $ligacao_notif->query(
+        "SELECT e.codigo_inventario, em.servico_origem, em.servico_destino
+         FROM emprestimos em
+         INNER JOIN equipamentos e ON e.id = em.equipamento_id
+         WHERE em.data_emprestimo = CURDATE()
+            OR (em.data_prevista_devolucao = CURDATE() AND em.data_devolucao IS NULL)
+         ORDER BY em.id DESC
+         LIMIT 4"
+    );
+    foreach ($stmt_notif->fetchAll(PDO::FETCH_OBJ) as $linha) {
+        $notificacoes_topbar[] = [
+            'classe' => 'notif-loan',
+            'tipo' => 'Empréstimo',
+            'titulo' => $linha->codigo_inventario . ' - Empréstimo',
+            'descricao' => $linha->servico_origem . ' - ' . $linha->servico_destino
+        ];
+    }
+
+    $stmt_notif = $ligacao_notif->query(
+        "SELECT e.codigo_inventario, gc.tipo_contrato, gc.entidade_responsavel
+         FROM garantias_contratos gc
+         INNER JOIN equipamentos e ON e.id = gc.equipamento_id
+         WHERE gc.data_fim = CURDATE()
+         ORDER BY e.codigo_inventario
+         LIMIT 4"
+    );
+    foreach ($stmt_notif->fetchAll(PDO::FETCH_OBJ) as $linha) {
+        $notificacoes_topbar[] = [
+            'classe' => 'notif-warranty',
+            'tipo' => 'Garantia',
+            'titulo' => $linha->codigo_inventario . ' - ' . ($linha->tipo_contrato ?: 'Garantia'),
+            'descricao' => 'Termina hoje' . ($linha->entidade_responsavel ? ' - ' . $linha->entidade_responsavel : '')
+        ];
+    }
+} catch (PDOException $err) {
+    $notificacoes_topbar = [];
+}
+
+$total_notificacoes_topbar = count($notificacoes_topbar);
+$notificacoes_topbar_chave = date('Y-m-d');
+
+
 if (!empty($_SESSION['utilizador'])) {
     try {
         $ligacao_nav = new PDO(
-            "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
+            "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
             MYSQL_USERNAME,
             MYSQL_PASSWORD
         );
@@ -37,7 +124,37 @@ if (!empty($_SESSION['utilizador'])) {
 ?>
 
 <header class="topbar-custom">
-    <div class="dropdown ms-auto user-menu">
+    <div class="dropdown notification-menu" data-notification-menu data-notification-date="<?= htmlspecialchars($notificacoes_topbar_chave, ENT_QUOTES, 'UTF-8') ?>">
+        <button class="notification-button" type="button" data-notification-button data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notificações" title="Notificações">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                <path d="M13.7 21a2 2 0 0 1-3.4 0"></path>
+            </svg>
+                    <?php if ($total_notificacoes_topbar > 0) : ?>
+                <span class="notification-daily-indicator" data-notification-indicator><?= (int) $total_notificacoes_topbar ?></span>
+            <?php endif; ?>
+</button>
+        <div class="dropdown-menu dropdown-menu-end notification-dropdown">
+            <div class="notification-header">
+                <strong>Notificações de hoje</strong>
+                <span><?= htmlspecialchars($data_notificacoes_topbar, ENT_QUOTES, 'UTF-8') ?></span>
+            </div>
+            <?php if ($total_notificacoes_topbar > 0) : ?>
+                <div class="notification-list">
+                    <?php foreach (array_slice($notificacoes_topbar, 0, 6) as $notificacao) : ?>
+                        <div class="notification-item <?= htmlspecialchars($notificacao['classe'], ENT_QUOTES, 'UTF-8') ?>">
+                            <span><?= htmlspecialchars($notificacao['tipo'], ENT_QUOTES, 'UTF-8') ?></span>
+                            <strong><?= htmlspecialchars($notificacao['titulo'], ENT_QUOTES, 'UTF-8') ?></strong>
+                            <small><?= htmlspecialchars($notificacao['descricao'], ENT_QUOTES, 'UTF-8') ?></small>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else : ?>
+                <div class="notification-empty">Sem notificações planeadas para hoje.</div>
+            <?php endif; ?>
+        </div>
+    </div>
+    <div class="dropdown user-menu">
         <button class="btn user-button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <img src="<?= htmlspecialchars($foto_topbar, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($nome_topbar, ENT_QUOTES, 'UTF-8') ?>" class="user-avatar-img">
             <span class="user-info">
@@ -50,8 +167,8 @@ if (!empty($_SESSION['utilizador'])) {
             <li class="dropdown-header user-dropdown-header">
                 <img src="<?= htmlspecialchars($foto_topbar, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($nome_topbar, ENT_QUOTES, 'UTF-8') ?>" class="dropdown-avatar">
                 <span>
-                    <strong><?= htmlspecialchars($nome_topbar, ENT_QUOTES, 'UTF-8') ?></strong>
-                    <small><?= htmlspecialchars($perfil_topbar, ENT_QUOTES, 'UTF-8') ?></small>
+                    <strong>Conta de <?= htmlspecialchars(strtolower($perfil_topbar), ENT_QUOTES, 'UTF-8') ?></strong>
+                    <small><?= htmlspecialchars($email_topbar, ENT_QUOTES, 'UTF-8') ?></small>
                 </span>
             </li>
             <li><hr class="dropdown-divider"></li>
@@ -71,147 +188,5 @@ if (!empty($_SESSION['utilizador'])) {
     </div>
 </header>
 
-<style>
-    .topbar-custom {
-        align-items: center;
-        background: #2F5D8A;
-        display: flex;
-        font-family: "Segoe UI", Arial, sans-serif;
-        height: 70px;
-        justify-content: flex-end;
-        left: 16.666666%;
-        padding: 0 24px;
-        position: fixed;
-        right: 0;
-        top: 0;
-        z-index: 1000;
-    }
 
-    .user-button {
-        align-items: center;
-        background: rgba(255, 255, 255, 0.10);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 999px;
-        color: #ffffff;
-        display: flex;
-        gap: 10px;
-        min-height: 44px;
-        padding: 5px 12px 5px 6px;
-    }
 
-    .user-button:hover,
-    .user-button:focus {
-        background: rgba(255, 255, 255, 0.18);
-        color: #ffffff;
-    }
-
-    .user-avatar-img {
-        border: 2px solid rgba(255, 255, 255, 0.55);
-        border-radius: 50%;
-        height: 34px;
-        object-fit: cover;
-        width: 34px;
-    }
-
-    .user-info {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.08;
-        text-align: left;
-    }
-
-    .user-role {
-        font-size: 0.9rem;
-        font-weight: 850;
-    }
-
-    .user-email {
-        color: rgba(255, 255, 255, 0.76);
-        font-size: 0.68rem;
-        max-width: 180px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .user-dropdown {
-        border: 1px solid #dbe5ef;
-        border-radius: 12px;
-        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.16);
-        min-width: 250px;
-        overflow: hidden;
-        padding: 8px;
-    }
-
-    .user-dropdown-header {
-        align-items: center;
-        color: #1E3A5F;
-        display: flex;
-        gap: 10px;
-        padding: 8px 8px 6px;
-        white-space: normal;
-    }
-
-    .user-dropdown-header strong,
-    .user-dropdown-header small {
-        display: block;
-    }
-
-    .user-dropdown-header small {
-        color: #64748b;
-        font-size: 0.74rem;
-        margin-top: 1px;
-    }
-
-    .dropdown-avatar {
-        border: 2px solid #dbeafe;
-        border-radius: 50%;
-        height: 40px;
-        object-fit: cover;
-        width: 40px;
-    }
-
-    .user-dropdown-item {
-        align-items: center;
-        border-radius: 9px;
-        color: #1E3A5F;
-        display: flex;
-        font-size: 0.9rem;
-        font-weight: 750;
-        gap: 10px;
-        padding: 9px 10px;
-    }
-
-    .user-dropdown-item i {
-        color: #2F5D8A;
-        width: 18px;
-    }
-
-    .user-dropdown-item:hover {
-        background: #edf4ff;
-        color: #1E3A5F;
-    }
-
-    .logout-item {
-        color: #be123c;
-    }
-
-    .logout-item i {
-        color: #be123c;
-    }
-
-    .logout-item:hover {
-        background: #fff1f2;
-        color: #be123c;
-    }
-
-    @media (max-width: 991px) {
-        .topbar-custom {
-            left: 25%;
-        }
-
-        .user-email {
-            display: none;
-        }
-    }
-</style>

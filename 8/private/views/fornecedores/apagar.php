@@ -23,7 +23,7 @@ if ($id <= 0) {
         /*Ligação à base de dados*/
         $ligacao = new PDO(
             "mysql:host=" . MYSQL_HOST .
-                ";dbname=" . MYSQL_DATABASE .
+                ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE .
                 ";charset=utf8",
             MYSQL_USERNAME,
             MYSQL_PASSWORD
@@ -76,118 +76,6 @@ if ($id <= 0) {
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
-
-<style>
-    .apagar-page {
-        background: #f5f7fa;
-        min-height: 100vh;
-        padding: 24px;
-    }
-
-    .page-title {
-        font-weight: 600;
-        color: #1E3A5F;
-        font-size: 1.8rem;
-        margin-bottom: 0;
-    }
-
-    .page-subtitle {
-        color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 0;
-    }
-
-    .content-card {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
-        border: 1px solid #e5e7eb;
-    }
-
-    .warning-box {
-        background: #fff7ed;
-        border: 1px solid #fed7aa;
-        color: #9a3412;
-        border-radius: 12px;
-        padding: 14px;
-        margin-bottom: 18px;
-    }
-
-    .info-item {
-        margin-bottom: 12px;
-    }
-
-    .info-label {
-        display: block;
-        color: #64748b;
-        font-size: 0.78rem;
-        font-weight: 600;
-    }
-
-    .info-value {
-        color: #0f172a;
-        font-weight: 500;
-    }
-
-    .btn-cancelar-custom {
-        background: #eef2f7;
-        border: 1px solid #dbe3ec;
-        color: #475569;
-        border-radius: 8px;
-        font-weight: 600;
-    }
-
-    .btn-cancelar-custom:hover {
-        background: #e2e8f0;
-        color: #334155;
-    }
-
-    .btn-eliminar-custom {
-        background: #fdeaea;
-        border: 1px solid #f8d3d3;
-        color: #dc3545;
-        border-radius: 8px;
-        font-weight: 600;
-    }
-
-    .btn-eliminar-custom:hover {
-        background: #fbdcdc;
-        color: #bb2d3b;
-    }
-
-    .btn-voltar-custom {
-        background: #edf4ff;
-        border: 1px solid #d6e7ff;
-        color: #2F5D8A;
-        border-radius: 8px;
-        font-weight: 600;
-    }
-
-    .btn-voltar-custom:hover {
-        background: #dcecff;
-        color: #1E3A5F;
-    }
-
-    .mensagem-erro {
-        background: #fdeaea;
-        color: #bb2d3b;
-        border: 1px solid #f8d3d3;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 16px;
-    }
-
-    .mensagem-sucesso {
-        background: #e8f5ee;
-        color: #198754;
-        border: 1px solid #cfead9;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 16px;
-    }
-</style>
-
 <div class="container-fluid">
     <div class="row">
 
@@ -321,3 +209,4 @@ if ($id <= 0) {
 </div>
 
 <?php include '../../includes/footer.php'; ?>
+

@@ -1,0 +1,65 @@
+da412b6 - Diana Carvalho - 2026-06-11 - Melhoria visual no public e inserção de novas informações (Sobre Nós; FAQ's; Mapa de Localização)
+80d0383 - Diana Carvalho - 2026-06-10 - Criação da área de conteúdos públicos
+a7ac2a7 - Diana Carvalho - 2026-06-10 - Criação da área de utilizadores e gestão de acesso
+8e8ab1d - Diana Carvalho - 2026-06-10 - Melhorias no separador da dashboard
+fa68202 - Diana Carvalho - 2026-06-09 - Melhorias no separador de fornecedores
+77a7a5c - Diana Carvalho - 2026-06-09 - Melhorias no separador de localizações
+691354b - Diana Carvalho - 2026-06-09 - Melhoria na gestão de equipamentos
+6320693 - Diana Carvalho - 2026-06-09 - Melhorias na gestão de equipamentos
+182e903 - Diana Carvalho - 2026-06-09 - Adição de documentação/manuais, imagens por categoria e melhoria da ficha de equipamentos
+279dbac - Diana Carvalho - 2026-06-07 - Melhoria visual no public
+a3671a3 - Diana Carvalho - 2026-06-07 - Adição da funcionalidade de exportação de dados para Excel
+1250164 - Diana Carvalho - 2026-06-07 - Melhoria visual no separador FERRAMENTAS
+eab1bcf - Diana Carvalho - 2026-06-05 - Melhoria visual no separador DOCUMENTAÇÃO
+b6de93b - Diana Carvalho - 2026-06-05 - Melhoria visual no separador LOCALIZAÇÕES
+8352a36 - Diana Carvalho - 2026-06-05 - Melhoria visual no separador EQUIPAMENTOS
+9c6dca4 - Diana Carvalho - 2026-06-05 - Mudança de layout na NAV e SIDE
+85b272c - Diana Carvalho - 2026-06-05 - Mudança de layout da dashboard
+65772ad - Diana Carvalho - 2026-06-05 - Melhoroia na apresentação visual do login
+22bb2d5 - Diana Carvalho - 2026-06-05 - Melhoria na autenticação e apresentação de perfis
+1146b09 - Diana Carvalho - 2026-06-05 - Implementação completa da gestão de ferramentas
+f957852 - Diana Carvalho - 2026-06-04 - Melhoria na dashboard tornando-a mais completa
+5799e91 - Diana Carvalho - 2026-06-04 - Implementação completa da gestão de documentação
+685b11f - Diana Carvalho - 2026-06-04 - Implementação completa da gestão de localizações
+495e9be - Diana Carvalho - 2026-06-04 - Implementação completa da gestão de fornecedores
+89dd365 - Diana Carvalho - 2026-06-04 - Implementação das listagens de localizações e fornecedores
+9559a03 - Diana Carvalho - 2026-06-04 - Associação de localizações e fornecedores aos equipamentos
+b2627b6 - Diana Carvalho - 2026-06-04 - Implementação do login com validação na base de dados
+fffbe84 - Diana Carvalho - 2026-06-04 - Implementação da desativação de equipamentos
+c21f929 - Diana Carvalho - 2026-06-04 - Implementação da edição de equipamentos com atualização na base de dados
+1916065 - Diana Carvalho - 2026-06-04 - Melhoria da validação e persistência de dados no formulário de equipamentos
+3e8a736 - Diana Carvalho - 2026-06-03 - Implementação de paginação e filtros na listagem de equipamentos
+7e71c1e - Diana Carvalho - 2026-06-03 - Implementação de indicadores dinâmicos no dashboard
+1638a76 - Diana Carvalho - 2026-06-03 - Implementação da edição e eliminação de equipamentos
+2506c4a - Diana Carvalho - 2026-06-03 - Implementação da consulta individual de equipamentos
+56b520f - Diana Carvalho - 2026-06-03 - Implementação do formulário de inserção de equipamentos
+146b59b - Diana Carvalho - 2026-06-03 - Implementação do formulário de inserção de equipamentos
+593890c - Diana Carvalho - 2026-06-03 - Implementação da ligação PDO e consulta da tabela equipamentos
+dce9672 - Diana Carvalho - 2026-06-03 - Confiiguração das credenciais de acesso MySQL
+50cfd12 - Diana Carvalho - 2026-06-03 - Driação da estrutura inicial da base de dados do inventário hospitalar
+c1029da - Diana Carvalho - 2026-06-03 - Centralização dos caminhos de navegação com BASE_URL
+279bac4 - Diana Carvalho - 2026-06-03 - Implementação da proteção de acesso nas views com sessões
+f958bb1 - Diana Carvalho - 2026-06-03 - Implementação de formulários POST, validações e sessões PHP
+f53c070 - Diana Carvalho - 2026-06-03 - Implementação da estrutura PHP com includes e configuração global
+5b6f248 - Diana Carvalho - 2026-04-14 - Aplicação do Bootsrap nas páginas principais de listagem do backend
+5324bf4 - Diana Carvalho - 2026-04-13 - Integração do Bootstrap no backend com nova estrutura de layout
+8169fb6 - Diana Carvalho - 2026-04-13 - Implementação do formulário de login com Bootstrap
+959000d - Diana Carvalho - 2026-04-12 - Implementação das páginas de relatórios e histórico no módulo ferramentas
+f1b7d79 - Diana Carvalho - 2026-04-12 - Implementação da página de garantias e contratos
+695c43e - Diana Carvalho - 2026-04-12 - Implementação da funcionalidade de estimativa de custo com Javacript
+1b915f2 - Diana Carvalho - 2026-04-12 - Implementação da funcionalidade de avaliação técnica com JavaScript
+c10ef21 - Diana Carvalho - 2026-04-12 - Implementação da funcionalidade de calculo da próxima manutenção com JvaScript
+b019e6f - Diana Carvalho - 2026-04-11 - Implementação do modulo ferramentas e integração no menu lateral
+2163412 - Diana Carvalho - 2026-04-11 - Implementação do modulo documentação com listagem, inserção, edição, eliminação e consulta
+349fe0c - Diana Carvalho - 2026-04-11 - Implementação do modulo localizações com listagem, inserção, edição, eliminação e consulta
+d83b62f - Diana Carvalho - 2026-04-11 - Implementação do modeulo equipamentos com listagem, inserção, edição, eliminação e consulta de dados
+a6ac15e - Diana Carvalho - 2026-04-11 - Implementação do modulo fornecedores com listagem, inserção, edição, eliminação e consulta de dados
+79868ea - Diana Carvalho - 2026-04-11 - Correção dos caminhos no backend e adição de fontes e ícones na interface administrativa
+3321da4 - Diana Carvalho - 2026-04-11 - Reorganização das views do backend em subpastas por módulo
+d0aa68f - Diana Carvalho - 2026-04-08 - Reorganização do backend com estrutura views, admin css e correção de caminhos
+3adccbe - Diana Carvalho - 2026-04-08 - Melhoria visual do frontend com Google Fonts, imagens, ícones e novas secções
+0b131d9 - Diana Carvalho - 2026-04-08 - Criação das páginas dos módeulos do sistema mantendo o layout comum da área pessoal
+0e8468d - Diana Carvalho - 2026-04-08 - Criação da estrutura da área pessoal com navbar, sidebar e aplicação dos estilos CSS
+58ff2d6 - Diana Carvalho - 2026-04-08 - Conversão do index para navegação por âncoras com todas as secções numa única página
+af2c3c9 - Diana Carvalho - 2026-04-07 - Adição das páginas dos módulos do sistema hospitalar com navegação e rodapé completos
+b3a0f5e - Diana Carvalho - 2026-04-07 - Criação da estrutura inicial com index, navegação e estilos base do sistema hospitalar

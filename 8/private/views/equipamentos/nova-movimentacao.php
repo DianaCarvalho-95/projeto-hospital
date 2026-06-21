@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 require_once __DIR__ . '/../../../config/config.php';
 require_once __DIR__ . '/../../includes/funcoes.php';
@@ -30,7 +30,7 @@ function texto_localizacao($localizacao)
 
 try {
     $ligacao = new PDO(
-        "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
+        "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
     );
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         try {
             if (!isset($ligacao)) {
                 $ligacao = new PDO(
-                    "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
+                    "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
                     MYSQL_USERNAME,
                     MYSQL_PASSWORD
                 );
@@ -110,6 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 ':observacoes' => $observacoes
             ]);
 
+            registar_evento('Movimentações', 'Criação', 'Equipamento', $equipamento_id, $local_origem . ' -> ' . $local_destino);
+
             header('Location: detalhes.php?id=' . $equipamento_id . '#movimentacoes');
             exit;
         } catch (PDOException $err) {
@@ -126,19 +128,6 @@ $cancelar_url = !empty($equipamento_id)
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
-
-<style>
-    .form-page { background: #f5f7fa; min-height: 100vh; padding: 24px; }
-    .page-title { color: #1E3A5F; font-size: 1.8rem; font-weight: 700; margin-bottom: 0; }
-    .page-subtitle { color: #64748b; font-size: 0.95rem; }
-    .content-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06); }
-    .form-label { font-weight: 700; color: #334155; font-size: 0.88rem; }
-    .form-control { border-radius: 10px; border: 1px solid #dbe3ec; font-size: 0.9rem; }
-    .btn-main { background: #0d6efd; border: 1px solid #0d6efd; color: #fff; font-weight: 700; }
-    .btn-main:hover { background: #0b5ed7; color: #fff; }
-    .btn-soft { background: #eef2f7; border: 1px solid #dbe3ec; color: #334155; font-weight: 700; }
-</style>
-
 <div class="container-fluid">
     <div class="row">
         <?php include '../../includes/sidebar.php'; ?>
@@ -230,3 +219,5 @@ $cancelar_url = !empty($equipamento_id)
 </div>
 
 <?php include '../../includes/footer.php'; ?>
+
+

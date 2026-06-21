@@ -22,27 +22,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             $ligacao = new PDO(
-                "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
+                "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
                 MYSQL_USERNAME,
                 MYSQL_PASSWORD
             );
             $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             $stmt = $ligacao->prepare(
-                'SELECT id FROM agents WHERE name = :utilizador AND passwrd = :password_atual LIMIT 1'
+                'SELECT id, passwrd FROM agents WHERE name = :utilizador LIMIT 1'
             );
             $stmt->execute([
-                ':utilizador' => $_SESSION['utilizador'],
-                ':password_atual' => $password_atual
+                ':utilizador' => $_SESSION['utilizador']
             ]);
             $utilizador = $stmt->fetch(PDO::FETCH_OBJ);
 
-            if (!$utilizador) {
+            if (!$utilizador || !password_verify($password_atual, $utilizador->passwrd)) {
                 $erro = 'A password atual não está correta.';
             } else {
+                $hash_password = password_hash($nova_password, PASSWORD_DEFAULT);
                 $stmt = $ligacao->prepare('UPDATE agents SET passwrd = :nova_password WHERE id = :id');
                 $stmt->execute([
-                    ':nova_password' => $nova_password,
+                    ':nova_password' => $hash_password,
                     ':id' => $utilizador->id
                 ]);
                 $sucesso = 'Password atualizada com sucesso.';
@@ -62,71 +62,6 @@ function h($valor)
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
-
-<style>
-    .password-page {
-        background: #f5f7fa;
-        min-height: 100vh;
-        padding: 22px 24px;
-    }
-
-    .page-title {
-        color: #1E3A5F;
-        font-size: 1.65rem;
-        font-weight: 850;
-        margin: 0;
-    }
-
-    .page-subtitle {
-        color: #526985;
-        font-size: 0.9rem;
-        margin: 3px 0 14px;
-    }
-
-    .password-card {
-        background: #ffffff;
-        border: 1px solid #dbe5ef;
-        border-radius: 14px;
-        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
-        max-width: 760px;
-        padding: 22px;
-    }
-
-    .form-label {
-        color: #1E3A5F;
-        font-size: 0.78rem;
-        font-weight: 850;
-    }
-
-    .form-control {
-        border-radius: 9px;
-        min-height: 38px;
-    }
-
-    .btn-main {
-        background: #2F5D8A;
-        border-color: #2F5D8A;
-        border-radius: 9px;
-        color: #ffffff;
-        font-weight: 850;
-        min-height: 38px;
-    }
-
-    .btn-main:hover {
-        background: #1E3A5F;
-        color: #ffffff;
-    }
-
-    .btn-light-back {
-        background: #f8fafc;
-        border: 1px solid #cbd5e1;
-        border-radius: 9px;
-        color: #1E3A5F;
-        font-weight: 800;
-        min-height: 38px;
-    }
-</style>
-
 <div class="container-fluid">
     <div class="row">
         <?php include '../../includes/sidebar.php'; ?>
@@ -175,3 +110,5 @@ function h($valor)
 </div>
 
 <?php include '../../includes/footer.php'; ?>
+
+

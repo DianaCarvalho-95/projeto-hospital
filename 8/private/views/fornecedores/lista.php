@@ -35,7 +35,7 @@ $where_sql = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
 
 try {
     $ligacao = new PDO(
-        "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
+        "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
     );
@@ -101,220 +101,6 @@ function h($valor)
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
-
-<style>
-    .fornecedores-page {
-        background: #f5f7fa;
-        min-height: 100vh;
-        padding: 24px;
-    }
-
-    .page-title {
-        font-weight: 700;
-        color: #1E3A5F;
-        font-size: 1.8rem;
-        margin-bottom: 0;
-    }
-
-    .page-subtitle {
-        color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 0;
-    }
-
-    .novo-btn {
-        background: #2F5D8A;
-        border-color: #2F5D8A;
-        color: #fff;
-        border-radius: 8px;
-        font-weight: 700;
-    }
-
-    .novo-btn:hover {
-        background: #1E3A5F;
-        border-color: #1E3A5F;
-        color: #fff;
-    }
-
-    .exportar-btn {
-        background: #e8f5ee;
-        border-color: #cfead9;
-        color: #198754;
-        border-radius: 8px;
-        font-weight: 700;
-    }
-
-    .exportar-btn:hover {
-        background: #d9f0e3;
-        border-color: #badfc9;
-        color: #146c43;
-    }
-
-    .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-        margin-bottom: 14px;
-    }
-
-    .summary-card {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 12px 14px;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-    }
-
-    .summary-label {
-        color: #55708d;
-        font-size: 0.72rem;
-        font-weight: 800;
-        text-transform: uppercase;
-    }
-
-    .summary-value {
-        color: #0f172a;
-        font-size: 1.25rem;
-        font-weight: 800;
-        line-height: 1.2;
-    }
-
-    .filters-card,
-    .content-card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 14px;
-        box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
-    }
-
-    .filters-card {
-        padding: 12px;
-        margin-bottom: 14px;
-    }
-
-    .filter-label {
-        color: #52677d;
-        font-size: 0.72rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-    }
-
-    .form-control,
-    .form-select {
-        border-color: #d8e1ec;
-        border-radius: 8px;
-        font-size: 0.86rem;
-    }
-
-    .filter-btn {
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 0.84rem;
-    }
-
-    .clear-btn {
-        color: #1E3A5F;
-        border-color: #d8e1ec;
-        background: #fff;
-    }
-
-    .clear-btn:hover {
-        background: #f6faff;
-        color: #1E3A5F;
-    }
-
-    .content-card {
-        padding: 16px;
-    }
-
-    .table {
-        border-color: #d9e2ec;
-    }
-
-    .table-primary-custom th {
-        background: #2F5D8A !important;
-        color: #ffffff !important;
-        border-color: #2F5D8A !important;
-        font-weight: 700;
-        font-size: 0.86rem;
-        white-space: nowrap;
-    }
-
-    .table td {
-        color: #0f172a;
-        font-size: 0.88rem;
-        vertical-align: middle;
-    }
-
-    .supplier-main {
-        font-weight: 800;
-        color: #0f172a;
-    }
-
-    .supplier-sub {
-        color: #64748b;
-        font-size: 0.78rem;
-        margin-top: 2px;
-    }
-
-    .count-pill {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 34px;
-        padding: 3px 9px;
-        border-radius: 999px;
-        background: #e8f1fb;
-        color: #1E3A5F;
-        font-weight: 800;
-        font-size: 0.78rem;
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 4px 9px;
-        border-radius: 7px;
-        font-size: 0.76rem;
-        font-weight: 800;
-        text-decoration: none;
-        white-space: nowrap;
-    }
-
-    .action-consultar {
-        background: #eaf5ef;
-        color: #087443;
-    }
-
-    .action-consultar:hover {
-        background: #d9eee3;
-        color: #075f38;
-    }
-
-    .mensagem-erro-custom {
-        background: #fdeaea;
-        color: #bb2d3b;
-        border: 1px solid #f8d3d3;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 16px;
-    }
-
-    @media (max-width: 991px) {
-        .summary-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-
-    @media (max-width: 640px) {
-        .summary-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-
 <div class="container-fluid">
     <div class="row">
         <?php include '../../includes/sidebar.php'; ?>
@@ -330,10 +116,20 @@ function h($valor)
                 </div>
 
                 <div class="d-flex gap-2">
-                    <a href="exportar-fornecedores.php" class="btn btn-sm exportar-btn">
-                        <i class="fa-solid fa-file-excel me-1"></i>
-                        Exportar Excel
-                    </a>
+                    <div class="export-actions">
+                        <a href="exportar-fornecedores.php?formato=excel" class="btn btn-sm exportar-btn">
+                            <i class="fa-solid fa-file-excel me-1"></i>
+                            Excel
+                        </a>
+                        <a href="exportar-fornecedores.php?formato=csv" class="btn btn-sm exportar-btn exportar-btn-secondary">
+                            <i class="fa-solid fa-file-csv me-1"></i>
+                            CSV
+                        </a>
+                        <a href="exportar-fornecedores.php?formato=imprimir" target="_blank" class="btn btn-sm exportar-btn exportar-btn-secondary">
+                            <i class="fa-solid fa-file-pdf me-1"></i>
+                            PDF
+                        </a>
+                    </div>
 
                     <a href="novo.php" class="btn btn-sm novo-btn">
                         <i class="fa-solid fa-plus me-1"></i>
@@ -438,3 +234,7 @@ function h($valor)
 </div>
 
 <?php include '../../includes/footer.php'; ?>
+
+
+
+

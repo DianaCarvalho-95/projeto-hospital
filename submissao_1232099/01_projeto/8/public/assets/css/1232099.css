@@ -1077,6 +1077,16 @@ section h2 {
     text-transform: uppercase;
 }
 
+
+.texto-linhas {
+    display: grid;
+    gap: 3px;
+}
+
+.texto-linhas span {
+    display: block;
+    white-space: nowrap;
+}
 .footer-section p {
     color: #dbeafe;
     margin: 5px 0;
@@ -1172,5 +1182,91 @@ section h2 {
 
 
 
+
+
+
+
+
+
+/* Centraliza o texto da caixa de localização */
+.mapa-info {
+    align-items: center;
+    text-align: center;
+}
+
+
+/* Centra o título da secção Localização */
+.localizacao-section .section-heading,
+.localizacao-section .section-heading h2 {
+    text-align: center;
+}
+
+
+/* Mapa real do Google Maps */
+.mapa-google-wrap {
+    background: #eef5f8;
+    height: 100%;
+    min-height: 250px;
+    overflow: hidden;
+}
+
+.mapa-google {
+    border: 0;
+    display: block;
+    height: 100%;
+    min-height: 250px;
+    width: 100%;
+}
+
+.mapa-link {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    color: #193553;
+    display: inline-flex;
+    font-size: 0.86rem;
+    font-weight: 800;
+    gap: 7px;
+    margin-top: 14px;
+    padding: 8px 14px;
+    text-decoration: none;
+}
+
+.mapa-link:hover {
+    background: #eaf2fb;
+    color: #193553;
+}
+
+
+/* Ajuste final do iframe do Google Maps dentro do cartão */
+.mapa-foto-wrap.mapa-google-wrap {
+    display: block;
+    height: 250px;
+    min-height: 250px;
+    padding: 0;
+}
+
+.mapa-foto-wrap.mapa-google-wrap iframe.mapa-google {
+    display: block !important;
+    height: 250px !important;
+    min-height: 250px !important;
+    width: 100% !important;
+}
+
+/* Painel de localização centrado sem botão externo */
+.localizacao-section .mapa-info {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.localizacao-section .mapa-info p {
+    margin: 0;
+    max-width: 220px;
+}
+
+/* Ajustes especificos do aluno 1232099 */
+/* Estilos pÃºblicos complementares - 1232099 */
 
 

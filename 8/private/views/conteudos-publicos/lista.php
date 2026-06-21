@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 require_once __DIR__ . '/../../../config/config.php';
 require_once __DIR__ . '/../../includes/funcoes.php';
@@ -41,7 +41,7 @@ $nomes_seccoes = [
 
 try {
     $ligacao = new PDO(
-        "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
+        "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
     );
@@ -89,6 +89,8 @@ try {
             }
         }
 
+        registar_evento('Conteúdos Públicos', 'Edição', 'Conteúdo público', null, 'Conteúdos da página pública atualizados.');
+
         $sucesso = 'Conteúdos públicos atualizados com sucesso.';
     }
 
@@ -128,63 +130,6 @@ function resumo_item($texto)
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
-
-<style>
-    .conteudos-page { background:#f5f7fa; min-height:100vh; padding:16px 20px; }
-    .page-title { color:#1E3A5F; font-size:1.6rem; font-weight:700; margin:0; }
-    .page-subtitle { color:#64748b; font-size:.95rem; margin-bottom:0; }
-    .tabs-card,.content-card { background:#fff; border:1px solid #dbe5ef; border-radius:14px; box-shadow:0 7px 18px rgba(15,23,42,.06); }
-    .tabs-card { margin-bottom:10px; padding:6px 10px 0; }
-    .content-card { padding:12px 14px; }
-    .content-tabs { border-bottom:1px solid #dbe5ef; display:flex; gap:4px; overflow-x:auto; }
-    .content-tabs .nav-link { align-items:center; border:0; border-bottom:3px solid transparent; border-radius:0; color:#1E3A5F; display:inline-flex; font-size:.86rem; font-weight:700; gap:7px; padding:8px 13px; white-space:nowrap; }
-    .content-tabs .nav-link.active { background:transparent; border-bottom-color:#0d6efd; color:#0d6efd; }
-    .section-title { border-bottom:1px solid #e2e8f0; color:#1E3A5F; font-size:.98rem; font-weight:700; margin-bottom:12px; padding-bottom:8px; }
-    .section-title::before { background:#2F5D8A; border-radius:999px; content:''; display:inline-block; height:18px; margin-right:8px; vertical-align:-3px; width:4px; }
-    .form-label { color:#31506f; font-size:.72rem; font-weight:700; }
-    .form-control { border-color:#d8e1ec; border-radius:9px; font-size:.86rem; min-height:34px; }
-    textarea.form-control { min-height:68px; resize:vertical; }
-    .btn-main { background:#2F5D8A; border-color:#2F5D8A; border-radius:9px; color:#fff; font-weight:700; min-height:38px; }
-    .btn-main:hover { background:#1E3A5F; color:#fff; }
-    .btn-public-page { align-items:center; background:#2F5D8A; border:1px solid #2F5D8A; border-radius:8px; color:#fff; display:inline-flex; font-size:.86rem; font-weight:700; gap:7px; min-height:36px; padding:7px 13px; text-decoration:none; }
-    .btn-public-page:hover { background:#1E3A5F; border-color:#1E3A5F; color:#fff; text-decoration:none; }
-    .item-grid { display:grid; gap:12px; grid-template-columns:repeat(3,minmax(0,1fr)); }
-    .item-box { background:#f8fafc; border:1px solid #dbe5ef; border-radius:12px; padding:12px; }
-    .item-head { align-items:center; display:flex; gap:10px; justify-content:space-between; margin-bottom:8px; }
-    .item-title { color:#1E3A5F; font-weight:700; }
-    .small-help { color:#64748b; font-size:.76rem; white-space:nowrap; }
-    .save-bar { border-top:1px solid #e2e8f0; display:flex; gap:8px; justify-content:flex-end; margin-top:10px; padding-top:9px; }
-    .compact-grid { display:grid; gap:12px; grid-template-columns:repeat(5,minmax(0,1fr)); }
-    .compact-item { background:#f8fafc; border:1px solid #dbe5ef; border-radius:12px; min-height:142px; padding:12px; display:flex; flex-direction:column; }
-    .compact-icon { align-items:center; background:#edf4ff; border-radius:10px; color:#2F5D8A; display:inline-flex; height:34px; justify-content:center; margin-bottom:8px; width:34px; }
-    .compact-title { color:#1E3A5F; font-weight:700; line-height:1.2; margin-bottom:5px; }
-    .compact-desc { color:#64748b; font-size:.78rem; line-height:1.35; margin-bottom:10px; }
-    .compact-footer { align-items:center; display:flex; justify-content:space-between; margin-top:auto; }
-    .status-pill { border-radius:999px; font-size:.72rem; font-weight:700; padding:3px 8px; }
-    .status-on { background:#dcfce7; color:#166534; }
-    .status-off { background:#fee2e2; color:#991b1b; }
-    .edit-mini { border-radius:8px; font-size:.76rem; font-weight:700; padding:4px 10px; }
-    .edit-overlay { align-items:center; background:rgba(15,23,42,.45); bottom:0; display:none; justify-content:center; left:16.666666%; padding:20px; position:fixed; right:0; top:0; z-index:3000; }
-    .edit-overlay.is-visible { display:flex; }
-    .edit-modal { background:#fff; border:1px solid #dbe5ef; border-radius:14px; box-shadow:0 24px 60px rgba(15,23,42,.25); max-width:620px; padding:20px; width:100%; }
-    .edit-modal-head { align-items:center; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; margin-bottom:14px; padding-bottom:10px; }
-    .edit-modal-title { color:#1E3A5F; font-size:1.05rem; font-weight:700; }
-    .modal-close { background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; color:#1E3A5F; font-weight:700; height:34px; width:34px; }
-    .general-grid { display:block; }
-    .general-stack { display:grid; gap:9px; grid-template-columns:1fr; align-items:start; }
-    .general-panel { background:#f8fafc; border:1px solid #dbe5ef; border-radius:12px; padding:10px 12px; }
-    .panel-title { align-items:center; color:#1E3A5F; display:flex; font-size:.92rem; font-weight:700; gap:8px; margin-bottom:8px; }
-    .panel-title i { align-items:center; background:#edf4ff; border-radius:8px; color:#2F5D8A; display:inline-flex; height:26px; justify-content:center; width:26px; }
-    .general-panel .form-label { font-size:.78rem; margin-bottom:4px; }
-    .general-panel .form-control { font-size:.84rem; min-height:31px; padding:5px 9px; }
-    .general-panel textarea.form-control { min-height:52px; resize:vertical; }
-    .general-panel .row { --bs-gutter-x:.65rem; --bs-gutter-y:.45rem; }
-    @media (max-width:1400px){ .compact-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
-
-    @media (max-width:1300px){ .item-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media (max-width:991px){ .edit-overlay{ left:25%; } }
-</style>
-
 <div class="container-fluid">
     <div class="row">
         <?php include '../../includes/sidebar.php'; ?>
@@ -301,41 +246,9 @@ function resumo_item($texto)
         </main>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.js-open-edit').forEach(function (button) {
-            button.addEventListener('click', function () {
-                const modal = document.getElementById(button.dataset.target);
-                if (modal) {
-                    modal.classList.add('is-visible');
-                    modal.setAttribute('aria-hidden', 'false');
-                }
-            });
-        });
-
-        document.querySelectorAll('.js-close-edit').forEach(function (button) {
-            button.addEventListener('click', function () {
-                const modal = button.closest('.edit-overlay');
-                if (modal) {
-                    modal.classList.remove('is-visible');
-                    modal.setAttribute('aria-hidden', 'true');
-                }
-            });
-        });
-
-        document.querySelectorAll('.edit-overlay').forEach(function (modal) {
-            modal.addEventListener('click', function (event) {
-                if (event.target === modal) {
-                    modal.classList.remove('is-visible');
-                    modal.setAttribute('aria-hidden', 'true');
-                }
-            });
-        });
-    });
-</script>
-
 <?php include '../../includes/footer.php'; ?>
+
+
 
 
 

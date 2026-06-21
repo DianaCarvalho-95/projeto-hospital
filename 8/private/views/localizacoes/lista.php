@@ -8,6 +8,9 @@ redirect_if_not_logged();
 $erro = '';
 $resultados = [];
 $edificios = [];
+$pisos = [];
+$servicos = [];
+$salas = [];
 $resumo = [
     'total' => 0,
     'equipamentos' => 0,
@@ -15,27 +18,39 @@ $resumo = [
     'media' => 0
 ];
 
-$pesquisa = isset($_GET['pesquisa']) ? trim($_GET['pesquisa']) : '';
 $filtro_edificio = isset($_GET['edificio']) ? trim($_GET['edificio']) : '';
+$filtro_piso = isset($_GET['piso']) ? trim($_GET['piso']) : '';
+$filtro_servico = isset($_GET['servico']) ? trim($_GET['servico']) : '';
+$filtro_sala = isset($_GET['sala']) ? trim($_GET['sala']) : '';
 
 $where = [];
 $params = [];
-
-if ($pesquisa !== '') {
-    $where[] = '(l.edificio LIKE :pesquisa OR l.piso LIKE :pesquisa OR l.servico LIKE :pesquisa OR l.sala LIKE :pesquisa)';
-    $params[':pesquisa'] = '%' . $pesquisa . '%';
-}
 
 if ($filtro_edificio !== '') {
     $where[] = 'l.edificio = :edificio';
     $params[':edificio'] = $filtro_edificio;
 }
 
+if ($filtro_piso !== '') {
+    $where[] = 'l.piso = :piso';
+    $params[':piso'] = $filtro_piso;
+}
+
+if ($filtro_servico !== '') {
+    $where[] = 'l.servico = :servico';
+    $params[':servico'] = $filtro_servico;
+}
+
+if ($filtro_sala !== '') {
+    $where[] = 'l.sala = :sala';
+    $params[':sala'] = $filtro_sala;
+}
+
 $where_sql = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
 
 try {
     $ligacao = new PDO(
-        "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
+        "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
     );
@@ -48,6 +63,39 @@ try {
          WHERE edificio IS NOT NULL AND edificio <> ''
          ORDER BY edificio"
     )->fetchAll(PDO::FETCH_COLUMN);
+
+    $stmt_pisos = $ligacao->prepare(
+        "SELECT DISTINCT piso
+         FROM localizacoes
+         WHERE piso IS NOT NULL AND piso <> ''
+         AND (:edificio = '' OR edificio = :edificio)
+         ORDER BY piso"
+    );
+    $stmt_pisos->execute([':edificio' => $filtro_edificio]);
+    $pisos = $stmt_pisos->fetchAll(PDO::FETCH_COLUMN);
+
+    $stmt_servicos = $ligacao->prepare(
+        "SELECT DISTINCT servico
+         FROM localizacoes
+         WHERE servico IS NOT NULL AND servico <> ''
+         AND (:edificio = '' OR edificio = :edificio)
+         AND (:piso = '' OR piso = :piso)
+         ORDER BY servico"
+    );
+    $stmt_servicos->execute([':edificio' => $filtro_edificio, ':piso' => $filtro_piso]);
+    $servicos = $stmt_servicos->fetchAll(PDO::FETCH_COLUMN);
+
+    $stmt_salas = $ligacao->prepare(
+        "SELECT DISTINCT sala
+         FROM localizacoes
+         WHERE sala IS NOT NULL AND sala <> ''
+         AND (:edificio = '' OR edificio = :edificio)
+         AND (:piso = '' OR piso = :piso)
+         AND (:servico = '' OR servico = :servico)
+         ORDER BY sala"
+    );
+    $stmt_salas->execute([':edificio' => $filtro_edificio, ':piso' => $filtro_piso, ':servico' => $filtro_servico]);
+    $salas = $stmt_salas->fetchAll(PDO::FETCH_COLUMN);
 
     $stmt_resumo = $ligacao->query(
         "SELECT
@@ -101,220 +149,6 @@ function h($valor)
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
-
-<style>
-    .localizacoes-page {
-        background: #f5f7fa;
-        min-height: 100vh;
-        padding: 24px;
-    }
-
-    .page-title {
-        font-weight: 700;
-        color: #1E3A5F;
-        font-size: 1.8rem;
-        margin-bottom: 0;
-    }
-
-    .page-subtitle {
-        color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 0;
-    }
-
-    .novo-btn {
-        background: #2F5D8A;
-        border-color: #2F5D8A;
-        color: #fff;
-        border-radius: 8px;
-        font-weight: 700;
-    }
-
-    .novo-btn:hover {
-        background: #1E3A5F;
-        border-color: #1E3A5F;
-        color: #fff;
-    }
-
-    .exportar-btn {
-        background: #e8f5ee;
-        border-color: #cfead9;
-        color: #198754;
-        border-radius: 8px;
-        font-weight: 700;
-    }
-
-    .exportar-btn:hover {
-        background: #d9f0e3;
-        border-color: #badfc9;
-        color: #146c43;
-    }
-
-    .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-        margin-bottom: 14px;
-    }
-
-    .summary-card {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 12px 14px;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-    }
-
-    .summary-label {
-        color: #55708d;
-        font-size: 0.72rem;
-        font-weight: 800;
-        text-transform: uppercase;
-    }
-
-    .summary-value {
-        color: #0f172a;
-        font-size: 1.25rem;
-        font-weight: 800;
-        line-height: 1.2;
-    }
-
-    .filters-card,
-    .content-card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 14px;
-        box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
-    }
-
-    .filters-card {
-        padding: 12px;
-        margin-bottom: 14px;
-    }
-
-    .filter-label {
-        color: #52677d;
-        font-size: 0.72rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-    }
-
-    .form-control,
-    .form-select {
-        border-color: #d8e1ec;
-        border-radius: 8px;
-        font-size: 0.86rem;
-    }
-
-    .filter-btn {
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 0.84rem;
-    }
-
-    .clear-btn {
-        color: #1E3A5F;
-        border-color: #d8e1ec;
-        background: #fff;
-    }
-
-    .clear-btn:hover {
-        background: #f6faff;
-        color: #1E3A5F;
-    }
-
-    .content-card {
-        padding: 16px;
-    }
-
-    .table {
-        border-color: #d9e2ec;
-    }
-
-    .table-primary-custom th {
-        background: #2F5D8A !important;
-        color: #ffffff !important;
-        border-color: #2F5D8A !important;
-        font-weight: 700;
-        font-size: 0.86rem;
-        white-space: nowrap;
-    }
-
-    .table td {
-        color: #0f172a;
-        font-size: 0.88rem;
-        vertical-align: middle;
-    }
-
-    .location-main {
-        font-weight: 700;
-        color: #0f172a;
-    }
-
-    .location-sub {
-        color: #64748b;
-        font-size: 0.78rem;
-        margin-top: 2px;
-    }
-
-    .count-pill {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 34px;
-        padding: 3px 9px;
-        border-radius: 999px;
-        background: #e8f1fb;
-        color: #1E3A5F;
-        font-weight: 800;
-        font-size: 0.78rem;
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 4px 9px;
-        border-radius: 7px;
-        font-size: 0.76rem;
-        font-weight: 800;
-        text-decoration: none;
-        white-space: nowrap;
-    }
-
-    .action-consultar {
-        background: #eaf5ef;
-        color: #087443;
-    }
-
-    .action-consultar:hover {
-        background: #d9eee3;
-        color: #075f38;
-    }
-
-    .mensagem-erro-custom {
-        background: #fdeaea;
-        color: #bb2d3b;
-        border: 1px solid #f8d3d3;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 16px;
-    }
-
-    @media (max-width: 991px) {
-        .summary-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-
-    @media (max-width: 640px) {
-        .summary-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-
 <div class="container-fluid">
     <div class="row">
 
@@ -335,9 +169,24 @@ function h($valor)
                 </div>
 
                 <div class="d-flex gap-2">
-                    <a href="exportar-localizacoes.php" class="btn btn-sm exportar-btn">
-                        <i class="fa-solid fa-file-excel me-1"></i>
-                        Exportar Excel
+                    <div class="export-actions">
+                        <a href="exportar-localizacoes.php?formato=excel" class="btn btn-sm exportar-btn">
+                            <i class="fa-solid fa-file-excel me-1"></i>
+                            Excel
+                        </a>
+                        <a href="exportar-localizacoes.php?formato=csv" class="btn btn-sm exportar-btn exportar-btn-secondary">
+                            <i class="fa-solid fa-file-csv me-1"></i>
+                            CSV
+                        </a>
+                        <a href="exportar-localizacoes.php?formato=imprimir" target="_blank" class="btn btn-sm exportar-btn exportar-btn-secondary">
+                            <i class="fa-solid fa-file-pdf me-1"></i>
+                            PDF
+                        </a>
+                    </div>
+
+                    <a href="novo-edificio.php" class="btn btn-sm novo-btn">
+                        <i class="fa-solid fa-building me-1"></i>
+                        Novo edifício
                     </a>
 
                     <a href="novo.php" class="btn btn-sm novo-btn">
@@ -375,34 +224,54 @@ function h($valor)
                     </div>
                 </div>
 
-                <form method="get" class="filters-card">
+                <form method="get" class="filters-card" id="locationFilters">
                     <div class="row g-2 align-items-end">
-                        <div class="col-lg-5">
-                            <div class="filter-label">Pesquisa</div>
-                            <input type="text" name="pesquisa" class="form-control" value="<?= h($pesquisa) ?>" placeholder="Pesquisar por edifício, piso, serviço ou sala">
-                        </div>
-
-                        <div class="col-lg-3">
+                        <div class="col-lg-2 col-md-4">
                             <div class="filter-label">Edifício</div>
-                            <select name="edificio" class="form-select">
-                                <option value="">Todos os edifícios</option>
+                            <select name="edificio" class="form-select auto-submit-filter">
+                                <option value="">Todos</option>
                                 <?php foreach ($edificios as $edificio) : ?>
-                                    <option value="<?= h($edificio) ?>" <?= $filtro_edificio === $edificio ? 'selected' : '' ?>>
-                                        <?= h($edificio) ?>
-                                    </option>
+                                    <option value="<?= h($edificio) ?>" <?= $filtro_edificio === $edificio ? 'selected' : '' ?>><?= h($edificio) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
 
-                        <div class="col-lg-4 d-flex gap-2">
+                        <div class="col-lg-2 col-md-4">
+                            <div class="filter-label">Piso</div>
+                            <select name="piso" class="form-select auto-submit-filter">
+                                <option value="">Todos</option>
+                                <?php foreach ($pisos as $piso) : ?>
+                                    <option value="<?= h($piso) ?>" <?= $filtro_piso === $piso ? 'selected' : '' ?>><?= h($piso) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-lg-3 col-md-4">
+                            <div class="filter-label">Serviço</div>
+                            <select name="servico" class="form-select auto-submit-filter">
+                                <option value="">Todos</option>
+                                <?php foreach ($servicos as $servico) : ?>
+                                    <option value="<?= h($servico) ?>" <?= $filtro_servico === $servico ? 'selected' : '' ?>><?= h($servico) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-lg-2 col-md-4">
+                            <div class="filter-label">Sala</div>
+                            <select name="sala" class="form-select auto-submit-filter">
+                                <option value="">Todas</option>
+                                <?php foreach ($salas as $sala) : ?>
+                                    <option value="<?= h($sala) ?>" <?= $filtro_sala === $sala ? 'selected' : '' ?>><?= h($sala) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-lg-3 col-md-8 d-flex gap-2">
                             <button type="submit" class="btn btn-primary filter-btn">
-                                <i class="fa-solid fa-magnifying-glass me-1"></i>
+                                <i class="fa-solid fa-filter me-1"></i>
                                 Filtrar
                             </button>
-
-                            <a href="lista.php" class="btn clear-btn filter-btn">
-                                Limpar
-                            </a>
+                            <a href="lista.php" class="btn clear-btn filter-btn">Limpar</a>
                         </div>
                     </div>
                 </form>
@@ -459,5 +328,13 @@ function h($valor)
 
     </div>
 </div>
-
 <?php include '../../includes/footer.php'; ?>
+
+
+
+
+
+
+
+
+

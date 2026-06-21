@@ -16,6 +16,8 @@ $manutencoes = [];
 $movimentacoes = [];
 $emprestimos = [];
 $historico = [];
+$timeline = [];
+$utilizadores_por_nome = [];
 $ultima_manutencao = null;
 $proxima_manutencao = null;
 $total_custos_manutencao = 0;
@@ -49,17 +51,62 @@ function moeda_pt($valor)
         : '-';
 }
 
+function chave_responsavel($valor)
+{
+    $valor = trim((string) $valor);
+    $valor = mb_strtolower($valor, 'UTF-8');
+    return preg_replace('/\s+/', ' ', $valor);
+}
+
+function iniciais_responsavel($nome)
+{
+    $partes = preg_split('/\s+/', trim((string) $nome));
+    $iniciais = '';
+
+    foreach ($partes as $parte) {
+        if ($parte !== '') {
+            $iniciais .= mb_strtoupper(mb_substr($parte, 0, 1, 'UTF-8'), 'UTF-8');
+        }
+        if (mb_strlen($iniciais, 'UTF-8') >= 2) {
+            break;
+        }
+    }
+
+    return $iniciais !== '' ? $iniciais : '?';
+}
+
+function foto_responsavel($responsavel, $utilizadores_por_nome)
+{
+    $chave = chave_responsavel($responsavel);
+    return $utilizadores_por_nome[$chave] ?? null;
+}
 if ($id <= 0) {
     $erro = 'Equipamento inválido.';
 } else {
     try {
         $ligacao = new PDO(
-            "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
+            "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
             MYSQL_USERNAME,
             MYSQL_PASSWORD
         );
 
         $ligacao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $stmt_utilizadores = $ligacao->query("SELECT display_name, name, identificador, fotografia FROM agents WHERE ativo = 1");
+        foreach ($stmt_utilizadores->fetchAll(PDO::FETCH_OBJ) as $utilizador) {
+            $foto = !empty($utilizador->fotografia)
+                ? BASE_URL . '/private/assets/img/utilizadores/' . rawurlencode($utilizador->fotografia)
+                : null;
+
+            foreach ([$utilizador->display_name, $utilizador->identificador, strstr($utilizador->name, '@', true)] as $nome_chave) {
+                if (!empty($nome_chave)) {
+                    $utilizadores_por_nome[chave_responsavel($nome_chave)] = [
+                        'nome' => $utilizador->display_name ?: $nome_chave,
+                        'foto' => $foto
+                    ];
+                }
+            }
+        }
 
         $stmt = $ligacao->prepare("
             SELECT 
@@ -190,6 +237,90 @@ if ($id <= 0) {
             }
 
             usort($historico, function ($a, $b) {
+                return strtotime($b['data']) <=> strtotime($a['data']);
+            });
+            if (!empty($equipamento->data_aquisicao)) {
+                $timeline[] = [
+                    'data' => $equipamento->data_aquisicao,
+                    'tipo' => 'Aquisição',
+                    'titulo' => 'Entrada do equipamento',
+                    'descricao' => trim(($equipamento->tipo_entrada ?? 'Registo inicial') . ' · ' . moeda_pt($equipamento->custo_aquisicao ?? 0)),
+                    'icone' => 'fa-cart-shopping',
+                    'classe' => 'timeline-aquisicao'
+                ];
+            }
+
+            foreach ($documentos as $doc) {
+                $timeline[] = [
+                    'data' => $doc->data_documento ?: $doc->data_validade,
+                    'tipo' => 'Documentação',
+                    'titulo' => $doc->tipo_documento ?: 'Documento técnico',
+                    'descricao' => trim(($doc->nome_documento ?? '') . (!empty($doc->data_validade) ? ' · validade até ' . data_pt($doc->data_validade) : '')),
+                    'icone' => 'fa-file-lines',
+                    'classe' => 'timeline-documentacao'
+                ];
+            }
+
+            foreach ($manuais as $manual) {
+                $timeline[] = [
+                    'data' => $manual->data_upload,
+                    'tipo' => 'Manual',
+                    'titulo' => $manual->titulo ?: 'Manual associado',
+                    'descricao' => trim(($manual->tipo_manual ?? '') . (!empty($manual->idioma) ? ' · ' . $manual->idioma : '')),
+                    'icone' => 'fa-book-open',
+                    'classe' => 'timeline-documentacao'
+                ];
+            }
+
+            foreach ($garantias as $garantia) {
+                $timeline[] = [
+                    'data' => $garantia->data_inicio ?: $garantia->data_fim,
+                    'tipo' => 'Garantia / Contrato',
+                    'titulo' => $garantia->tipo_contrato ?: 'Garantia associada',
+                    'descricao' => trim(($garantia->entidade_responsavel ?? '') . (!empty($garantia->data_fim) ? ' · termina em ' . data_pt($garantia->data_fim) : '')),
+                    'icone' => 'fa-shield-halved',
+                    'classe' => 'timeline-garantia'
+                ];
+            }
+
+            foreach ($manutencoes as $manutencao) {
+                $timeline[] = [
+                    'data' => $manutencao->data_manutencao,
+                    'tipo' => 'Manutenção',
+                    'titulo' => $manutencao->tipo_manutencao ?: 'Intervenção técnica',
+                    'descricao' => trim(($manutencao->descricao ?? '') . (!empty($manutencao->responsavel) ? ' · ' . $manutencao->responsavel : '')),
+                    'icone' => 'fa-wrench',
+                    'classe' => 'timeline-manutencao'
+                ];
+            }
+
+            foreach ($movimentacoes as $mov) {
+                $timeline[] = [
+                    'data' => $mov->data_movimentacao,
+                    'tipo' => 'Movimentação',
+                    'titulo' => $mov->motivo ?: 'Alteração de localização',
+                    'descricao' => trim(($mov->local_origem ?? '-') . ' → ' . ($mov->local_destino ?? '-') . (!empty($mov->responsavel) ? ' · ' . $mov->responsavel : '')),
+                    'icone' => 'fa-right-left',
+                    'classe' => 'timeline-movimentacao'
+                ];
+            }
+
+            foreach ($emprestimos as $emp) {
+                $timeline[] = [
+                    'data' => $emp->data_emprestimo,
+                    'tipo' => 'Empréstimo',
+                    'titulo' => $emp->estado ?: 'Empréstimo registado',
+                    'descricao' => trim(($emp->servico_origem ?? '-') . ' → ' . ($emp->servico_destino ?? '-') . (!empty($emp->data_prevista_devolucao) ? ' · devolução prevista ' . data_pt($emp->data_prevista_devolucao) : '')),
+                    'icone' => 'fa-handshake',
+                    'classe' => 'timeline-emprestimo'
+                ];
+            }
+
+            $timeline = array_values(array_filter($timeline, function ($item) {
+                return !empty($item['data']);
+            }));
+
+            usort($timeline, function ($a, $b) {
                 return strtotime($b['data']) <=> strtotime($a['data']);
             });
 
@@ -325,553 +456,19 @@ if ($id <= 0) {
     }
 }
 
-$imagem = !empty($equipamento->imagem)
-    ? BASE_URL . '/private/assets/img/equipamentos/' . $equipamento->imagem
-    : BASE_URL . '/private/assets/img/hospital125.png';
+if (!empty($equipamento->imagem_upload)) {
+    $imagem = BASE_URL . '/private/uploads/equipamentos/' . rawurlencode($equipamento->imagem_upload);
+} elseif (!empty($equipamento->imagem)) {
+    $imagem = BASE_URL . '/private/assets/img/equipamentos/' . rawurlencode($equipamento->imagem);
+} else {
+    $imagem = BASE_URL . '/private/assets/img/hospital125.png';
+}
 
 ?>
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
 <?php include '../../includes/sidebar.php'; ?>
-
-<style>
-    .equipamento-main {
-        margin-left: 16.666666%;
-        padding: 88px 24px 18px 24px;
-        background: #f5f7fa;
-        height: 100vh;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .page-title {
-        font-weight: 700;
-        color: #0f172a;
-        font-size: 1.45rem;
-    }
-
-    .page-subtitle {
-        color: #64748b;
-        font-size: 0.86rem;
-    }
-
-    .btn-voltar {
-        background: #fff;
-        color: #1E3A5F;
-        border: 1px solid #dbe4ef;
-        border-radius: 8px;
-        padding: 7px 12px;
-        font-weight: 700;
-        font-size: 0.86rem;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
-    }
-
-    .btn-voltar:hover {
-        background: #f6faff;
-        border-color: #bdd5f0;
-        color: #1E3A5F;
-    }
-
-    .summary-card,
-    .tabs-card,
-    .inner-card {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 14px;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
-    }
-
-    .summary-card {
-        padding: 12px 14px;
-        overflow: hidden;
-        flex: 0 0 auto;
-    }
-
-    .equipment-hero {
-        display: grid;
-        grid-template-columns: minmax(280px, 0.8fr) minmax(620px, 1.2fr);
-        gap: 16px;
-        align-items: center;
-    }
-
-    .equipment-left {
-        display: grid;
-        grid-template-columns: 92px 1fr;
-        gap: 14px;
-        align-items: center;
-        min-width: 0;
-    }
-
-    .equipment-identity {
-        min-width: 0;
-    }
-
-    .summary-actions {
-        margin-top: 0;
-    }
-
-    .equipment-media {
-        width: 92px;
-        height: 78px;
-        border: 1px solid #dbe3ed;
-        border-radius: 12px;
-        background: #f8fafc;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .equipment-img {
-        width: 78px;
-        height: 62px;
-        object-fit: contain;
-    }
-
-    .equipment-title {
-        color: #0f172a;
-        font-size: 1rem;
-        font-weight: 700;
-        margin-bottom: 4px;
-        line-height: 1.25;
-    }
-
-    .equipment-subtitle {
-        color: #46627f;
-        font-size: 0.82rem;
-        margin-bottom: 7px;
-    }
-
-    .equipment-meta-line {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .equipment-chip {
-        background: #edf4fb;
-        color: #24496d;
-        border: 1px solid #d8e7f5;
-        border-radius: 999px;
-        padding: 3px 8px;
-        font-size: 0.7rem;
-        font-weight: 700;
-    }
-
-    .info-label {
-        font-weight: 700;
-        font-size: 0.7rem;
-        color: #52677d;
-        margin-bottom: 5px;
-        text-transform: uppercase;
-        letter-spacing: 0;
-    }
-
-    .info-value {
-        color: #0f172a;
-        font-size: 0.84rem;
-        font-weight: 600;
-        line-height: 1.35;
-    }
-
-    .badge-status {
-        background: #ffe8a3;
-        color: #8a5a00;
-        padding: 5px 10px;
-        border-radius: 7px;
-        font-weight: 700;
-        font-size: 0.72rem;
-        display: inline-block;
-    }
-
-    .badge-critical {
-        background: #ffd4d4;
-        color: #b42318;
-        padding: 5px 10px;
-        border-radius: 7px;
-        font-weight: 700;
-        font-size: 0.72rem;
-        display: inline-block;
-    }
-
-    .tabs-card {
-        overflow: visible;
-        margin-bottom: 0;
-        flex: 1 1 auto;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .tabs-header {
-        background: #fff;
-        border-bottom: 1px solid #e5e7eb;
-        padding: 0 16px;
-        flex: 0 0 auto;
-    }
-
-    .nav-tabs {
-        border-bottom: none;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        overflow-y: hidden;
-    }
-
-    .nav-tabs .nav-link {
-        border: none;
-        color: #334155;
-        font-weight: 600;
-        padding: 12px 13px;
-        white-space: nowrap;
-        font-size: 0.82rem;
-    }
-
-    .nav-tabs .nav-link i {
-        margin-right: 7px;
-        color: #64748b;
-    }
-
-    .nav-tabs .nav-link.active {
-        color: #0d6efd;
-        background: transparent;
-        border-bottom: 3px solid #0d6efd;
-    }
-
-    .nav-tabs .nav-link.active i {
-        color: #0d6efd;
-    }
-
-    .tabs-body {
-        padding: 16px;
-        overflow: auto;
-        min-height: 0;
-        flex: 1 1 auto;
-    }
-
-    .inner-card {
-        padding: 12px 14px;
-        height: 100%;
-    }
-
-    .inner-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 800;
-        color: #1E3A5F;
-        margin-bottom: 12px;
-        padding-bottom: 9px;
-        border-bottom: 1px solid #e8eef5;
-        font-size: 0.95rem;
-    }
-
-    .inner-title::before {
-        content: "";
-        width: 4px;
-        height: 18px;
-        border-radius: 999px;
-        background: #2F5D8A;
-        flex: 0 0 auto;
-    }
-
-    .details-row {
-        display: grid;
-        grid-template-columns: 118px 1fr;
-        gap: 9px;
-        margin-bottom: 7px;
-        font-size: 0.84rem;
-    }
-
-    .details-row strong {
-        color: #0f172a;
-    }
-
-    .notes-box {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 11px 12px;
-        color: #334155;
-        line-height: 1.55;
-        font-size: 0.88rem;
-    }
-
-    .notes-empty {
-        color: #64748b;
-        font-style: italic;
-    }
-
-    .notes-list {
-        display: flex;
-        flex-direction: column;
-        gap: 9px;
-    }
-
-    .note-item {
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        background: #f8fafc;
-        padding: 10px 11px;
-    }
-
-    .note-item-general {
-        background: #fffdf5;
-        border-color: #f4d58d;
-    }
-
-    .note-top {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        align-items: center;
-        margin-bottom: 5px;
-    }
-
-    .note-title {
-        color: #0f172a;
-        font-weight: 800;
-        font-size: 0.84rem;
-    }
-
-    .note-date {
-        color: #64748b;
-        font-size: 0.72rem;
-        white-space: nowrap;
-    }
-
-    .note-text {
-        color: #334155;
-        font-size: 0.82rem;
-        line-height: 1.45;
-        margin-bottom: 6px;
-    }
-
-    .note-footer {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        color: #64748b;
-        font-size: 0.72rem;
-    }
-
-    .note-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 2px 7px;
-        border-radius: 999px;
-        background: #e8f1fb;
-        color: #1E3A5F;
-        font-weight: 700;
-    }
-
-    .quick-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .quick-actions-compact {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 8px;
-    }
-
-    .summary-actions .quick-action-copy small {
-        display: none;
-    }
-
-    .summary-actions .quick-action-item {
-        min-height: 40px;
-        padding: 7px 8px;
-    }
-
-    .quick-action-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        width: 100%;
-        min-height: 44px;
-        padding: 8px 10px;
-        border: 1px solid #dbe4ef;
-        border-radius: 8px;
-        background: #fff;
-        color: #1E3A5F;
-        text-decoration: none;
-        transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-    }
-
-    .quick-action-item:hover {
-        background: #f6faff;
-        border-color: #bdd5f0;
-        color: #1E3A5F;
-        transform: translateY(-1px);
-    }
-
-    .quick-action-icon {
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 7px;
-        background: #edf4ff;
-        color: #2F5D8A;
-        flex: 0 0 auto;
-        font-size: 0.9rem;
-    }
-
-    .quick-action-copy {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.2;
-    }
-
-    .quick-action-copy strong {
-        font-size: 0.86rem;
-        font-weight: 800;
-    }
-
-    .quick-action-copy small {
-        margin-top: 2px;
-        color: #64748b;
-        font-size: 0.72rem;
-        font-weight: 500;
-    }
-
-    .quick-action-main {
-        background: #f8fbff;
-        border-color: #cfe0f5;
-    }
-
-    .quick-action-danger-zone {
-        border-top: 1px solid #e5e7eb;
-        padding-top: 8px;
-        margin-top: 2px;
-    }
-
-    .quick-actions-compact .quick-action-danger-zone {
-        border-top: 0;
-        padding-top: 0;
-        margin-top: 0;
-    }
-
-    .quick-action-danger {
-        background: #fffafa;
-        border-color: #f3c7cd;
-        color: #9f1239;
-    }
-
-    .quick-action-danger .quick-action-icon {
-        background: #fff1f2;
-        color: #be123c;
-    }
-
-    .quick-action-danger:hover {
-        background: #fff1f2;
-        border-color: #f3a8b4;
-        color: #9f1239;
-    }
-
-    .compact-status-row {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-bottom: 8px;
-    }
-
-    .footer-update {
-        border-top: 1px solid #e5e7eb;
-        background: #f8fafc;
-        padding: 9px 16px;
-        color: #64748b;
-        font-size: 0.78rem;
-        flex: 0 0 auto;
-    }
-
-    .evaluation-panel {
-        display: grid;
-        grid-template-columns: 240px 1fr;
-        gap: 18px;
-        margin-bottom: 22px;
-    }
-
-    .evaluation-score-card {
-        background: #f8fafc;
-        border: 1px solid #e3eaf2;
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-    }
-
-    .evaluation-score {
-        color: #0f172a;
-        font-size: 2.6rem;
-        font-weight: 800;
-        line-height: 1;
-        margin-bottom: 10px;
-    }
-
-    .evaluation-score span {
-        color: #64748b;
-        font-size: 1rem;
-        font-weight: 700;
-    }
-
-    .evaluation-summary {
-        background: #fff;
-        border: 1px solid #e3eaf2;
-        border-radius: 12px;
-        padding: 18px;
-    }
-
-    .evaluation-summary p {
-        color: #475569;
-        margin-bottom: 0;
-        line-height: 1.6;
-    }
-
-    .table-custom th {
-        background: #2F5D8A;
-        color: #fff;
-        font-size: 0.85rem;
-    }
-
-    .table-custom td {
-        font-size: 0.88rem;
-        vertical-align: middle;
-    }
-
-    @media (max-width: 991px) {
-        .equipamento-main {
-            margin-left: 25%;
-        }
-
-        .equipment-hero {
-            grid-template-columns: 1fr;
-        }
-
-        .evaluation-panel {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 640px) {
-        .equipment-identity {
-            grid-template-columns: 1fr;
-        }
-
-        .equipment-media {
-            width: 100%;
-        }
-
-    }
-</style>
-
 <main class="equipamento-main">
 
     <div class="d-flex justify-content-between align-items-start mb-3">
@@ -983,7 +580,13 @@ $imagem = !empty($equipamento->imagem)
 
                     <li class="nav-item">
                         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#movimentacoes" type="button">
-                            <i class="fa-solid fa-clock-rotate-left"></i> Histórico
+                            <i class="fa-solid fa-right-left"></i> Movimentações
+                        </button>
+                    </li>
+
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#historico" type="button">
+                            <i class="fa-solid fa-timeline"></i> Histórico
                         </button>
                     </li>
 
@@ -1063,8 +666,21 @@ $imagem = !empty($equipamento->imagem)
                     </div>
 
                     <div class="tab-pane fade" id="documentacao">
+                        <div class="mb-3">
+                            <h5 class="inner-title mb-0">Documentação / Manuais</h5>
+                        </div>
+
 
                         <?php if (count($documentos) == 0 && count($manuais) == 0) : ?>
+
+                            <div class="d-flex justify-content-end align-items-center gap-2 mb-3 flex-wrap">
+                                <a href="novo-documento.php?equipamento_id=<?= $equipamento->id ?>&tipo=ficha" class="btn btn-sm btn-outline-primary fw-bold">
+                                    <i class="fa-regular fa-file-lines me-1"></i>Nova ficha técnica
+                                </a>
+                                <a href="novo-documento.php?equipamento_id=<?= $equipamento->id ?>&tipo=manual" class="btn btn-sm btn-outline-primary fw-bold">
+                                    <i class="fa-solid fa-book-open me-1"></i>Novo manual
+                                </a>
+                            </div>
 
                             <div class="alert alert-info mb-0">
                                 Não existem documentos ou manuais associados a este equipamento.
@@ -1074,10 +690,15 @@ $imagem = !empty($equipamento->imagem)
 
                             <?php if (count($documentos) > 0) : ?>
 
-                                <h6 class="mb-3 mt-2">
-                                    <i class="fa-regular fa-file-lines me-2"></i>
-                                    Documentação Técnica
-                                </h6>
+                                <div class="d-flex justify-content-between align-items-center gap-2 mb-3 mt-2 flex-wrap">
+                                    <h6 class="mb-0">
+                                        <i class="fa-regular fa-file-lines me-2"></i>
+                                        Documentação Técnica
+                                    </h6>
+                                    <a href="novo-documento.php?equipamento_id=<?= $equipamento->id ?>&tipo=ficha" class="btn btn-sm btn-outline-primary fw-bold">
+                                        <i class="fa-regular fa-file-lines me-1"></i>Nova ficha técnica
+                                    </a>
+                                </div>
 
                                 <div class="table-responsive mb-4">
                                     <table class="table table-bordered table-hover table-custom align-middle">
@@ -1120,10 +741,15 @@ $imagem = !empty($equipamento->imagem)
 
                             <?php if (count($manuais) > 0) : ?>
 
-                                <h6 class="mb-3 mt-2">
-                                    <i class="fa-solid fa-book-open me-2"></i>
-                                    Manuais do Equipamento
-                                </h6>
+                                <div class="d-flex justify-content-between align-items-center gap-2 mb-3 mt-2 flex-wrap">
+                                    <h6 class="mb-0">
+                                        <i class="fa-solid fa-book-open me-2"></i>
+                                        Manuais do Equipamento
+                                    </h6>
+                                    <a href="novo-documento.php?equipamento_id=<?= $equipamento->id ?>&tipo=manual" class="btn btn-sm btn-outline-primary fw-bold">
+                                        <i class="fa-solid fa-book-open me-1"></i>Novo manual
+                                    </a>
+                                </div>
 
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-custom align-middle">
@@ -1171,7 +797,13 @@ $imagem = !empty($equipamento->imagem)
                     </div>
 
                     <div class="tab-pane fade" id="garantias">
-                        <h5 class="inner-title">Garantias / Contratos</h5>
+                        <div class="d-flex justify-content-between align-items-center gap-2 mb-3 flex-wrap">
+                            <h5 class="inner-title mb-0">Garantias / Contratos</h5>
+                            <a href="nova-garantia.php?equipamento_id=<?= $equipamento->id ?>" class="btn btn-sm btn-outline-primary fw-bold">
+                                <i class="fa-solid fa-file-contract me-1"></i>Nova garantia/contrato
+                            </a>
+                        </div>
+
 
                         <?php if (count($garantias) == 0) : ?>
                             <p class="text-muted">Não existem garantias ou contratos associados.</p>
@@ -1313,7 +945,7 @@ $imagem = !empty($equipamento->imagem)
                     </div>
 
                     <div class="tab-pane fade" id="movimentacoes">
-                        <h5 class="inner-title">Histórico de Movimentações e Empréstimos</h5>
+                        <h5 class="inner-title">Movimentações e Empréstimos</h5>
 
                         <?php if (count($historico) == 0) : ?>
                             <p class="text-muted">Não existem movimentações ou empréstimos associados.</p>
@@ -1338,12 +970,48 @@ $imagem = !empty($equipamento->imagem)
                                             <td><?= h($item['destino']) ?></td>
                                             <td><?= data_pt($item['data']) ?></td>
                                             <td><?= h($item['devolucao']) ?></td>
-                                            <td><?= h($item['responsavel']) ?></td>
+                                            <td>
+                                                <?php $foto_responsavel = foto_responsavel($item['responsavel'], $utilizadores_por_nome); ?>
+                                                <div class="responsavel-cell">
+                                                    <span class="responsavel-avatar">
+                                                        <?php if (!empty($foto_responsavel['foto'])) : ?>
+                                                            <img src="<?= h($foto_responsavel['foto']) ?>" alt="<?= h($item['responsavel']) ?>">
+                                                        <?php else : ?>
+                                                            <?= h(iniciais_responsavel($item['responsavel'])) ?>
+                                                        <?php endif; ?>
+                                                    </span>
+                                                    <span class="responsavel-name"><?= h($item['responsavel']) ?></span>
+                                                </div>
+                                            </td>
                                             <td><?= h($item['estado']) ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="tab-pane fade" id="historico">
+                        <h5 class="inner-title">Histórico do equipamento</h5>
+
+                        <?php if (count($timeline) == 0) : ?>
+                            <p class="text-muted">Não existem acontecimentos registados no histórico deste equipamento.</p>
+                        <?php else : ?>
+                            <div class="timeline-list">
+                                <?php foreach ($timeline as $evento) : ?>
+                                    <div class="timeline-item <?= h($evento['classe']) ?>">
+                                        <span class="timeline-date"><?= date('d/m', strtotime($evento['data'])) ?><small><?= date('Y', strtotime($evento['data'])) ?></small></span>
+                                        <span class="timeline-marker"><span class="timeline-dot"><i class="fa-solid <?= h($evento['icone']) ?>"></i></span></span>
+                                        <div class="timeline-content">
+                                            <div class="timeline-type"><?= h($evento['tipo']) ?></div>
+                                            <div class="timeline-title"><?= h($evento['titulo']) ?></div>
+                                            <?php if (!empty($evento['descricao'])) : ?>
+                                                <div class="timeline-description"><?= h($evento['descricao']) ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         <?php endif; ?>
                     </div>
 
@@ -1485,28 +1153,55 @@ $imagem = !empty($equipamento->imagem)
     <?php endif; ?>
 
 </main>
-
-
-
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    if (!window.location.hash) {
-        return;
+    var tabsKey = 'equipamento_detalhes_<?= (int) $equipamento->id ?>_aba';
+    var savedTab = window.location.hash || localStorage.getItem(tabsKey);
+
+    if (savedTab) {
+        var tabButton = document.querySelector('[data-bs-target="' + savedTab + '"]');
+        if (tabButton && window.bootstrap) {
+            new bootstrap.Tab(tabButton).show();
+        }
     }
 
-    var tabButton = document.querySelector('.nav-link[data-bs-target="' + window.location.hash + '"]');
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (tabButton) {
+        tabButton.addEventListener('shown.bs.tab', function (event) {
+            var target = event.target.getAttribute('data-bs-target');
+            if (!target) {
+                return;
+            }
 
-    if (!tabButton) {
-        return;
-    }
-
-    if (window.bootstrap && bootstrap.Tab) {
-        bootstrap.Tab.getOrCreateInstance(tabButton).show();
-    } else {
-        tabButton.click();
-    }
+            localStorage.setItem(tabsKey, target);
+            if (history.replaceState) {
+                history.replaceState(null, '', target);
+            }
+        });
+    });
 });
 </script>
-
 <?php include '../../includes/footer.php'; ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

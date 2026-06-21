@@ -13,7 +13,20 @@ $piso = '';
 $servico = '';
 $sala = '';
 $observacoes = '';
+$edificios_opcoes = [];
 
+try {
+    $ligacao_edificios = new PDO(
+        "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
+        MYSQL_USERNAME,
+        MYSQL_PASSWORD
+    );
+    $ligacao_edificios->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $edificios_opcoes = $ligacao_edificios->query("SELECT nome FROM edificios ORDER BY nome")->fetchAll(PDO::FETCH_COLUMN);
+} catch (PDOException $err) {
+    $edificios_opcoes = [];
+}
+$ligacao_edificios = null;
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     /*Recolha dos dados enviados pelo formulário*/
@@ -51,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             /*Ligação à base de dados*/
             $ligacao = new PDO(
                 "mysql:host=" . MYSQL_HOST .
-                    ";dbname=" . MYSQL_DATABASE .
+                    ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE .
                     ";charset=utf8",
                 MYSQL_USERNAME,
                 MYSQL_PASSWORD
@@ -75,6 +88,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 ':observacoes' => $observacoes
             ]);
 
+            $nova_localizacao_id = (int) $ligacao->lastInsertId();
+            registar_evento('Localizações', 'Criação', 'Localização', $nova_localizacao_id, $edificio . ' - ' . $piso . ' - ' . $servico . ' - ' . $sala);
+
             $sucesso = 'Localização inserida com sucesso.';
 
             /*Limpa os campos depois da inserção*/
@@ -83,6 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $servico = '';
             $sala = '';
             $observacoes = '';
+$edificios_opcoes = [];
 
         } catch (PDOException $err) {
 
@@ -97,109 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
-
-<style>
-    /*Fundo da página.*/
-    .novo-page {
-        background: #f5f7fa;
-        min-height: 100vh;
-        padding: 24px;
-    }
-
-    /*Título principal*/
-    .page-title {
-        font-weight: 600;
-        color: #1E3A5F;
-        font-size: 1.8rem;
-        margin-bottom: 0;
-    }
-
-    /*Subtítulo*/
-    .page-subtitle {
-        color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 0;
-    }
-
-    /*Cartão branco que contém o formulário*/
-    .content-card {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
-        border: 1px solid #e5e7eb;
-    }
-
-    /*Labels dos campos*/
-    .form-label {
-        font-weight: 600;
-        color: #334155;
-        font-size: 0.88rem;
-    }
-
-    /*Campos do formulário*/
-    .form-control {
-        border-radius: 10px;
-        border: 1px solid #dbe3ec;
-        font-size: 0.9rem;
-    }
-
-    .form-control:focus {
-        border-color: #2F5D8A;
-        box-shadow: 0 0 0 0.15rem rgba(47, 93, 138, 0.18);
-    }
-
-    /*Botão Cancelar*/
-    .btn-cancelar-custom {
-        background: #eef2f7;
-        border: 1px solid #dbe3ec;
-        color: #475569;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 8px 16px;
-    }
-
-    .btn-cancelar-custom:hover {
-        background: #e2e8f0;
-        color: #334155;
-    }
-
-    /*Botão Guardar*/
-    .btn-guardar-custom {
-        background: #edf4ff;
-        border: 1px solid #d6e7ff;
-        color: #2F5D8A;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 8px 16px;
-    }
-
-    .btn-guardar-custom:hover {
-        background: #dcecff;
-        color: #1E3A5F;
-    }
-
-    /*Mensagens de erro*/
-    .mensagem-erro {
-        background: #fdeaea;
-        color: #bb2d3b;
-        border: 1px solid #f8d3d3;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 16px;
-    }
-
-    /*Mensagens de sucesso*/
-    .mensagem-sucesso {
-        background: #e8f5ee;
-        color: #198754;
-        border: 1px solid #cfead9;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 16px;
-    }
-</style>
-
 <div class="container-fluid">
     <div class="row">
 
@@ -256,10 +170,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                             <select name="edificio" class="form-control">
                                 <option value="">Escolha um edifício</option>
-                                <option value="Edifício A" <?= $edificio == 'Edifício A' ? 'selected' : '' ?>>Edifício A</option>
-                                <option value="Edifício B" <?= $edificio == 'Edifício B' ? 'selected' : '' ?>>Edifício B</option>
-                                <option value="Edifício C" <?= $edificio == 'Edifício C' ? 'selected' : '' ?>>Edifício C</option>
-                                <option value="Edifício D" <?= $edificio == 'Edifício D' ? 'selected' : '' ?>>Edifício D</option>
+                                <?php foreach ($edificios_opcoes as $opcao) : ?>
+                                    <option value="<?= htmlspecialchars($opcao) ?>" <?= $edificio == $opcao ? 'selected' : '' ?>><?= htmlspecialchars($opcao) ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
 
@@ -345,3 +258,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </div>
 
 <?php include '../../includes/footer.php'; ?>
+
+

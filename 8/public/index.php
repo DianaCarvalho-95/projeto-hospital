@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/../config/config.php';
 
 $itens = [];
@@ -15,7 +15,7 @@ $conteudos = [
 
 try {
     $ligacao = new PDO(
-        "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
+        "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
     );
@@ -41,6 +41,19 @@ function linhas($texto)
 {
     return array_filter(array_map('trim', preg_split('/\R/u', $texto ?? '')));
 }
+function linhas_morada($texto)
+{
+    $texto = trim($texto ?? '');
+    $texto = preg_replace('/,\s*(\d{4}-\d{3}\s+.+)$/u', "\n$1", $texto);
+    return linhas($texto);
+}
+
+function linhas_horario($texto)
+{
+    $texto = trim($texto ?? '');
+    $texto = preg_replace('/:\s*/u', "\n", $texto, 1);
+    return linhas($texto);
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -50,7 +63,7 @@ function linhas($texto)
     <title>MedTech Solutions</title>
     <link rel="shortcut icon" href="assets/img/hospital125.png" type="image/png">
     <link rel="stylesheet" href="assets/fontawesome/all.min.css">
-    <link rel="stylesheet" href="assets/css/estilos.css?v=20260611-mapa-foto">
+    <link rel="stylesheet" href="assets/css/1232099.css?v=20260617-sem-barra-topo">
 </head>
 <body>
     <nav class="bng-navbar">
@@ -68,6 +81,7 @@ function linhas($texto)
             <a href="#precario">Planos</a>
             <a href="#perguntas-frequentes">FAQ</a>
             <a href="#contacto">Contacto</a>
+            <a href="#localizacao">Localização</a>
         </div>
 
         <div class="nav-cliente">
@@ -242,10 +256,15 @@ function linhas($texto)
             <div class="mapa-localizacao">
                 <div class="mapa-info">
                     <strong>MedTech Solutions</strong>
-                    <p><?= h($conteudos['footer_localizacao']) ?></p>
+                    <p class="texto-linhas"><?php foreach (linhas_morada($conteudos['footer_localizacao']) as $linha) : ?><span><?= h($linha) ?></span><?php endforeach; ?></p>
                 </div>
-                <div class="mapa-foto-wrap">
-                    <img class="mapa-foto" src="assets/img/mapa_porto_medtech.png" alt="Mapa da morada da MedTech Solutions no Porto">
+                <div class="mapa-foto-wrap mapa-google-wrap">
+                    <iframe
+                        class="mapa-google"
+                        src="https://www.google.com/maps?q=<?= rawurlencode($conteudos['footer_localizacao']) ?>&output=embed"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        title="Mapa da morada da MedTech Solutions no Porto"></iframe>
                 </div>
             </div>
         </section>
@@ -254,7 +273,7 @@ function linhas($texto)
     <footer class="footer-container">
         <div class="footer-section">
             <strong>Horário</strong>
-            <p><?= h($conteudos['footer_horario']) ?></p>
+            <p class="texto-linhas"><?php foreach (linhas_horario($conteudos['footer_horario']) as $linha) : ?><span><?= h($linha) ?></span><?php endforeach; ?></p>
         </div>
         <div class="footer-section">
             <strong>Contactos</strong>
@@ -284,6 +303,20 @@ function linhas($texto)
     </footer>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

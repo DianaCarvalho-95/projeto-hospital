@@ -21,7 +21,7 @@ $estado = $estado === 1 ? 1 : 0;
 
 try {
     $ligacao = new PDO(
-        "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
+        "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8mb4",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
     );
@@ -47,9 +47,12 @@ try {
         ':id' => $id
     ]);
 
+    registar_evento('Utilizadores', $estado === 1 ? 'Ativação' : 'Desativação', 'Utilizador', $id, $utilizador->name);
+
     header('Location: lista.php?msg=' . ($estado === 1 ? 'ativado' : 'desativado'));
     exit;
 } catch (PDOException $err) {
     header('Location: lista.php?msg=erro');
     exit;
 }
+

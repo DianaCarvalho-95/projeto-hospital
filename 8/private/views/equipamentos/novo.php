@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 require_once __DIR__ . '/../../../config/config.php';
 require_once __DIR__ . '/../../includes/funcoes.php';
@@ -26,6 +26,7 @@ $criticidade = '';
 $localizacao_id = '';
 $fornecedor_id = '';
 $observacoes = '';
+$imagem_upload = null;
 
 try {
 
@@ -35,7 +36,7 @@ try {
     */
     $ligacao_dados = new PDO(
         "mysql:host=" . MYSQL_HOST .
-            ";dbname=" . MYSQL_DATABASE .
+            ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE .
             ";charset=utf8",
         MYSQL_USERNAME,
         MYSQL_PASSWORD
@@ -138,6 +139,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $erros[] = 'A data de aquisição não é válida.';
         }
     }
+    if (empty($erros)) {
+        $imagem_upload = guardar_upload_imagem_equipamento('imagem_equipamento', $erros);
+    }
 
     if (empty($erros)) {
 
@@ -174,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             */
             $ligacao = new PDO(
                 "mysql:host=" . MYSQL_HOST .
-                    ";dbname=" . MYSQL_DATABASE .
+                    ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE .
                     ";charset=utf8",
                 MYSQL_USERNAME,
                 MYSQL_PASSWORD
@@ -186,12 +190,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     (codigo_inventario, designacao, categoria, marca, modelo,
                      numero_serie, fabricante, data_aquisicao, ano_fabrico,
                      custo_aquisicao, tipo_entrada, estado, criticidade,
-                     localizacao_id, fornecedor_id, observacoes)
+                     localizacao_id, fornecedor_id, observacoes, imagem_upload)
                     VALUES
                     (:codigo, :designacao, :categoria, :marca, :modelo,
                      :numero_serie, :fabricante, :data_aquisicao, :ano_fabrico,
                      :custo_aquisicao, :tipo_entrada, :estado, :criticidade,
-                     :localizacao_id, :fornecedor_id, :observacoes)";
+                     :localizacao_id, :fornecedor_id, :observacoes, :imagem_upload)";
 
             $stmt = $ligacao->prepare($sql);
 
@@ -211,8 +215,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 ':criticidade' => $criticidade,
                 ':localizacao_id' => !empty($localizacao_id) ? $localizacao_id : null,
                 ':fornecedor_id' => !empty($fornecedor_id) ? $fornecedor_id : null,
-                ':observacoes' => $observacoes
+                ':observacoes' => $observacoes,
+                ':imagem_upload' => $imagem_upload
             ]);
+
+            $novo_id = (int) $ligacao->lastInsertId();
+            registar_evento('Equipamentos', 'Criação', 'Equipamento', $novo_id, $codigo . ' - ' . $designacao);
 
             $sucesso = 'Equipamento inserido com sucesso.';
 
@@ -235,6 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $localizacao_id = '';
             $fornecedor_id = '';
             $observacoes = '';
+            $imagem_upload = null;
 
         } catch (PDOException $err) {
 
@@ -248,128 +257,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
-
-<style>
-    /*
-        Fundo da página.
-        Mantém a coerência visual com Dashboard, listagem e edição.
-    */
-    .novo-page {
-        background: #f5f7fa;
-        min-height: 100vh;
-        padding: 24px;
-    }
-
-    /*
-        Título principal.
-    */
-    .page-title {
-        font-weight: 600;
-        color: #1E3A5F;
-        font-size: 1.8rem;
-        margin-bottom: 0;
-    }
-
-    /*
-        Subtítulo explicativo.
-    */
-    .page-subtitle {
-        color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 0;
-    }
-
-    /*
-        Cartão branco que contém o formulário.
-    */
-    .content-card {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
-        border: 1px solid #e5e7eb;
-    }
-
-    /*
-        Labels dos campos.
-    */
-    .form-label {
-        font-weight: 600;
-        color: #334155;
-        font-size: 0.88rem;
-    }
-
-    /*
-        Campos do formulário.
-    */
-    .form-control {
-        border-radius: 10px;
-        border: 1px solid #dbe3ec;
-        font-size: 0.9rem;
-    }
-
-    .form-control:focus {
-        border-color: #2F5D8A;
-        box-shadow: 0 0 0 0.15rem rgba(47, 93, 138, 0.18);
-    }
-
-    /*
-        Botão Cancelar.
-    */
-    .btn-cancelar-custom {
-        background: #eef2f7;
-        border: 1px solid #dbe3ec;
-        color: #475569;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 8px 16px;
-    }
-
-    .btn-cancelar-custom:hover {
-        background: #e2e8f0;
-        color: #334155;
-    }
-
-    /*
-        Botão Guardar.
-        Usa o azul institucional do site.
-    */
-    .btn-guardar-custom {
-        background: #edf4ff;
-        border: 1px solid #d6e7ff;
-        color: #2F5D8A;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 8px 16px;
-    }
-
-    .btn-guardar-custom:hover {
-        background: #dcecff;
-        color: #1E3A5F;
-    }
-
-    /*
-        Mensagens de erro e sucesso.
-    */
-    .mensagem-erro {
-        background: #fdeaea;
-        color: #bb2d3b;
-        border: 1px solid #f8d3d3;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 16px;
-    }
-
-    .mensagem-sucesso {
-        background: #e8f5ee;
-        color: #198754;
-        border: 1px solid #cfead9;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 16px;
-    }
-</style>
-
 <div class="container-fluid">
     <div class="row">
 
@@ -416,7 +303,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <div class="content-card">
 
-                <form action="novo.php" method="post" novalidate>
+                <form action="novo.php" method="post" enctype="multipart/form-data" novalidate>
 
                     <div class="row g-3">
 
@@ -579,6 +466,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
 
                         <div class="col-lg-4 col-md-6">
+                            <label class="form-label">Imagem do equipamento</label>
+                            <input type="file"
+                                   name="imagem_equipamento"
+                                   class="form-control"
+                                   accept="image/jpeg,image/png,image/webp,image/gif">
+                            <small class="form-text text-muted">Opcional. Formatos: JPG, PNG, WebP ou GIF.</small>
+                        </div>
+                        <div class="col-lg-4 col-md-6">
                             <label class="form-label">Observações</label>
                             <textarea name="observacoes"
                                       rows="1"
@@ -612,3 +507,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </div>
 
 <?php include '../../includes/footer.php'; ?>
+
+
+
+
+
+

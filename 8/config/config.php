@@ -1,21 +1,29 @@
-<?php
+﻿<?php
 
-// Configurações globais da aplicação
+// ====================================================================
+// CONFIGURAÇÕES GERAIS DA APLICAÇÃO
+// ====================================================================
+
+define('BASE_URL', '/sibdas/1232099/medtech-solutions');
 define('APP_NAME', 'MedTech Solutions');
 define('APP_VERSION', '1.0.0');
-define('APP_COPYRIGHT', '© 2025 MedTech Solutions');
+define('APP_COPYRIGHT', '© 2026 MedTech Solutions – Gestão Hospitalar');
 
-// Caminho base do projeto no navegador
-define('BASE_URL', '/PROJETO-HOSPITAL/8');
+// ====================================================================
+// CONFIGURAÇÕES DA BASE DE DADOS MYSQL/MARIADB
+// ====================================================================
 
-// Configuração da Base de Dados
-define('MYSQL_HOST', '127.0.0.1');
-define('MYSQL_DATABASE', 'inventario_hospitalar');
-define('MYSQL_USERNAME', 'root');
-define('MYSQL_PASSWORD', '');
-define('MYSQL_AES_KEY', 'medtech2025');
+define('MYSQL_HOST', 'vsgate-s1.dei.isep.ipp.pt');
+define('MYSQL_PORT', '10464');
+define('MYSQL_DATABASE', 'db1232099');
+define('MYSQL_USERNAME', '1232099');
+define('MYSQL_PASSWORD', 'carvalho_099');
+define('MYSQL_AES_KEY', 'carvalho_099');
 
-// Segurança - Encriptação com OpenSSL
+// ====================================================================
+// SEGURANÇA – ENCRIPTAÇÃO OPENSSL
+// ====================================================================
+
 define('OPENSSL_METHOD', 'AES-256-CBC');
-define('OPENSSL_KEY', 'MedTechSolutionsKey2025Secure01');
-define('OPENSSL_IV', 'MedTechInitVet01');
+define('OPENSSL_KEY', 'H0SDRQzIGqclX2kbYBk9xspdn9U5f3Wa');
+define('OPENSSL_IV', 'BzKAbjuREsHgnw56');

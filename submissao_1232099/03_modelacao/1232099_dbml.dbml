@@ -1,0 +1,206 @@
+﻿Project inventario_hospitalar {
+  database_type: 'MySQL'
+  Note: 'Modelo relacional da plataforma MedTech Solutions - aluno 1232099'
+}
+
+Table agents {
+  id int [pk, increment]
+  display_name varchar(120)
+  codigo varchar(20)
+  name varchar(100) [not null, unique]
+  passwrd varchar(100) [not null]
+  profile varchar(20) [not null]
+  identificador varchar(50)
+  notas varchar(160)
+  fotografia varchar(180)
+  ativo tinyint [not null, default: 1]
+  created_at datetime
+  last_login datetime
+}
+
+Table conteudos_publicos {
+  chave varchar(80) [pk]
+  titulo varchar(180)
+  conteudo text
+  atualizado_em datetime [not null]
+}
+
+Table conteudos_publicos_itens {
+  id int [pk, increment]
+  seccao varchar(40) [not null]
+  ordem int [not null, default: 0]
+  titulo varchar(180) [not null]
+  subtitulo varchar(180)
+  descricao text
+  icone varchar(80)
+  imagem varchar(180)
+  preco varchar(50)
+  ativo tinyint [not null, default: 1]
+  atualizado_em datetime [not null]
+
+  Indexes {
+    (seccao, ordem) [name: 'idx_seccao_ordem']
+  }
+}
+
+Table edificios {
+  id int [pk, increment]
+  nome varchar(100) [not null, unique]
+  observacoes text
+  criado_em timestamp
+}
+
+Table localizacoes {
+  id int [pk, increment]
+  edificio varchar(100) [not null]
+  piso varchar(50) [not null]
+  servico varchar(100) [not null]
+  sala varchar(50) [not null]
+  observacoes text
+}
+
+Table fornecedores {
+  id int [pk, increment]
+  nome_empresa varchar(150) [not null]
+  nif varchar(20) [not null, unique]
+  telefone varchar(20)
+  email varchar(100)
+  morada varchar(200)
+  website varchar(100)
+  pessoa_contacto varchar(100)
+  telefone_contacto varchar(20)
+  tipo_fornecedor varchar(100)
+  observacoes text
+}
+
+Table equipamentos {
+  id int [pk, increment]
+  codigo_inventario varchar(50) [not null, unique]
+  designacao varchar(150) [not null]
+  categoria varchar(100) [not null]
+  marca varchar(100)
+  modelo varchar(100)
+  numero_serie varchar(100)
+  fabricante varchar(100)
+  data_aquisicao date
+  ano_fabrico year
+  custo_aquisicao decimal(10,2)
+  tipo_entrada varchar(50)
+  estado varchar(50) [not null]
+  criticidade varchar(50) [not null]
+  observacoes text
+  imagem_upload varchar(255)
+  localizacao_id int
+  fornecedor_id int
+}
+
+Table documentacao {
+  id int [pk, increment]
+  tipo_documento varchar(100) [not null]
+  nome_documento varchar(150) [not null]
+  data_documento date
+  data_validade date
+  caminho_ficheiro varchar(200)
+  equipamento_id int [not null]
+  fornecedor_id int
+}
+
+Table manuais_equipamentos {
+  id_manual int [pk, increment]
+  id_equipamento int [not null]
+  titulo varchar(150) [not null]
+  tipo_manual varchar(100) [not null]
+  idioma varchar(50) [default: 'Português']
+  ficheiro varchar(255) [not null]
+  data_upload datetime
+  observacoes text
+}
+
+Table garantias_contratos {
+  id int [pk, increment]
+  equipamento_id int [not null]
+  data_inicio date
+  data_fim date
+  existe_contrato tinyint [default: 0]
+  tipo_contrato varchar(100)
+  entidade_responsavel varchar(150)
+  periodicidade varchar(100)
+  observacoes text
+  caminho_ficheiro varchar(255)
+}
+
+Table manutencoes {
+  id int [pk, increment]
+  equipamento_id int [not null]
+  fornecedor_id int
+  tipo_manutencao varchar(100) [not null]
+  data_manutencao date [not null]
+  proxima_manutencao date
+  responsavel varchar(150)
+  descricao text
+  custo decimal(10,2)
+  observacoes text
+}
+
+Table movimentacoes {
+  id int [pk, increment]
+  equipamento_id int [not null]
+  local_origem varchar(150) [not null]
+  local_destino varchar(150) [not null]
+  data_movimentacao date [not null]
+  responsavel varchar(150)
+  motivo varchar(150)
+  observacoes text
+}
+
+Table emprestimos {
+  id int [pk, increment]
+  equipamento_id int [not null]
+  servico_origem varchar(150) [not null]
+  servico_destino varchar(150) [not null]
+  data_emprestimo date [not null]
+  data_prevista_devolucao date
+  data_devolucao date
+  responsavel varchar(150)
+  estado varchar(50) [not null]
+  observacoes text
+}
+
+Table imagens_equipamentos {
+  id int [pk, increment]
+  categoria varchar(100) [not null]
+  imagem varchar(255) [not null]
+}
+
+
+Table eventos_logs {
+  id int [pk, increment]
+  data_evento datetime [not null]
+  utilizador varchar(120)
+  perfil varchar(40)
+  modulo varchar(80) [not null]
+  acao varchar(80) [not null]
+  entidade varchar(80)
+  entidade_id int
+  descricao text
+  ip varchar(45)
+  user_agent varchar(255)
+
+  Indexes {
+    data_evento [name: 'idx_eventos_data']
+    modulo [name: 'idx_eventos_modulo']
+    utilizador [name: 'idx_eventos_utilizador']
+  }
+}
+
+Ref: equipamentos.localizacao_id > localizacoes.id [delete: set null, update: cascade]
+Ref: equipamentos.fornecedor_id > fornecedores.id [delete: set null, update: cascade]
+Ref: documentacao.equipamento_id > equipamentos.id [delete: cascade, update: cascade]
+Ref: documentacao.fornecedor_id > fornecedores.id [delete: set null, update: cascade]
+Ref: manuais_equipamentos.id_equipamento > equipamentos.id [delete: cascade]
+Ref: garantias_contratos.equipamento_id > equipamentos.id [delete: cascade, update: cascade]
+Ref: manutencoes.equipamento_id > equipamentos.id
+Ref: manutencoes.fornecedor_id > fornecedores.id
+Ref: movimentacoes.equipamento_id > equipamentos.id
+Ref: emprestimos.equipamento_id > equipamentos.id
+

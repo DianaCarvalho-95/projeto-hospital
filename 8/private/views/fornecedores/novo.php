@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($erros)) {
         try {
             $ligacao = new PDO(
-                "mysql:host=" . MYSQL_HOST . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
+                "mysql:host=" . MYSQL_HOST . ";port=" . MYSQL_PORT . ";dbname=" . MYSQL_DATABASE . ";charset=utf8",
                 MYSQL_USERNAME,
                 MYSQL_PASSWORD
             );
@@ -86,6 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 ':tipo_fornecedor' => $tipo_fornecedor,
                 ':observacoes' => $observacoes
             ]);
+
+            $novo_fornecedor_id = (int) $ligacao->lastInsertId();
+            registar_evento('Fornecedores', 'Criação', 'Fornecedor', $novo_fornecedor_id, $nome_empresa);
 
             $sucesso = 'Fornecedor inserido com sucesso.';
 
@@ -121,174 +124,6 @@ function selecionado($valor_atual, $valor_opcao)
 
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/nav.php'; ?>
-
-<style>
-    .novo-page {
-        background: #f5f7fa;
-        min-height: 100vh;
-        padding: 24px;
-    }
-
-    .page-title {
-        font-weight: 700;
-        color: #1E3A5F;
-        font-size: 1.8rem;
-        margin-bottom: 0;
-    }
-
-    .page-subtitle {
-        color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 0;
-    }
-
-    .supplier-strip,
-    .content-card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 14px;
-        box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
-    }
-
-    .supplier-strip {
-        padding: 12px 14px;
-        margin-bottom: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-    }
-
-    .supplier-name {
-        color: #0f172a;
-        font-size: 1rem;
-        font-weight: 800;
-        margin-bottom: 2px;
-    }
-
-    .supplier-path {
-        color: #52677d;
-        font-size: 0.84rem;
-    }
-
-    .supplier-badge {
-        background: #e8f1fb;
-        color: #1E3A5F;
-        border-radius: 999px;
-        padding: 5px 10px;
-        font-size: 0.76rem;
-        font-weight: 800;
-        white-space: nowrap;
-    }
-
-    .content-card {
-        padding: 16px;
-    }
-
-    .form-section-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #1E3A5F;
-        font-weight: 800;
-        font-size: 0.98rem;
-        margin-bottom: 12px;
-        padding-bottom: 9px;
-        border-bottom: 1px solid #e8eef5;
-    }
-
-    .form-section-title::before {
-        content: "";
-        width: 4px;
-        height: 18px;
-        border-radius: 999px;
-        background: #2F5D8A;
-    }
-
-    .form-hint {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 9px;
-        color: #52677d;
-        font-size: 0.84rem;
-        padding: 9px 11px;
-        margin-bottom: 14px;
-    }
-
-    .form-label {
-        font-weight: 800;
-        color: #172033;
-        font-size: 0.84rem;
-        margin-bottom: 5px;
-    }
-
-    .form-control,
-    .form-select {
-        border-radius: 8px;
-        border: 1px solid #dbe3ec;
-        font-size: 0.88rem;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-        border-color: #2F5D8A;
-        box-shadow: 0 0 0 0.15rem rgba(47, 93, 138, 0.18);
-    }
-
-    textarea.form-control {
-        resize: vertical;
-        min-height: 76px;
-    }
-
-    .btn-cancelar-custom,
-    .btn-guardar-custom {
-        border-radius: 8px;
-        font-weight: 700;
-        padding: 8px 14px;
-    }
-
-    .btn-cancelar-custom {
-        background: #ffffff;
-        border: 1px solid #dbe3ec;
-        color: #1E3A5F;
-    }
-
-    .btn-cancelar-custom:hover {
-        background: #f6faff;
-        color: #1E3A5F;
-    }
-
-    .btn-guardar-custom {
-        background: #2F5D8A;
-        border: 1px solid #2F5D8A;
-        color: #ffffff;
-    }
-
-    .btn-guardar-custom:hover {
-        background: #1E3A5F;
-        color: #ffffff;
-    }
-
-    .mensagem-erro,
-    .mensagem-sucesso {
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 14px;
-    }
-
-    .mensagem-erro {
-        background: #fdeaea;
-        color: #bb2d3b;
-        border: 1px solid #f8d3d3;
-    }
-
-    .mensagem-sucesso {
-        background: #e8f5ee;
-        color: #198754;
-        border: 1px solid #cfead9;
-    }
-</style>
-
 <div class="container-fluid">
     <div class="row">
         <?php include '../../includes/sidebar.php'; ?>
@@ -404,3 +239,5 @@ function selecionado($valor_atual, $valor_opcao)
 </div>
 
 <?php include '../../includes/footer.php'; ?>
+
+

@@ -15,162 +15,21 @@ if (!empty($_SESSION['server_error'])) {
     unset($_SESSION['server_error']);
 }
 
-include '../private/includes/header.php';
+require_once '../config/config.php';
 
 ?>
-
-<style>
-
-/*
-|--------------------------------------------------------------------------
-| PÁGINA DE LOGIN
-|--------------------------------------------------------------------------
-*/
-
-.login-page {
-
-    min-height: 100vh;
-
-    background-image:
-        url('../private/assets/img/fundo_login.png');
-
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 30px;
-}
-
-/*
-|--------------------------------------------------------------------------
-| CARTÃO CENTRAL
-|--------------------------------------------------------------------------
-| Contém o formulário de autenticação.
-|--------------------------------------------------------------------------
-*/
-
-.login-card {
-
-    width: 100%;
-    max-width: 560px;
-
-    background: rgba(255,255,255,0.92);
-
-    backdrop-filter: blur(4px);
-
-    border-radius: 22px;
-
-    padding: 40px;
-
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-
-    border: 1px solid rgba(255,255,255,0.8);
-}
-
-/*
-|--------------------------------------------------------------------------
-| LOGÓTIPO
-|--------------------------------------------------------------------------
-*/
-
-.login-logo {
-
-    width: 240px;
-    max-width: 100%;
-
-    margin-bottom: 25px;
-}
-
-/*
-|--------------------------------------------------------------------------
-| LABELS
-|--------------------------------------------------------------------------
-*/
-
-.login-label {
-
-    font-weight: 600;
-    color: #1f2937;
-}
-
-/*
-|--------------------------------------------------------------------------
-| CAMPOS DE TEXTO
-|--------------------------------------------------------------------------
-*/
-
-.login-input {
-
-    padding: 12px 14px;
-
-    border-radius: 10px;
-
-    border: 1px solid #ced4da;
-}
-
-/*
-|--------------------------------------------------------------------------
-| BOTÃO DE LOGIN
-|--------------------------------------------------------------------------
-*/
-
-.login-button {
-
-    width: 100%;
-
-    padding: 12px;
-
-    border: none;
-
-    border-radius: 10px;
-
-    background: linear-gradient(
-        135deg,
-        #0d6efd,
-        #084298
-    );
-
-    color: white;
-
-    font-weight: 600;
-
-    transition: 0.2s;
-}
-
-.login-button:hover {
-
-    background: linear-gradient(
-        135deg,
-        #0b5ed7,
-        #052c65
-    );
-
-    color: white;
-}
-
-/*
-|--------------------------------------------------------------------------
-| TEXTO INFERIOR
-|--------------------------------------------------------------------------
-*/
-
-.login-footer {
-
-    margin-top: 20px;
-
-    text-align: center;
-
-    color: #6c757d;
-
-    font-size: 0.9rem;
-}
-
-</style>
-
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MedTech Solutions</title>
+    <link rel="shortcut icon" href="/PROJETO-HOSPITAL/8/private/assets/img/hospital125.png" type="image/png">
+    <link rel="stylesheet" href="/PROJETO-HOSPITAL/8/private/assets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/PROJETO-HOSPITAL/8/private/assets/fontawesome/all.min.css">
+    <link rel="stylesheet" href="/PROJETO-HOSPITAL/8/private/assets/css/1232099.css?v=20260617-login-white">
+</head>
+<body class="login-body">
 <div class="login-page">
 
     <div class="login-card">
@@ -277,4 +136,9 @@ include '../private/includes/header.php';
 
 </div>
 
-<?php include '../private/includes/footer.php'; ?>
+<script src="/PROJETO-HOSPITAL/8/private/assets/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+
